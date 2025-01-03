@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>員林市智慧交通整合計畫</title>
+  <style>
+    /* 基本樣式 */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2em;
+      color: #333;
+    }
+
+    p {
+      color: #666;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      padding: 20px;
+    }
+
+    .tabs-list {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .tab-trigger {
+      flex: 1;
+      padding: 10px 20px;
+      text-align: center;
+      background: #eaeaea;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .tab-trigger.active {
+      background-color: #007bff;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .tabs-content {
+      display: none;
+    }
+
+    .tabs-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<link rel="stylesheet" href="styles.css">
+<body>
+  <div class="container">
+    <!-- 頁面標題 -->
+    <div class="header text-center">
+      <h1>員林市智慧交通整合暨銀髮宜居社區發展計畫</h1>
+      <p>打造中彰投地區最具代表性的智慧樂齡示範區</p>
+    </div>
+
+    <!-- 分頁按鈕 -->
+    <div class="tabs-list">
+      <button class="tab-trigger active" data-tab="background">現況分析</button>
+      <button class="tab-trigger" data-tab="plan">計畫內容</button>
+      <button class="tab-trigger" data-tab="benefits">預期效益</button>
+      <button class="tab-trigger" data-tab="innovation">創新特色</button>
+    </div>
+
+    <!-- 現況分析內容 -->
+    <div class="tabs-content active" id="background">
+      <div class="card">
+        <h3>現況分析</h3>
+        <h4>區域發展困境</h4>
+        <ul>
+          <li>學生人數銳減：從 17,000 人降至 3,500 人，減少 79%</li>
+          <li>房地產衝擊：套房空置率 75%，房價下跌 40%</li>
+        </ul>
+        <h4>交通瓶頸問題</h4>
+        <ul>
+          <li>尖峰時段延誤 15-20 分鐘</li>
+          <li>碳排放每年增加 76.8 噸</li>
+          <li>救護車需繞行 3.2 公里</li>
+          <li>重型車輛穿越住宅區，噪音污染加劇</li>
+        </ul>
+        <h4>老年住宅需求分析</h4>
+        <ul>
+          <li>65 歲以上人口：28,000 人</li>
+          <li>住宅需求人數：6,160 人</li>
+          <li>現有供給率：僅 2%（120 單位）</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 計畫內容 -->
+    <div class="tabs-content" id="plan">
+      <div class="card">
+        <h3>計畫內容</h3>
+        <h4>預算編列與財務規劃</h4>
+        <ul>
+          <li>道路工程預算：總計 4.8 億元</li>
+          <li>社區改造預算：總計 2.4 億元</li>
+          <li>總投資金額：7.2 億元，預期回收期 7.7 年</li>
+        </ul>
+        <h4>道路系統優化</h4>
+        <ul>
+          <li>總長度：1.2 公里</li>
+          <li>路寬規格：20 米</li>
+        </ul>
+        <h4>銀髮社區規劃</h4>
+        <ul>
+          <li>200 戶優質住宅</li>
+          <li>完整照護體系</li>
+          <li>社區活動中心</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 預期效益 -->
+    <div class="tabs-content" id="benefits">
+      <div class="card">
+        <h3>預期效益</h3>
+        <h4>交通效益</h4>
+        <ul>
+          <li>年省油效益：2,160 萬元</li>
+          <li>碳排放減少：76.8 噸/年</li>
+        </ul>
+        <h4>經濟效益</h4>
+        <ul>
+          <li>創造 150 個工作機會</li>
+          <li>年增營業額：2.4 億元</li>
+        </ul>
+        <h4>社會效益</h4>
+        <ul>
+          <li>提供 200 戶銀髮住宅</li>
+          <li>改善社區治安與活力</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 創新特色 -->
+    <div class="tabs-content" id="innovation">
+      <div class="card">
+        <h3>創新特色</h3>
+        <h4>市場競爭優勢</h4>
+        <ul>
+          <li>較私人養老院便宜 35%</li>
+          <li>較都會區住宅便宜 45%</li>
+          <li>月費上限 25,000 元</li>
+        </ul>
+        <h4>資源整合</h4>
+        <ul>
+          <li>大葉大學護理系資源：專業實習與照護支援</li>
+          <li>完整醫療網絡：與地區醫院策略聯盟</li>
+        </ul>
+        <h4>永續發展策略</h4>
+        <ul>
+          <li>閒置建築再利用</li>
+          <li>降低開發成本 40%</li>
+          <li>加速建置時程</li>
+        </ul>
+        <h4>計畫創新亮點</h4>
+        <ul>
+          <li>首創大學城轉型銀髮宜居社區</li>
+          <li>結合教育、醫療、照護資源</li>
+          <li>打造低碳、便捷運輸網絡</li>
+          <li>創造多元收入、自給自足</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.tab-trigger').forEach(button => {
+      button.addEventListener('click', () => {
+        // 移除所有按鈕的 active 狀態
+        document.querySelectorAll('.tab-trigger').forEach(trigger => {
+          trigger.classList.remove('active');
+        });
+
+        // 隱藏所有分頁內容
+        document.querySelectorAll('.tabs-content').forEach(tab => {
+          tab.classList.remove('active');
+        });
+
+        // 顯示點擊的分頁內容
+        const tabId = button.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+        button.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
