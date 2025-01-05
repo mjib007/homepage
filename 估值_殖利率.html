@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EPS 和合理股價計算器</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    h1, h2 {
+      text-align: center;
+      color: #333;
+    }
+    .field-group {
+      margin-bottom: 16px;
+    }
+    .field-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    .field-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      color: #fff;
+      background-color: #007BFF;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .results {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: #f1f1f1;
+    }
+    .results p {
+      margin: 8px 0;
+    }
+    .highlight {
+      color: #007BFF;
+      font-weight: bold;
+    }
+    .formula {
+      color: #555;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>EPS 和合理股價計算器</h1>
+    <p>根據您輸入的數據，計算合理股價與投資價值。</p>
+
+    <!-- 步驟一：輸入 EPS 數據 -->
+    <h2>輸入 EPS 數據</h2>
+    <div class="field-group">
+      <label for="latestEps">最近一季 EPS</label>
+      <input type="text" id="latestEps" placeholder="輸入最近一季 EPS">
+    </div>
+    <div class="field-group">
+      <label for="prevEps1">前一季 EPS</label>
+      <input type="text" id="prevEps1" placeholder="輸入前一季 EPS">
+    </div>
+    <div class="field-group">
+      <label for="prevEps2">前二季 EPS</label>
+      <input type="text" id="prevEps2" placeholder="輸入前二季 EPS">
+    </div>
+    <div class="field-group">
+      <label for="prevEps3">前三季 EPS</label>
+      <input type="text" id="prevEps3" placeholder="輸入前三季 EPS">
+    </div>
+
+    <!-- 步驟二：輸入配息率 -->
+    <h2>輸入配息率 (%)</h2>
+    <div class="field-group">
+      <label for="dividend1">最近一次配息率</label>
+      <input type="text" id="dividend1" placeholder="輸入最近一次配息率">
+    </div>
+    <div class="field-group">
+      <label for="dividend2">前一次配息率</label>
+      <input type="text" id="dividend2" placeholder="輸入前一次配息率">
+    </div>
+    <div class="field-group">
+      <label for="dividend3">前兩次配息率</label>
+      <input type="text" id="dividend3" placeholder="輸入前兩次配息率">
+    </div>
+
+    <!-- 步驟三：輸入目前股價 -->
+    <h2>輸入目前股價</h2>
+    <div class="field-group">
+      <label for="currentPrice">目前股價</label>
+      <input type="text" id="currentPrice" placeholder="輸入目前股價">
+    </div>
+
+    <!-- 計算按鈕 -->
+    <button onclick="calculate()">計算</button>
+
+    <!-- 結果區域 -->
+    <div class="results" id="results">
+      <p>請輸入所有必要數據後，按下計算按鈕查看結果。</p>
+    </div>
+  </div>
+
+  <script>
+    function getNumericValue(value) {
+      const num = parseFloat(value);
+      return isNaN(num) ? 0 : num;
+    }
+
+    function calculate() {
+      // EPS 數據
+      const latestEps = getNumericValue(document.getElementById('latestEps').value);
+      const prevEps1 = getNumericValue(document.getElementById('prevEps1').value);
+      const prevEps2 = getNumericValue(document.getElementById('prevEps2').value);
+      const prevEps3 = getNumericValue(document.getElementById('prevEps3').value);
+
+      // 配息率
+      const dividend1 = getNumericValue(document.getElementById('dividend1').value);
+      const dividend2 = getNumericValue(document.getElementById('dividend2').value);
+      const dividend3 = getNumericValue(document.getElementById('dividend3').value);
+      const avgDividendRate = (dividend1 + dividend2 + dividend3) / 3 / 100;
+
+      // 目前股價
+      const currentPrice = getNumericValue(document.getElementById('currentPrice').value);
+
+      // 第一種 EPS 計算方式
+      const method1Eps = (latestEps + prevEps1 + prevEps2) * (4 / 3);
+
+      // 第二種 EPS 計算方式
+      const method2Eps = latestEps + prevEps1 + prevEps2 + prevEps3;
+
+      // 預估配息
+      const estimatedDividend1 = method1Eps * avgDividendRate;
+      const estimatedDividend2 = method2Eps * avgDividendRate;
+
+      // 合理股價
+      const fairPrice1 = estimatedDividend1 / 0.05;
+      const fairPrice2 = estimatedDividend2 / 0.05;
+
+      // 實際殖利率
+      const actualYield1 = currentPrice > 0 ? (estimatedDividend1 / currentPrice) * 100 : 0;
+      const actualYield2 = currentPrice > 0 ? (estimatedDividend2 / currentPrice) * 100 : 0;
+
+      // 溢價/折價判斷
+      const premiumOrDiscount1 = currentPrice > fairPrice1 ? "溢價" : "折價";
+      const premiumOrDiscount2 = currentPrice > fairPrice2 ? "溢價" : "折價";
+
+      // 顯示結果
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = `
+        <h3>計算結果</h3>
+        <p><strong>第一種方式 EPS：</strong> <span class="highlight">${method1Eps.toFixed(2)}</span></p>
+        <p class="formula">(${latestEps.toFixed(2)} + ${prevEps1.toFixed(2)} + ${prevEps2.toFixed(2)}) × 4 / 3</p>
+        <p><strong>第二種方式 EPS：</strong> <span class="highlight">${method2Eps.toFixed(2)}</span></p>
+        <p class="formula">${latestEps.toFixed(2)} + ${prevEps1.toFixed(2)} + ${prevEps2.toFixed(2)} + ${prevEps3.toFixed(2)}</p>
+        <p><strong>平均配息率：</strong> <span class="highlight">${(avgDividendRate * 100).toFixed(2)}%</span></p>
+        <p><strong>預估配息 (第一種方式)：</strong> <span class="highlight">${estimatedDividend1.toFixed(2)} 元</span></p>
+        <p><strong>預估配息 (第二種方式)：</strong> <span class="highlight">${estimatedDividend2.toFixed(2)} 元</span></p>
+        <p><strong>合理股價 (第一種方式)：</strong> <span class="highlight">${fairPrice1.toFixed(2)} 元</span></p>
+        <p><strong>合理股價 (第二種方式)：</strong> <span class="highlight">${fairPrice2.toFixed(2)} 元</span></p>
+        <p><strong>實際殖利率 (第一種方式)：</strong> <span class="highlight">${actualYield1.toFixed(2)}%</span></p>
+        <p><strong>實際殖利率 (第二種方式)：</strong> <span class="highlight">${actualYield2.toFixed(2)}%</span></p>
+        <p><strong>第一種方式：</strong> ${premiumOrDiscount1}</p>
+        <p><strong>第二種方式：</strong> ${premiumOrDiscount2}</p>
+      `;
+    }
+  </script>
+</body>
+</html>
