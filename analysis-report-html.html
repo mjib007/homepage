@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台塑產業分析：疫情vs現在</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8fafc;
+            color: #1a202c;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .kpi-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .comparison-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .data-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .pandemic-data {
+            background-color: #dbeafe;
+        }
+        .current-data {
+            background-color: #fee2e2;
+        }
+        .trend-up {
+            color: #16a34a;
+            margin-right: 8px;
+        }
+        .trend-down {
+            color: #dc2626;
+            margin-right: 8px;
+        }
+        .conclusion {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .highlight-box {
+            background-color: #fef3c7;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .title {
+            color: #1e40af;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .change {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>台塑產業分析：疫情vs現在</h1>
+            <p>產業結構性改變分析報告</p>
+        </header>
+
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <h3>EPS (元)</h3>
+                <div class="value">0.24</div>
+                <div class="change trend-down">▼ -96% vs 疫情期間(6元)</div>
+            </div>
+            <div class="kpi-card">
+                <h3>產能利用率</h3>
+                <div class="value">57%</div>
+                <div class="change trend-down">▼ -37% vs 疫情期間(90%)</div>
+            </div>
+            <div class="kpi-card">
+                <h3>全球市占率</h3>
+                <div class="value">8%</div>
+                <div class="change trend-down">▼ -47% vs 疫情期間(15%)</div>
+            </div>
+            <div class="kpi-card">
+                <h3>競爭對手數量</h3>
+                <div class="value">12</div>
+                <div class="change trend-up">▲ +140% vs 疫情期間(5)</div>
+            </div>
+        </section>
+
+        <section class="comparison-grid">
+            <div class="comparison-card">
+                <h2 class="title">供給端比較</h2>
+                <div class="data-item pandemic-data">
+                    <span class="trend-up">▲</span>
+                    <div>
+                        <h4>疫情期間</h4>
+                        <ul>
+                            <li>低價採購成本優勢</li>
+                            <li>全球供應鏈中斷限制競爭</li>
+                            <li>OPEC減產推動油價上漲</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="data-item current-data">
+                    <span class="trend-down">▼</span>
+                    <div>
+                        <h4>現在 (2024)</h4>
+                        <ul>
+                            <li>中國"七個六輕"產能全面開出</li>
+                            <li>供過於求將持續到2028年</li>
+                            <li>產能利用率低（輕油裂解廠僅57%）</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison-card">
+                <h2 class="title">需求端比較</h2>
+                <div class="data-item pandemic-data">
+                    <span class="trend-up">▲</span>
+                    <div>
+                        <h4>疫情期間</h4>
+                        <ul>
+                            <li>歐美家電搶購潮</li>
+                            <li>家電進口大幅成長（3-8成）</li>
+                            <li>市場供不應求</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="data-item current-data">
+                    <span class="trend-down">▼</span>
+                    <div>
+                        <h4>現在 (2024)</h4>
+                        <ul>
+                            <li>中國內需疲弱</li>
+                            <li>下游客戶停工</li>
+                            <li>全球需求平淡</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="comparison-grid">
+            <div class="comparison-card">
+                <h2 class="title">競爭格局變化</h2>
+                <div class="data-item pandemic-data">
+                    <span class="trend-up">▲</span>
+                    <div>
+                        <h4>疫情期間</h4>
+                        <ul>
+                            <li>供應鏈中斷減緩競爭</li>
+                            <li>中國產能受疫情管控</li>
+                            <li>價格主導能力強</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="data-item current-data">
+                    <span class="trend-down">▼</span>
+                    <div>
+                        <h4>現在 (2024)</h4>
+                        <ul>
+                            <li>中國產能全面釋放</li>
+                            <li>失去價格話語權</li>
+                            <li>同質化競爭加劇</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="comparison-card">
+                <h2 class="title">獲利表現對比</h2>
+                <div class="data-item pandemic-data">
+                    <span class="trend-up">▲</span>
+                    <div>
+                        <h4>疫情期間</h4>
+                        <ul>
+                            <li>EPS維持5-7元水準</li>
+                            <li>2020 Q4淨利季增1.5倍</li>
+                            <li>外資預期50%以上獲利成長</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="data-item current-data">
+                    <span class="trend-down">▼</span>
+                    <div>
+                        <h4>現在 (2024)</h4>
+                        <ul>
+                            <li>2024 Q3稅前虧損32.45億</li>
+                            <li>預期全年EPS低於1元</li>
+                            <li>基本面持續惡化</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="conclusion">
+            <h2 class="title">關鍵結論</h2>
+            <p>
+                台塑面臨的不只是短期的景氣循環問題，而是更根本的產業結構性改變。
+                疫情時期的特殊需求和供給限制創造了有利的經營環境，但隨著這些因素消失，
+                加上中國產能的大量投放，台塑的競爭優勢正面臨嚴峻挑戰。
+            </p>
+            <div class="highlight-box">
+                <h3>質變關鍵點：</h3>
+                <ul>
+                    <li>從供不應求變成供過於求</li>
+                    <li>從價格主導者變成價格接受者</li>
+                    <li>從區域領導者變成競爭者之一</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
