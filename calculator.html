@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.calculator {
+    width: 300px;
+    background: #2d3436;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    margin: 20px auto;
+}
+
+.display {
+    background: #dfe6e9;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: right;
+    font-size: 24px;
+    font-family: monospace;
+    min-height: 30px;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+button {
+    padding: 15px;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background: #636e72;
+    color: white;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #74b9ff;
+}
+
+.operator {
+    background: #fdcb6e;
+}
+
+.equal {
+    background: #00b894;
+    grid-column: span 2;
+}
+
+.clear {
+    background: #d63031;
+}
+</style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display">0</div>
+        <div class="buttons">
+            <button class="clear" onclick="clearDisplay()">C</button>
+            <button onclick="changeSign()">±</button>
+            <button onclick="percentage()">%</button>
+            <button class="operator" onclick="setOperator('/')">÷</button>
+            
+            <button onclick="appendNumber('7')">7</button>
+            <button onclick="appendNumber('8')">8</button>
+            <button onclick="appendNumber('9')">9</button>
+            <button class="operator" onclick="setOperator('*')">×</button>
+            
+            <button onclick="appendNumber('4')">4</button>
+            <button onclick="appendNumber('5')">5</button>
+            <button onclick="appendNumber('6')">6</button>
+            <button class="operator" onclick="setOperator('-')">-</button>
+            
+            <button onclick="appendNumber('1')">1</button>
+            <button onclick="appendNumber('2')">2</button>
+            <button onclick="appendNumber('3')">3</button>
+            <button class="operator" onclick="setOperator('+')">+</button>
+            
+            <button onclick="appendNumber('0')">0</button>
+            <button onclick="appendDecimal()">.</button>
+            <button class="equal" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+<script>
+let currentValue = '0';
+let previousValue = '';
+let operator = '';
+let newNumber = true;
+
+const display = document.querySelector('.display');
+
+function updateDisplay() {
+    display.textContent = currentValue;
+}
+
+function appendNumber(num) {
+    if (newNumber) {
+        currentValue = num;
+        newNumber = false;
+    } else {
+        currentValue = currentValue === '0' ? num : currentValue + num;
+    }
+    updateDisplay();
+}
+
+function appendDecimal() {
+    if (!currentValue.includes('.')) {
+        currentValue += '.';
+        updateDisplay();
+    }
+}
+
+function clearDisplay() {
+    currentValue = '0';
+    previousValue = '';
+    operator = '';
+    newNumber = true;
+    updateDisplay();
+}
+
+function setOperator(op) {
+    if (previousValue && !newNumber) {
+        calculate();
+    }
+    previousValue = currentValue;
+    operator = op;
+    newNumber = true;
+}
+
+function changeSign() {
+    currentValue = (parseFloat(currentValue) * -1).toString();
+    updateDisplay();
+}
+
+function percentage() {
+    currentValue = (parseFloat(currentValue) / 100).toString();
+    updateDisplay();
+}
+
+function calculate() {
+    if (!previousValue || newNumber) return;
+    
+    let result;
+    const prev = parseFloat(previousValue);
+    const current = parseFloat(currentValue);
+    
+    switch(operator) {
+        case '+':
+            result = prev + current;
+            break;
+        case '-':
+            result = prev - current;
+            break;
+        case '*':
+            result = prev * current;
+            break;
+        case '/':
+            result = prev / current;
+            break;
+        default:
+            return;
+    }
+    
+    currentValue = result.toString();
+    operator = '';
+    previousValue = '';
+    newNumber = true;
+    updateDisplay();
+}
+</script>
+</body>
+</html>
