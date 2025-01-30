@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聖光虛境-光明燈</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            background: url('https://mjib007.github.io/homepage/light/bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            padding: 0 10px;
+        }
+        .main-title {
+            color: #FF4D4D;
+            font-size: 1.8rem;
+            margin-bottom: 0.8rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .subtitle-container {
+            color: #99CCFF;
+            font-size: 1rem;
+            margin: 0.8rem 0;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .subtitle-dot {
+            color: #4D79FF;
+            margin: 0 0.3rem;
+        }
+        .lamp-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .lamp-row {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+        }
+        .lamp {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            filter: drop-shadow(0 0 10px rgba(255, 100, 0, 0.3));
+        }
+        .lamp svg {
+            width: 100%;
+            height: 100%;
+        }
+        .name-tag {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(127, 29, 29, 0.5);
+            color: #fef3c7;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            white-space: nowrap;
+            font-size: 0.8rem;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 0.9; transform: scale(1); }
+            25% { opacity: 0.8; transform: scale(0.98); }
+            50% { opacity: 1; transform: scale(1.02); }
+            75% { opacity: 0.9; transform: scale(0.99); }
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+        }
+
+        .flame-container {
+            transform-origin: center bottom;
+            animation: sway 3s ease-in-out infinite;
+        }
+
+        .flame {
+            animation: flicker 2s ease-in-out infinite;
+            animation-delay: calc(var(--delay) * 1s);
+        }
+
+        .glow {
+            filter: blur(5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="main-title">聖光虛境-光明燈</h1>
+            <div class="subtitle-container">
+                「股票賺錢」
+                <span class="subtitle-dot">●</span>
+                「考試必上」
+                <span class="subtitle-dot">●</span>
+                「身體勇壯」
+            </div>
+        </div>
+        <div class="lamp-grid">
+            <div class="lamp-row" id="row1"></div>
+            <div class="lamp-row" id="row2"></div>
+            <div class="lamp-row" id="row3"></div>
+            <div class="lamp-row" id="row4"></div>
+            <div class="lamp-row" id="row5"></div>
+            <div class="lamp-row" id="row6"></div>
+            <div class="lamp-row" id="row7"></div>
+            <div class="lamp-row" id="row8"></div>
+            <div class="lamp-row" id="row9"></div>
+            <div class="lamp-row" id="row10"></div>
+            <div class="lamp-row" id="row11"></div>
+            <div class="lamp-row" id="row12"></div>
+        </div>
+    </div>
+
+    <script>
+        const allNames = [
+            "賴清德", "錢世傑", "林穗蓉", "林蕙君", "林欣儀", "趙彗亨",
+            "蔡枚秀", "鍾  寧", "盧吉昱", "陳俊源", "何孟蒨", "莊雯惠",
+            "○○○", "○○○", "彭紹欽", "蔡政倫", "王譯臨", "陳周輿",
+            "○○○", "○○○", "○○○", "○○○", "○○○", "黃聖雄",
+            "○○○", "○○○", "○○○", "○○○", "○○○", "○○○",
+            "○○○", "○○○", "○○○", "○○○", "錢友科", "鄭雪絨"
+        ];
+
+        function createLamp(name, index) {
+            const lamp = document.createElement('div');
+            lamp.className = 'lamp';
+            
+            const uniqueId = `glow-${Math.random().toString(36).substr(2, 9)}`;
+            const randomDelay = Math.random() * 2;
+            
+            lamp.innerHTML = `
+                <svg viewBox="0 0 100 100">
+                    <defs>
+                        <radialGradient id="${uniqueId}-flame">
+                            <stop offset="0%" stop-color="#FFF" stop-opacity="0.95"/>
+                            <stop offset="50%" stop-color="#FFD700" stop-opacity="0.8"/>
+                            <stop offset="100%" stop-color="#FF4500" stop-opacity="0"/>
+                        </radialGradient>
+                        <radialGradient id="${uniqueId}-glow">
+                            <stop offset="0%" stop-color="#FF8C00" stop-opacity="0.8"/>
+                            <stop offset="100%" stop-color="#FF4500" stop-opacity="0"/>
+                        </radialGradient>
+                    </defs>
+                    
+                    <circle cx="50" cy="50" r="40" fill="#8B0000"/>
+                    <circle cx="50" cy="50" r="35" fill="#FF4500"/>
+                    
+                    <circle cx="50" cy="50" r="45" fill="url(#${uniqueId}-glow)" class="glow"/>
+                    
+                    <g class="flame-container">
+                        <path d="M 50,30 
+                               Q 40,45 50,60 
+                               Q 60,45 50,30" 
+                              fill="url(#${uniqueId}-flame)" 
+                              class="flame"
+                              style="--delay: ${randomDelay}">
+                            <animate 
+                                attributeName="d" 
+                                values="M 50,30 Q 40,45 50,60 Q 60,45 50,30;
+                                        M 50,28 Q 38,45 50,60 Q 62,45 50,28;
+                                        M 50,32 Q 42,45 50,60 Q 58,45 50,32;
+                                        M 50,30 Q 40,45 50,60 Q 60,45 50,30" 
+                                dur="1.5s" 
+                                repeatCount="indefinite"
+                            />
+                        </path>
+                        
+                        <path d="M 50,35 
+                               Q 45,45 50,55 
+                               Q 55,45 50,35" 
+                              fill="#FFF" 
+                              opacity="0.8" 
+                              class="flame">
+                            <animate 
+                                attributeName="d" 
+                                values="M 50,35 Q 45,45 50,55 Q 55,45 50,35;
+                                        M 50,33 Q 43,45 50,55 Q 57,45 50,33;
+                                        M 50,37 Q 47,45 50,55 Q 53,45 50,37;
+                                        M 50,35 Q 45,45 50,55 Q 55,45 50,35" 
+                                dur="2s" 
+                                repeatCount="indefinite"
+                            />
+                        </path>
+                    </g>
+                </svg>
+                <div class="name-tag">${name}</div>
+            `;
+            
+            return lamp;
+        }
+
+        window.onload = function() {
+            for (let i = 0; i < 12; i++) {
+                const rowElement = document.getElementById(`row${i + 1}`);
+                for (let j = 0; j < 3; j++) {
+                    const index = i * 3 + j;
+                    if (index < allNames.length) {
+                        rowElement.appendChild(createLamp(allNames[index], index));
+                    }
+                }
+            }
+        };
+    </script>
+</body>
+</html>

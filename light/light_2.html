@@ -9,7 +9,7 @@
             margin: 0;
             padding: 10px;
             font-family: Arial, sans-serif;
-            background: url('https://mjib007.github.io/homepage/light/bg.jpg') no-repeat center center fixed;
+            background: url('homepage/light/bg.jpg') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
         }
@@ -25,13 +25,13 @@
             padding: 0 10px;
         }
         .main-title {
-            color: #991b1b;
+            color: #FF4D4D;
             font-size: 1.8rem;
             margin-bottom: 0.8rem;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
         .subtitle-container {
-            color: #1939B0;
+            color: #99CCFF;
             font-size: 1rem;
             margin: 0.8rem 0;
             font-weight: bold;
@@ -42,7 +42,7 @@
             flex-wrap: wrap;
         }
         .subtitle-dot {
-            color: #9f1239;
+            color: #4D79FF;
             margin: 0 0.3rem;
         }
         .lamp-grid {
@@ -61,9 +61,17 @@
             height: 100px;
             filter: drop-shadow(0 0 10px rgba(255, 100, 0, 0.3));
         }
-        .lamp svg {
-            width: 100%;
-            height: 100%;
+        .last-row .lamp, 
+        #row11 .lamp { 
+            transform: scale(1.2); 
+        }
+        .lamp svg { 
+            width: 100%; 
+            height: 100%; 
+        }
+        .last-row .flame-container path, 
+        #row11 .flame-container path { 
+            transform: scale(1.3) translateY(-10px); 
         }
         .name-tag {
             position: absolute;
@@ -78,29 +86,24 @@
             white-space: nowrap;
             font-size: 0.8rem;
         }
-
         @keyframes flicker {
             0%, 100% { opacity: 0.9; transform: scale(1); }
             25% { opacity: 0.8; transform: scale(0.98); }
             50% { opacity: 1; transform: scale(1.02); }
             75% { opacity: 0.9; transform: scale(0.99); }
         }
-
         @keyframes sway {
             0%, 100% { transform: rotate(-2deg); }
             50% { transform: rotate(2deg); }
         }
-
         .flame-container {
             transform-origin: center bottom;
             animation: sway 3s ease-in-out infinite;
         }
-
         .flame {
             animation: flicker 2s ease-in-out infinite;
             animation-delay: calc(var(--delay) * 1s);
         }
-
         .glow {
             filter: blur(5px);
         }
@@ -130,26 +133,21 @@
             <div class="lamp-row" id="row9"></div>
             <div class="lamp-row" id="row10"></div>
             <div class="lamp-row" id="row11"></div>
-            <div class="lamp-row" id="row12"></div>
+            <div class="lamp-row last-row" id="row12"></div>
         </div>
     </div>
 
     <script>
-        const allNames = [
-            "賴清德", "錢世傑", "○○○", "○○○", "○○○", "○○○",
-            "○○○", "○○○", "○○○", "○○○", "○○○", "○○○",
-            "○○○", "○○○", "○○○", "○○○", "○○○", "○○○",
-            "○○○", "○○○", "○○○", "○○○", "○○○", "○○○",
-            "○○○", "○○○", "○○○", "○○○", "○○○", "○○○",
-            "○○○", "○○○", "○○○", "○○○", "○○○", "○○○"
-        ];
-
-        function createLamp(name, index) {
+        function createLamp(name, index, isSpecial) {
             const lamp = document.createElement('div');
             lamp.className = 'lamp';
             
             const uniqueId = `glow-${Math.random().toString(36).substr(2, 9)}`;
             const randomDelay = Math.random() * 2;
+            
+            // 根據是否為特殊燈決定顏色
+            const baseRingColor = isSpecial ? "#FFD700" : "#8B0000";
+            const innerRingColor = isSpecial ? "#FFA500" : "#FF4500";
             
             lamp.innerHTML = `
                 <svg viewBox="0 0 100 100">
@@ -165,8 +163,8 @@
                         </radialGradient>
                     </defs>
                     
-                    <circle cx="50" cy="50" r="40" fill="#8B0000"/>
-                    <circle cx="50" cy="50" r="35" fill="#FF4500"/>
+                    <circle cx="50" cy="50" r="40" fill="${baseRingColor}"/>
+                    <circle cx="50" cy="50" r="35" fill="${innerRingColor}"/>
                     
                     <circle cx="50" cy="50" r="45" fill="url(#${uniqueId}-glow)" class="glow"/>
                     
@@ -213,12 +211,24 @@
         }
 
         window.onload = function() {
+            const names = [
+            "賴清德", "錢世傑", "林穗蓉", "林蕙君", "林欣儀", "趙彗亨",
+            "蔡枚秀", "鍾  寧", "盧吉昱", "陳俊源", "何孟蒨", "莊雯惠",
+            "○○○", "○○○", "彭紹欽", "蔡政倫", "王譯臨", "陳周輿",
+            "○○○", "○○○", "○○○", "○○○", "○○○", "黃聖雄",
+            "○○○", "○○○", "○○○", "○○○", "○○○", "○○○",
+            "○○○", "○○○", "○○○", "○○○", "錢友科", "鄭雪絨"
+        ];
+
+
             for (let i = 0; i < 12; i++) {
                 const rowElement = document.getElementById(`row${i + 1}`);
+                const isSpecialRow = i >= 10; // 最後兩排為特殊燈
+                
                 for (let j = 0; j < 3; j++) {
                     const index = i * 3 + j;
-                    if (index < allNames.length) {
-                        rowElement.appendChild(createLamp(allNames[index], index));
+                    if (index < names.length) {
+                        rowElement.appendChild(createLamp(names[index], index, isSpecialRow));
                     }
                 }
             }
