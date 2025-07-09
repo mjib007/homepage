@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>法律人專屬AI 幼幼班 - 一日化神課程</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .hero {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .hero h1 {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hero .subtitle {
+            font-size: 1.2em;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        
+        .time-info {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            text-align: center;
+        }
+        
+        .highlight {
+            font-size: 1.3em;
+            color: #e74c3c;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .location {
+            background: #34495e;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .feature-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+            border: 1px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .feature-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .feature-card li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .feature-card li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .target-audience {
+            background: linear-gradient(145deg, #ffeaa7 0%, #fdcb6e 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .target-audience h3 {
+            color: #2d3436;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .target-audience ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .target-audience li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .target-audience li::before {
+            content: '👨‍⚖️';
+            position: absolute;
+            left: 0;
+        }
+        
+        .cta-button {
+            background: linear-gradient(45deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 25px rgba(231, 76, 60, 0.3);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(231, 76, 60, 0.4);
+        }
+        
+        .cta-section {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .urgency {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2em;
+            }
+            
+            .hero {
+                padding: 20px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>法律人專屬AI 幼幼班<br><span style="color: #e74c3c; font-size: 0.7em;">(第01梯次)</span></h1>
+            <p class="subtitle">零基礎也能懂的 AI 實戰課程</p>
+            
+            <div class="time-info">
+                <strong>時間：</strong>9/24 週六 10:00–12:00、13:30–16:30<br>
+                課程費用：<span style="color: #2c3e50; font-weight: bold; font-size: 1.2em; background: rgba(255,255,255,0.8); padding: 2px 6px; border-radius: 4px;">3,999元</span>/3小時+加送2小時<br>
+                (含中午便當與茶點)<br>
+                <span style="color: #2c3e50; font-weight: bold; font-size: 1.3em; background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 6px; border: 2px solid #f39c12;">限額10人</span>
+            </div>
+            
+            <div class="highlight">
+                全程 5 小時，三大重點⚡<br>
+                由淺入深，一日化神
+            </div>
+            
+            <div class="location">
+                <strong>地點：</strong>台灣法學基金會會址<br>
+                (台北市大同區長安西路82號6樓)
+            </div>
+        </div>
+        
+        <div class="content">
+            <h2 class="section-title">三大重點，全場手把手實作</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>重點 1）基礎班</h3>
+                    <ul>
+                        <li>認識機器學習：Zero Code 實作平台操作教學</li>
+                        <li>認識生成式AI：搜尋＋分析＋呈現關鍵工具一次上手（Perplexity、ChatGPT、Artifacts等）</li>
+                        <li>生成圖片：ChatGPT</li>
+                        <li>圖片轉影像：Veo</li>
+                        <li>生成行銷工具：Podcast一步驟搞定</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>重點 2）分析判決 100 秒</h3>
+                    <ul>
+                        <li>快速閱讀與提取裁判要旨技巧</li>
+                        <li>一鍵辨識判決摘要、爭點、法條證物</li>
+                        <li>快速多重判決比較、雙方當事人主張</li>
+                        <li>視覺化分析：人物關係圖、時間軸、犯罪流程圖</li>
+                        <li>訴訟策略</li>
+                        <li>快速完成會談(會議)紀錄</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>重點 3）生成式 AI 的法律應用</h3>
+                    <ul>
+                        <li>G-AI 畫布：撰寫訴狀輔助、訴訟策略優化法律諮詢流程</li>
+                        <li>幻覺驗證技巧</li>
+                        <li>附贈：律師專用快速簡報檔製作</li>
+                        <li>附贈：文獻分析一指搞定指令</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="target-audience">
+            <h3>適合對象</h3>
+            <ul>
+                <li>對 AI 概念較弱，希望手把手教學的法律人</li>
+                <li>想要提早卡位、掌握未來趨勢的法律專業人士</li>
+                <li>律師、法務人員、法律系學生</li>
+                <li>其他對本課程有興趣的專業人士</li>
+            </ul>
+        </div>
+        
+        <div class="content">
+            <h3 style="color: #2c3e50; margin-bottom: 15px; font-size: 1.4em;">時數及證明</h3>
+            <ul style="list-style: none; padding-left: 0;">
+                <li style="margin-bottom: 10px; padding-left: 25px; position: relative;">
+                    <span style="position: absolute; left: 0; color: #27ae60; font-weight: bold;">📋</span>
+                    公務人員進修時數
+                </li>
+                <li style="margin-bottom: 10px; padding-left: 25px; position: relative;">
+                    <span style="position: absolute; left: 0; color: #27ae60; font-weight: bold;">📋</span>
+                    上市櫃董事進修時數、公司治理主管進修時數
+                </li>
+                <li style="margin-bottom: 10px; padding-left: 25px; position: relative;">
+                    <span style="position: absolute; left: 0; color: #27ae60; font-weight: bold;">📋</span>
+                    完成本門課程並符合出席等相關規定後，核給『法律人專屬AI導入實作』課程修習證明
+                </li>
+            </ul>
+        </div>
+        
+        <div class="content">
+            <h3 style="color: #2c3e50; margin-bottom: 15px; font-size: 1.4em;">電腦環境設備建議</h3>
+            <ul style="list-style: none; padding-left: 0;">
+                <li style="margin-bottom: 10px; padding-left: 25px; position: relative;">
+                    <span style="position: absolute; left: 0; color: #27ae60; font-weight: bold;">💻</span>
+                    建議使用Google帳號登入
+                </li>
+                <li style="margin-bottom: 10px; padding-left: 25px; position: relative;">
+                    <span style="position: absolute; left: 0; color: #27ae60; font-weight: bold;">💻</span>
+                    建議使用筆記型電腦
+                </li>
+                <li style="margin-bottom: 10px; padding-left: 25px; position: relative;">
+                    <span style="position: absolute; left: 0; color: #27ae60; font-weight: bold;">💻</span>
+                    建議使用ChatGPT、Claude付費帳號
+                </li>
+            </ul>
+        </div>
+        
+        <div class="cta-section">
+            <div class="urgency">
+                📌 名額有限，敬請預約！
+            </div>
+            <button class="cta-button" onclick="handleRegistration()">
+                立即報名
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        function handleRegistration() {
+            window.open('https://forms.gle/UFpCP61WZVyiKHWY6', '_blank');
+        }
+        
+        // 添加滾動動畫效果
+        window.addEventListener('scroll', function() {
+            const elements = document.querySelectorAll('.feature-card');
+            elements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementTop < window.innerHeight - elementVisible) {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }
+            });
+        });
+        
+        // 初始化動畫
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.feature-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'all 0.6s ease';
+                
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>
