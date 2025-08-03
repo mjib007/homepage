@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>AI 聊天小幫手</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 40px 0 10px;
+      color: #333;
+    }
+
+    iframe {
+      width: 90%;
+      max-width: 500px;
+      height: 600px;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>AI 聊天介面</h1>
+  <iframe 
+    src="https://mjib007.zeabur.app/webhook/dee863b0-14c0-4292-856d-66cdfeed377d/chat"
+    title="AI 課程助理"
+    sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
+    loading="lazy">
+  </iframe>
+</body>
+</html>
