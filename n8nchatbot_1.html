@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 課程助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .main-content {
+            padding: 40px 20px;
+            text-align: center;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .course-info {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            max-width: 600px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .course-info h2 {
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .course-info p {
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        /* 聊天機器人按鈕 */
+        .chatbot-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            animation: pulse 2s infinite;
+        }
+
+        .chatbot-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+        }
+
+        .chatbot-button svg {
+            width: 30px;
+            height: 30px;
+            fill: white;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+            }
+            50% {
+                box-shadow: 0 4px 30px rgba(76, 175, 80, 0.6);
+            }
+            100% {
+                box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+            }
+        }
+
+        /* 聊天視窗 */
+        .chat-window {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            display: none;
+            flex-direction: column;
+            z-index: 1001;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .bot-message {
+            background: #e9ecef;
+            color: #333;
+            margin-right: auto;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .send-button {
+            padding: 12px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+
+        .send-button:hover {
+            background: #45a049;
+        }
+
+        .close-chat {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-chat:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .chat-window {
+                width: calc(100vw - 40px);
+                right: 20px;
+                left: 20px;
+                height: 70vh;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .course-info {
+                margin: 10px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <h1>🤖 AI 時代生存指南</h1>
+        <p class="subtitle">東吳大學 AI 應用實戰課程</p>
+        
+        <div class="course-info">
+            <h2>📱 手機 AI 實戰體驗</h2>
+            <p>學習如何運用 AI 工具提升學習與工作效率，包含 ChatGPT、Claude 等實用應用，以及針對不同科系的客製化 AI 助手指令。</p>
+        </div>
+
+        <div class="course-info">
+            <h2>💡 課程重點</h2>
+            <p>• AI 基礎認知與應用場景<br>
+               • 實用 AI 工具操作教學<br>
+               • 各科系專屬 AI 應用案例<br>
+               • 未來職涯 AI 技能準備</p>
+        </div>
+    </div>
+
+    <!-- 聊天機器人按鈕 -->
+    <div class="chatbot-button" onclick="toggleChat()">
+        <svg viewBox="0 0 24 24">
+            <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,6A4,4 0 0,1 16,10A4,4 0 0,1 12,14A4,4 0 0,1 8,10A4,4 0 0,1 12,6M12,8A2,2 0 0,0 10,10A2,2 0 0,0 12,12A2,2 0 0,0 14,10A2,2 0 0,0 12,8Z"/>
+        </svg>
+    </div>
+
+    <!-- 聊天視窗 -->
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <button class="close-chat" onclick="toggleChat()">×</button>
+            AI 課程助手
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                👋 你好！我是 AI 課程助手，有什麼問題可以問我？
+            </div>
+        </div>
+        <div class="loading" id="loading">AI 正在思考中...</div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="chatInput" placeholder="輸入你的問題..." onkeypress="handleKeyPress(event)">
+            <button class="send-button" onclick="sendMessage()">發送</button>
+        </div>
+    </div>
+
+    <script>
+        // 你的 n8n webhook URL
+        const N8N_WEBHOOK_URL = 'https://mjb007.zeabur.app/webhook/dee863b0-14c0-4292-856d-66cdfeed377d/chat';
+        
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // 顯示用戶訊息
+            addMessage(message, 'user');
+            input.value = '';
+
+            // 顯示載入狀態
+            showLoading(true);
+
+            try {
+                console.log('發送訊息到:', N8N_WEBHOOK_URL);
+                console.log('訊息內容:', message);
+
+                // 發送到 n8n webhook
+                const response = await fetch(N8N_WEBHOOK_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        timestamp: new Date().toISOString(),
+                        chatId: 'web-chat-' + Date.now()
+                    })
+                });
+
+                console.log('回應狀態:', response.status);
+                console.log('回應 headers:', response.headers);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('收到回應:', data);
+                
+                // 顯示 AI 回應
+                const botResponse = data.response || data.message || data.reply || '收到你的訊息了！';
+                addMessage(botResponse, 'bot');
+                
+            } catch (error) {
+                console.error('詳細錯誤:', error);
+                addMessage(`連線錯誤: ${error.message}。請檢查 n8n 工作流程是否啟動，或聯繫管理員。`, 'bot');
+            }
+
+            showLoading(false);
+        }
+
+        function addMessage(text, type) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            loading.style.display = show ? 'block' : 'none';
+        }
+
+        // 頁面載入完成後的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('AI 課程網頁已載入');
+        });
+    </script>
+</body>
+</html>
