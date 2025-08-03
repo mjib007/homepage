@@ -2,7 +2,38 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>Chat to n8n AI Agent</title>
+  <title>AI 聊天小幫手</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f4f4f4;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 60%;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    #response {
+      margin-top: 30px;
+      font-size: 18px;
+      color: #444;
+    }
+  </style>
 </head>
 <body>
   <h1>AI 聊天介面</h1>
@@ -20,7 +51,7 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const message = input.value;
-      responseDiv.innerHTML = '處理中...';
+      responseDiv.innerHTML = '⌛ 處理中...';
       try {
         const res = await fetch('https://mjib007.zeabur.app/webhook/dee863b0-14c0-4292-856d-66cdfeed377d/chat', {
           method: 'POST',
@@ -30,10 +61,11 @@
           body: JSON.stringify({ message })
         });
         const data = await res.json();
-        responseDiv.innerHTML = `<p><strong>回應：</strong> ${data.reply || '無法取得回應'}</p>`;
+        console.log("伺服器回傳：", data);
+        responseDiv.innerHTML = `<p><strong>回應：</strong> ${data.output || '⚠️ 無法取得 output'}</p>`;
       } catch (err) {
-        console.error(err);
-        responseDiv.innerHTML = '發生錯誤';
+        console.error("錯誤：", err);
+        responseDiv.innerHTML = '⚠️ 發生錯誤，無法取得資料。';
       }
     });
   </script>
