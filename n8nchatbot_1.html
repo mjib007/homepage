@@ -280,7 +280,7 @@
     </div>
 
     <script>
-        // 你的 n8n webhook URL
+        // 使用 n8n 的聊天 API
         const N8N_WEBHOOK_URL = 'https://mjb007.zeabur.app/webhook/dee863b0-14c0-4292-856d-66cdfeed377d/chat';
         
         function toggleChat() {
@@ -292,6 +292,19 @@
             if (event.key === 'Enter') {
                 sendMessage();
             }
+        }
+
+        // 直接嵌入 n8n 聊天 iframe
+        function initN8nChat() {
+            // 如果瀏覽器支援，直接嵌入 n8n 聊天
+            const chatFrame = document.createElement('iframe');
+            chatFrame.src = 'https://mjb007.zeabur.app/webhook/dee863b0-14c0-4292-856d-66cdfeed377d/chat';
+            chatFrame.style.width = '100%';
+            chatFrame.style.height = '400px';
+            chatFrame.style.border = 'none';
+            chatFrame.style.borderRadius = '10px';
+            
+            return chatFrame;
         }
 
         async function sendMessage() {
@@ -311,34 +324,44 @@
                 console.log('發送訊息到:', N8N_WEBHOOK_URL);
                 console.log('訊息內容:', message);
 
-                // 發送到 n8n webhook
+                // 使用簡化的 POST 請求
+                const formData = new FormData();
+                formData.append('chatInput', message);
+
                 const response = await fetch(N8N_WEBHOOK_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        chatInput: message
-                    })
+                    body: formData
                 });
 
-                console.log('回應狀態:', response.status);
-                console.log('回應 headers:', response.headers);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                if (response.ok) {
+                    const text = await response.text();
+                    console.log('收到回應:', text);
+                    
+                    try {
+                        const data = JSON.parse(text);
+                        const botResponse = data.response || data.output || text;
+                        addMessage(botResponse, 'bot');
+                    } catch (e) {
+                        // 如果不是 JSON，直接顯示文字
+                        addMessage(text || '收到回應了！', 'bot');
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
                 }
-
-                const data = await response.json();
-                console.log('收到回應:', data);
-                
-                // 顯示 AI 回應
-                const botResponse = data.response || data.message || data.reply || '收到你的訊息了！';
-                addMessage(botResponse, 'bot');
                 
             } catch (error) {
                 console.error('詳細錯誤:', error);
-                addMessage(`連線錯誤: ${error.message}。請檢查 n8n 工作流程是否啟動，或聯繫管理員。`, 'bot');
+                
+                // 提供備用聊天方案
+                const chatMessages = document.getElementById('chatMessages');
+                const iframeContainer = document.createElement('div');
+                iframeContainer.innerHTML = `
+                    <div style="text-align: center; margin: 20px 0;">
+                        <p>直接使用 n8n 聊天介面：</p>
+                        <iframe src="${N8N_WEBHOOK_URL}" width="100%" height="300" frameborder="0" style="border-radius: 10px;"></iframe>
+                    </div>
+                `;
+                chatMessages.appendChild(iframeContainer);
             }
 
             showLoading(false);
