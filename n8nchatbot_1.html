@@ -314,15 +314,11 @@
                 // 發送到 n8n webhook
                 const response = await fetch(N8N_WEBHOOK_URL, {
                     method: 'POST',
-                    mode: 'cors',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        message: message,
-                        timestamp: new Date().toISOString(),
-                        chatId: 'web-chat-' + Date.now()
+                        chatInput: message
                     })
                 });
 
