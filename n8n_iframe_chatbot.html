@@ -1,293 +1,41 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 課程助手</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            position: relative;
-        }
-
-        .main-content {
-            padding: 40px 20px;
-            text-align: center;
-            color: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            margin-bottom: 40px;
-            opacity: 0.9;
-        }
-
-        .course-info {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            margin: 20px 0;
-            max-width: 600px;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .course-info h2 {
-            margin-bottom: 15px;
-            color: #fff;
-        }
-
-        .course-info p {
-            line-height: 1.6;
-            opacity: 0.9;
-        }
-
-        /* 聊天機器人按鈕 */
-        .chatbot-button {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            animation: pulse 2s infinite;
-        }
-
-        .chatbot-button:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 25px rgba(0,0,0,0.4);
-        }
-
-        .chatbot-button svg {
-            width: 30px;
-            height: 30px;
-            fill: white;
-        }
-
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
-            }
-            50% {
-                box-shadow: 0 4px 30px rgba(76, 175, 80, 0.6);
-            }
-            100% {
-                box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
-            }
-        }
-
-        /* 聊天視窗 */
-        .chat-window {
-            position: fixed;
-            bottom: 100px;
-            right: 30px;
-            width: 380px;
-            height: 520px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            display: none;
-            flex-direction: column;
-            z-index: 1001;
-            overflow: hidden;
-        }
-
-        .chat-header {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-weight: bold;
-            position: relative;
-        }
-
-        .close-chat {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .close-chat:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
-        .chat-iframe {
-            flex: 1;
-            border: none;
-            width: 100%;
-            height: 100%;
-        }
-
-        .chat-fallback {
-            padding: 20px;
-            text-align: center;
-            color: #666;
-        }
-
-        .fallback-link {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 10px 20px;
-            background: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 25px;
-            transition: background 0.3s ease;
-        }
-
-        .fallback-link:hover {
-            background: #45a049;
-        }
-
-        @media (max-width: 768px) {
-            .chat-window {
-                width: calc(100vw - 40px);
-                right: 20px;
-                left: 20px;
-                height: 70vh;
-                bottom: 20px;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .course-info {
-                margin: 10px;
-                padding: 20px;
-            }
-
-            .chatbot-button {
-                bottom: 20px;
-                right: 20px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Chat to n8n AI Agent</title>
 </head>
 <body>
-    <div class="main-content">
-        <h1>🤖 AI 時代生存指南</h1>
-        <p class="subtitle">東吳大學 AI 應用實戰課程</p>
-        
-        <div class="course-info">
-            <h2>📱 手機 AI 實戰體驗</h2>
-            <p>學習如何運用 AI 工具提升學習與工作效率，包含 ChatGPT、Claude 等實用應用，以及針對不同科系的客製化 AI 助手指令。</p>
-        </div>
+  <h1>AI 聊天介面</h1>
+  <form id="chatForm">
+    <input type="text" id="userInput" placeholder="輸入你的問題..." required>
+    <button type="submit">送出</button>
+  </form>
+  <div id="response"></div>
 
-        <div class="course-info">
-            <h2>💡 課程重點</h2>
-            <p>• AI 基礎認知與應用場景<br>
-               • 實用 AI 工具操作教學<br>
-               • 各科系專屬 AI 應用案例<br>
-               • 未來職涯 AI 技能準備</p>
-        </div>
-    </div>
+  <script>
+    const form = document.getElementById('chatForm');
+    const input = document.getElementById('userInput');
+    const responseDiv = document.getElementById('response');
 
-    <!-- 聊天機器人按鈕 -->
-    <div class="chatbot-button" onclick="toggleChat()">
-        <svg viewBox="0 0 24 24">
-            <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,6A4,4 0 0,1 16,10A4,4 0 0,1 12,14A4,4 0 0,1 8,10A4,4 0 0,1 12,6M12,8A2,2 0 0,0 10,10A2,2 0 0,0 12,12A2,2 0 0,0 14,10A2,2 0 0,0 12,8Z"/>
-        </svg>
-    </div>
-
-    <!-- 聊天視窗 -->
-    <div class="chat-window" id="chatWindow">
-        <div class="chat-header">
-            <button class="close-chat" onclick="toggleChat()">×</button>
-            AI 課程助手
-        </div>
-        <iframe 
-            class="chat-iframe" 
-            id="chatIframe"
-            src="https://mjb007.zeabur.app/webhook/dee863b0-14c0-4292-856d-66cdfeed377d/chat"
-            title="AI 課程助手"
-            sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
-            onload="handleIframeLoad()"
-            onerror="handleIframeError()">
-        </iframe>
-        <div class="chat-fallback" id="chatFallback" style="display: none;">
-            <p>聊天介面載入中...</p>
-            <p>如果持續無法載入，請點擊下方連結：</p>
-            <a href="https://mjb007.zeabur.app/webhook/dee863b0-14c0-4292-856d-66cdfeed377d/chat" 
-               target="_blank" 
-               class="fallback-link">
-               直接開啟聊天
-            </a>
-        </div>
-    </div>
-
-    <script>
-        function toggleChat() {
-            const chatWindow = document.getElementById('chatWindow');
-            chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        function handleIframeLoad() {
-            console.log('聊天介面載入成功');
-            document.getElementById('chatFallback').style.display = 'none';
-        }
-
-        function handleIframeError() {
-            console.log('聊天介面載入失敗');
-            document.getElementById('chatFallback').style.display = 'block';
-        }
-
-        // 檢查 iframe 載入狀態
-        setTimeout(() => {
-            const iframe = document.getElementById('chatIframe');
-            try {
-                // 嘗試存取 iframe 內容，如果失敗表示有 CORS 問題
-                if (!iframe.contentDocument && !iframe.contentWindow) {
-                    throw new Error('Iframe access denied');
-                }
-            } catch (e) {
-                console.log('直接嵌入失敗，顯示備用連結');
-                document.getElementById('chatFallback').style.display = 'block';
-            }
-        }, 3000);
-
-        // 頁面載入完成後的初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('AI 課程網頁已載入');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = input.value;
+      responseDiv.innerHTML = '處理中...';
+      try {
+        const res = await fetch('https://mjib007.zeabur.app/webhook/dee863b0-14c0-4292-856d-66cdfeed377d/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message })
         });
-    </script>
+        const data = await res.json();
+        responseDiv.innerHTML = `<p><strong>回應：</strong> ${data.reply || '無法取得回應'}</p>`;
+      } catch (err) {
+        console.error(err);
+        responseDiv.innerHTML = '發生錯誤';
+      }
+    });
+  </script>
 </body>
 </html>
