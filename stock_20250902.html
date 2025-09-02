@@ -236,7 +236,7 @@
                 const data = await response.json();
                 
                 // 顯示結果
-                resultContent.textContent = data.analysis || data.message || '分析完成';
+                resultContent.textContent = data.results || '分析完成';
                 result.style.display = 'block';
                 result.classList.remove('error');
                 
