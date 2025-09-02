@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 股票分析師</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            border-color: #667eea;
+        }
+        
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result {
+            display: none;
+            background: #fff;
+            border-radius: 15px;
+            padding: 30px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .result h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .result-content {
+            line-height: 1.8;
+            color: #555;
+            white-space: pre-wrap;
+        }
+        
+        .error {
+            background: #ffe6e6;
+            border-left-color: #ff4444;
+            color: #cc0000;
+        }
+        
+        .examples {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .examples h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+        
+        .examples span {
+            display: inline-block;
+            background: #2196f3;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .examples span:hover {
+            background: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI 股票分析師</h1>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <input type="text" id="stockCode" placeholder="請輸入股票代碼，例如：2330" maxlength="10">
+                <button id="analyzeBtn" onclick="analyzeStock()">開始分析</button>
+            </div>
+            
+            <div class="examples">
+                <h4>熱門股票範例：</h4>
+                <span onclick="fillStock('2330')">台積電 (2330)</span>
+                <span onclick="fillStock('2454')">聯發科 (2454)</span>
+                <span onclick="fillStock('2317')">鴻海 (2317)</span>
+                <span onclick="fillStock('2308')">台達電 (2308)</span>
+                <span onclick="fillStock('2382')">廣達 (2382)</span>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>AI 正在深度分析中，請稍候...</p>
+        </div>
+        
+        <div class="result" id="result">
+            <h3>📊 分析結果</h3>
+            <div class="result-content" id="resultContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // 填入範例股票代碼
+        function fillStock(code) {
+            document.getElementById('stockCode').value = code;
+        }
+        
+        // 分析股票
+        async function analyzeStock() {
+            const stockCode = document.getElementById('stockCode').value.trim();
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            
+            if (!stockCode) {
+                alert('請輸入股票代碼');
+                return;
+            }
+            
+            // 顯示載入狀態
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            analyzeBtn.disabled = true;
+            
+            try {
+                // 你的 Zeabur n8n webhook URL
+                const response = await fetch('https://mjib007.zeabur.app/webhook/729e1042-17fc-4e15-8e3e-f1570ed02af9', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        stock_code: stockCode
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // 顯示結果
+                resultContent.textContent = data.analysis || data.message || '分析完成';
+                result.style.display = 'block';
+                result.classList.remove('error');
+                
+            } catch (error) {
+                console.error('分析錯誤:', error);
+                resultContent.textContent = `分析過程中發生錯誤：${error.message}`;
+                result.style.display = 'block';
+                result.classList.add('error');
+            } finally {
+                loading.style.display = 'none';
+                analyzeBtn.disabled = false;
+            }
+        }
+        
+        // 按 Enter 鍵也可以分析
+        document.getElementById('stockCode').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeStock();
+            }
+        });
+    </script>
+</body>
+</html>
