@@ -354,26 +354,26 @@
                     this.panels.chinese.querySelector('.result').innerHTML = 
                         `<strong>翻譯:</strong><br>${result.chinese_translation || '翻譯失敗'}`;
                     
-                    // 顯示回應建議 - 已修正為正確解析 JSON 物件
+                    // 顯示回應建議
                     const suggestionsResultDiv = this.panels.suggestions.querySelector('.result');
                     let suggestionsHtml = `<strong>建議回應:</strong><br>`;
-                    
-                    if (result.response_suggestions) {
-                        for (const key in result.response_suggestions) {
-                            if (Object.prototype.hasOwnProperty.call(result.response_suggestions, key)) {
-                                const suggestion = result.response_suggestions[key];
-                                if (suggestion) {
-                                    // 將 key 轉為可讀的格式，如 "alternative_view" 變成 "Alternative View"
-                                    const formattedKey = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
-                                    suggestionsHtml += `<strong>${formattedKey}:</strong> ${suggestion}<br>`;
-                                }
-                            }
-                        }
+
+                    const suggestions = result.response_suggestions;
+
+                    if (suggestions) {
+                        // 透過換行符號切割字串，並處理每個部分
+                        const parts = suggestions.split('\n\n');
+                        
+                        // 確保有足夠的部分
+                        if (parts[0]) suggestionsHtml += `<p>${parts[0]}</p>`;
+                        if (parts[1]) suggestionsHtml += `<p>${parts[1]}</p>`;
+                        if (parts[2]) suggestionsHtml += `<p>${parts[2]}</p>`;
+
                     } else {
                         suggestionsHtml += '無建議';
                     }
                     suggestionsResultDiv.innerHTML = suggestionsHtml;
-                    
+
                 } else {
                     this.showError(result.message || '處理失敗');
                 }
