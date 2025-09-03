@@ -324,7 +324,9 @@
                     });
 
                     if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        // Check if the response is not OK, and throw a specific error
+                        const errorText = await response.text();
+                        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
                     }
 
                     const result = await response.json();
@@ -332,10 +334,12 @@
                     this.updateStatus('處理完成');
 
                 } catch (error) {
+                    // This catch block will now capture any errors from the fetch or parsing process.
+                    console.error('處理失敗:', error);
                     this.showError('處理失敗: ' + error.message);
                     this.hideLoading();
                 } finally {
-                    // 釋放媒體流
+                    // 確保在任何情況下都釋放媒體流
                     if (this.mediaRecorder && this.mediaRecorder.stream) {
                         this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
                     }
@@ -418,3 +422,4 @@
     </script>
 </body>
 </html>
+}
