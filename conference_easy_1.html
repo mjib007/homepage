@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研討會即時翻譯助理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .control-panel {
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .record-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            width: 120px;
+            height: 120px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+        }
+
+        .record-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(231, 76, 60, 0.4);
+        }
+
+        .record-btn.recording {
+            background: #c0392b;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .result-area {
+            padding: 30px;
+            min-height: 400px;
+        }
+
+        .result-content {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid #007acc;
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+            min-height: 350px;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #ddd;
+            border-top: 3px solid #007acc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #e74c3c;
+            background: #fdf2f2;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .section-title {
+            color: #007acc;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin: 20px 0 10px 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        .waiting-text {
+            color: #999;
+            font-style: italic;
+            text-align: center;
+            padding: 80px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎤 研討會即時翻譯助理</h1>
+            <p>點擊開始錄音，即時獲得翻譯和回應建議</p>
+        </div>
+
+        <div class="control-panel">
+            <button id="recordBtn" class="record-btn">
+                <div>🎤</div>
+                <div>開始錄音</div>
+            </button>
+            <div id="status" class="status">準備就緒</div>
+            <div id="error" class="error"></div>
+        </div>
+
+        <div class="result-area">
+            <div id="resultContent" class="result-content">
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    正在處理中，請稍候...
+                </div>
+                <div id="resultText" class="waiting-text">
+                    等待語音輸入...
+                    <br><br>
+                    點擊上方的錄音按鈕開始錄製研討會內容
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ConferenceTranslator {
+            constructor() {
+                this.isRecording = false;
+                this.mediaRecorder = null;
+                this.audioChunks = [];
+                // 請將這裡的網址替換成您的 n8n Webhook 網址
+                this.webhookUrl = 'https://kf0630.zeabur.app/webhook/audio-input';
+                
+                this.recordBtn = document.getElementById('recordBtn');
+                this.status = document.getElementById('status');
+                this.error = document.getElementById('error');
+                this.loading = document.getElementById('loading');
+                this.resultText = document.getElementById('resultText');
+                
+                this.init();
+            }
+
+            init() {
+                this.recordBtn.addEventListener('click', () => this.toggleRecording());
+                this.checkMicrophonePermission();
+            }
+
+            async checkMicrophonePermission() {
+                try {
+                    await navigator.mediaDevices.getUserMedia({ audio: true });
+                    this.updateStatus('麥克風已準備就緒');
+                } catch (error) {
+                    this.showError('無法訪問麥克風，請檢查瀏覽器權限設定');
+                }
+            }
+
+            async toggleRecording() {
+                if (!this.isRecording) {
+                    await this.startRecording();
+                } else {
+                    this.stopRecording();
+                }
+            }
+
+            async startRecording() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true
+                        } 
+                    });
+
+                    this.mediaRecorder = new MediaRecorder(stream, {
+                        mimeType: 'audio/webm;codecs=opus'
+                    });
+
+                    this.audioChunks = [];
+
+                    this.mediaRecorder.ondataavailable = (event) => {
+                        this.audioChunks.push(event.data);
+                    };
+
+                    this.mediaRecorder.onstop = () => {
+                        this.processAudio();
+                    };
+
+                    this.mediaRecorder.start();
+                    this.isRecording = true;
+                    
+                    this.recordBtn.classList.add('recording');
+                    this.recordBtn.innerHTML = '<div>⏹️</div><div>停止錄音</div>';
+                    this.updateStatus('正在錄音中...');
+                    this.clearResult();
+
+                } catch (error) {
+                    this.showError('錄音啟動失敗: ' + error.message);
+                }
+            }
+
+            stopRecording() {
+                if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+                    this.mediaRecorder.stop();
+                }
+
+                this.isRecording = false;
+                this.recordBtn.classList.remove('recording');
+                this.recordBtn.innerHTML = '<div>🎤</div><div>開始錄音</div>';
+                this.updateStatus('處理中...');
+            }
+
+            async processAudio() {
+                try {
+                    const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                    
+                    this.showLoading();
+
+                    const formData = new FormData();
+                    formData.append('audio_file', audioBlob, 'recording.webm');
+
+                    const response = await fetch(this.webhookUrl, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+                    }
+
+                    const result = await response.json();
+                    this.displayResults(result);
+                    this.updateStatus('處理完成');
+
+                } catch (error) {
+                    console.error('處理失敗:', error);
+                    this.showError('處理失敗: ' + error.message);
+                    this.hideLoading();
+                } finally {
+                    if (this.mediaRecorder && this.mediaRecorder.stream) {
+                        this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                    }
+                }
+            }
+
+            displayResults(result) {
+                this.hideLoading();
+                
+                // 支援多種回應格式
+                if (result.english || result.original_english || (result.status === 'success')) {
+                    const english = result.english || result.original_english || '無法轉錄';
+                    const chinese = result.chinese || result.chinese_translation || '翻譯失敗';
+                    const suggestions = result.suggestions || result.response_suggestions || '無建議';
+                    const timestamp = result.timestamp || new Date().toLocaleString('zh-TW');
+                    
+                    let displayText = `📝 研討會翻譯結果\n`;
+                    displayText += `🕐 處理時間：${timestamp}\n\n`;
+                    displayText += `🇺🇸 英文原文：\n${english}\n\n`;
+                    displayText += `🇹🇼 中文翻譯：\n${chinese}\n\n`;
+                    displayText += `💡 建議回應：\n${suggestions}`;
+                    
+                    this.resultText.innerHTML = displayText.replace(/\n/g, '<br>');
+                    this.resultText.className = '';
+                } else {
+                    this.showError(result.message || '處理失敗');
+                }
+            }
+
+            showLoading() {
+                this.loading.style.display = 'block';
+                this.resultText.style.display = 'none';
+            }
+
+            hideLoading() {
+                this.loading.style.display = 'none';
+                this.resultText.style.display = 'block';
+            }
+
+            clearResult() {
+                this.resultText.innerHTML = '處理中...';
+                this.resultText.className = '';
+            }
+
+            updateStatus(message) {
+                this.status.textContent = message;
+                this.error.style.display = 'none';
+            }
+
+            showError(message) {
+                this.error.textContent = message;
+                this.error.style.display = 'block';
+                this.updateStatus('發生錯誤');
+            }
+        }
+
+        // 初始化應用程式
+        document.addEventListener('DOMContentLoaded', () => {
+            new ConferenceTranslator();
+        });
+    </script>
+</body>
+</html>
