@@ -222,7 +222,6 @@
                 this.isRecording = false;
                 this.mediaRecorder = null;
                 this.audioChunks = [];
-                // *** 請將這裡的網址替換成您的 n8n Webhook 網址 ***
                 this.webhookUrl = 'https://kf0630.zeabur.app/webhook/audio-input';
                 
                 this.recordBtn = document.getElementById('recordBtn');
@@ -324,9 +323,7 @@
                     });
 
                     if (!response.ok) {
-                        // Check if the response is not OK, and throw a specific error
-                        const errorText = await response.text();
-                        throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText}`);
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
 
                     const result = await response.json();
@@ -334,12 +331,10 @@
                     this.updateStatus('處理完成');
 
                 } catch (error) {
-                    // This catch block will now capture any errors from the fetch or parsing process.
-                    console.error('處理失敗:', error);
                     this.showError('處理失敗: ' + error.message);
                     this.hideLoading();
                 } finally {
-                    // 確保在任何情況下都釋放媒體流
+                    // 釋放媒體流
                     if (this.mediaRecorder && this.mediaRecorder.stream) {
                         this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
                     }
@@ -359,25 +354,9 @@
                         `<strong>翻譯:</strong><br>${result.chinese_translation || '翻譯失敗'}`;
                     
                     // 顯示回應建議
-                    const suggestionsResultDiv = this.panels.suggestions.querySelector('.result');
-                    let suggestionsHtml = `<strong>建議回應:</strong><br>`;
-
-                    const suggestions = result.response_suggestions;
-
-                    if (suggestions) {
-                        // 透過換行符號切割字串，並處理每個部分
-                        const parts = suggestions.split('\n\n');
+                    this.panels.suggestions.querySelector('.result').innerHTML = 
+                        `<strong>建議回應:</strong><br>${result.response_suggestions || '無建議'}`;
                         
-                        // 確保有足夠的部分
-                        if (parts[0]) suggestionsHtml += `<p>${parts[0]}</p>`;
-                        if (parts[1]) suggestionsHtml += `<p>${parts[1]}</p>`;
-                        if (parts[2]) suggestionsHtml += `<p>${parts[2]}</p>`;
-
-                    } else {
-                        suggestionsHtml += '無建議';
-                    }
-                    suggestionsResultDiv.innerHTML = suggestionsHtml;
-
                 } else {
                     this.showError(result.message || '處理失敗');
                 }
@@ -422,4 +401,3 @@
     </script>
 </body>
 </html>
-}
