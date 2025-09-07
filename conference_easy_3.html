@@ -407,9 +407,15 @@
                 translations.push(translation);
                 updateTranslationsList();
                 
-                await saveToDatabase(translation);
+                // 嘗試自動儲存到資料庫
+                const saveSuccess = await saveToDatabase(translation);
                 
-                updateStatus("翻譯完成");
+                if (saveSuccess) {
+                    updateStatus("翻譯完成並已儲存");
+                } else {
+                    updateStatus("翻譯完成，但儲存失敗");
+                    showError("資料儲存失敗，請檢查網路連接或稍後重試");
+                }
             } else {
                 showError("翻譯結果格式錯誤");
             }
@@ -424,6 +430,8 @@
                     chinese_text: translation.chinese
                 };
 
+                console.log("嘗試儲存資料:", saveData);
+
                 const response = await fetch(saveUrl, {
                     method: "POST",
                     headers: {
@@ -432,13 +440,23 @@
                     body: JSON.stringify(saveData)
                 });
 
+                console.log("儲存回應狀態:", response.status);
+                
                 if (response.ok) {
+                    const result = await response.json();
+                    console.log("儲存成功:", result);
                     recordCount++;
                     elements.recordCount.textContent = recordCount;
                     updateGenerateButton();
+                    return true;
+                } else {
+                    const errorText = await response.text();
+                    console.error("儲存失敗:", response.status, errorText);
+                    return false;
                 }
             } catch (error) {
-                console.error("儲存失敗:", error);
+                console.error("儲存錯誤:", error);
+                return false;
             }
         }
 
