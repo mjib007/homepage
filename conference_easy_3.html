@@ -499,8 +499,21 @@
                 }
 
                 const result = await response.json();
-                console.log("提問生成成功，回應:", result);
-                displayQuestions(result.questions || "");
+                console.log("提問生成成功，完整回應:", result);
+                
+                // 檢查回應結構並提取 questions
+                let questionsContent = "";
+                if (result.questions) {
+                    questionsContent = result.questions;
+                } else if (result.choices && result.choices[0] && result.choices[0].message) {
+                    questionsContent = result.choices[0].message.content;
+                } else {
+                    console.log("無法找到 questions 內容，回應結構:", result);
+                    questionsContent = "無法解析提問內容";
+                }
+                
+                console.log("提取的提問內容:", questionsContent);
+                displayQuestions(questionsContent);
                 updateStatus("提問建議已生成");
 
             } catch (error) {
