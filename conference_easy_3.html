@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研討會快速翻譯助理</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .session-info {
+            background: #34495e;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .control-panel {
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 15px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-new-session {
+            background: #27ae60;
+            color: white;
+        }
+
+        .record-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            width: 120px;
+            height: 120px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .record-btn.recording {
+            background: #c0392b;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .btn-generate {
+            background: #8e44ad;
+            color: white;
+        }
+
+        .btn-generate:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .content-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+
+        .translation-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .error {
+            color: #e74c3c;
+            background: #fdf2f2;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .content-area {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>研討會快速翻譯助理</h1>
+            <p>即時語音翻譯與智能提問建議系統</p>
+        </div>
+
+        <div class="session-info">
+            <div>當前會話：<span id="currentSession">等待初始化</span></div>
+            <div>記錄數：<span id="recordCount">0</span></div>
+        </div>
+
+        <div class="control-panel">
+            <div class="button-group">
+                <button id="newSessionBtn" class="btn btn-new-session">
+                    開始新報告
+                </button>
+                
+                <button id="recordBtn" class="record-btn">
+                    <div>開始錄音</div>
+                </button>
+
+                <button id="generateBtn" class="btn btn-generate" disabled>
+                    生成提問
+                </button>
+            </div>
+            
+            <div id="status" class="status">準備就緒</div>
+            <div id="error" class="error"></div>
+            <div class="loading" id="loading">處理中...</div>
+        </div>
+
+        <div class="content-area">
+            <div class="section">
+                <div class="section-title">翻譯記錄</div>
+                <div id="translationsList">
+                    <div class="empty-state">
+                        尚無翻譯記錄<br>
+                        點擊錄音按鈕開始使用
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">智能提問建議</div>
+                <div id="questionsArea">
+                    <div class="empty-state">
+                        需要至少2筆翻譯記錄<br>
+                        才能生成提問建議
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let currentSession = "";
+        let translations = [];
+        let recordCount = 0;
+        let isProcessing = false;
+
+        const translateUrl = "https://kf0630.zeabur.app/webhook-test/quick-translate";
+        const saveUrl = "https://kf0630.zeabur.app/webhook-test/save-record";
+        const questionsUrl = "https://kf0630.zeabur.app/webhook-test/generate-questions";
+
+        const elements = {
+            currentSession: document.getElementById("currentSession"),
+            recordCount: document.getElementById("recordCount"),
+            newSessionBtn: document.getElementById("newSessionBtn"),
+            recordBtn: document.getElementById("recordBtn"),
+            generateBtn: document.getElementById("generateBtn"),
+            status: document.getElementById("status"),
+            error: document.getElementById("error"),
+            loading: document.getElementById("loading"),
+            translationsList: document.getElementById("translationsList"),
+            questionsArea: document.getElementById("questionsArea")
+        };
+
+        function generateSessionId() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, "0");
+            const day = String(now.getDate()).padStart(2, "0");
+            const hour = String(now.getHours()).padStart(2, "0");
+            const minute = String(now.getMinutes()).padStart(2, "0");
+            return "Session_" + year + month + day + "_" + hour + minute;
+        }
+
+        function startNewSession() {
+            currentSession = generateSessionId();
+            translations = [];
+            recordCount = 0;
+            elements.currentSession.textContent = currentSession;
+            elements.recordCount.textContent = recordCount;
+            updateTranslationsList();
+            updateQuestionsArea();
+            updateGenerateButton();
+            updateStatus("新會話已開始");
+        }
+
+        function updateStatus(message) {
+            elements.status.textContent = message;
+            elements.error.style.display = "none";
+        }
+
+        function showError(message) {
+            elements.error.textContent = message;
+            elements.error.style.display = "block";
+        }
+
+        function setProcessing(processing) {
+            isProcessing = processing;
+            elements.loading.style.display = processing ? "block" : "none";
+            updateGenerateButton();
+        }
+
+        function updateGenerateButton() {
+            elements.generateBtn.disabled = recordCount < 2 || isProcessing;
+        }
+
+        function updateTranslationsList() {
+            if (translations.length === 0) {
+                elements.translationsList.innerHTML = '<div class="empty-state">尚無翻譯記錄<br>點擊錄音按鈕開始使用</div>';
+            } else {
+                let html = "";
+                for (let i = 0; i < translations.length; i++) {
+                    const t = translations[i];
+                    html += '<div class="translation-item">';
+                    html += '<div style="font-size: 12px; color: #666; margin-bottom: 10px;">' + t.timestamp + '</div>';
+                    html += '<div style="background: #ebf3fd; padding: 10px; border-radius: 5px; margin-bottom: 10px;">';
+                    html += '<strong>英文：</strong><br>' + t.english;
+                    html += '</div>';
+                    html += '<div style="background: #e8f5e8; padding: 10px; border-radius: 5px;">';
+                    html += '<strong>中文：</strong><br>' + t.chinese;
+                    html += '</div>';
+                    html += '</div>';
+                }
+                elements.translationsList.innerHTML = html;
+            }
+        }
+
+        function updateQuestionsArea() {
+            elements.questionsArea.innerHTML = '<div class="empty-state">需要至少2筆翻譯記錄<br>才能生成提問建議</div>';
+        }
+
+        function displayQuestions(questions) {
+            elements.questionsArea.innerHTML = '<div style="background: white; padding: 15px; border-radius: 10px; white-space: pre-wrap; line-height: 1.6;">' + questions + '</div>';
+        }
+
+        async function toggleRecording() {
+            if (!isRecording) {
+                await startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = function(event) {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = function() {
+                    processAudio();
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                
+                elements.recordBtn.classList.add("recording");
+                elements.recordBtn.innerHTML = "<div>停止錄音</div>";
+                updateStatus("正在錄音中...");
+
+            } catch (error) {
+                showError("錄音啟動失敗: " + error.message);
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+            }
+
+            isRecording = false;
+            elements.recordBtn.classList.remove("recording");
+            elements.recordBtn.innerHTML = "<div>開始錄音</div>";
+            updateStatus("處理中...");
+        }
+
+        async function processAudio() {
+            try {
+                setProcessing(true);
+                const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+                
+                const formData = new FormData();
+                formData.append("audio_file", audioBlob, "recording.webm");
+
+                const response = await fetch(translateUrl, {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error("翻譯請求失敗");
+                }
+
+                const result = await response.json();
+                await handleTranslationResult(result);
+
+            } catch (error) {
+                showError("處理失敗: " + error.message);
+            } finally {
+                setProcessing(false);
+                if (mediaRecorder && mediaRecorder.stream) {
+                    mediaRecorder.stream.getTracks().forEach(function(track) {
+                        track.stop();
+                    });
+                }
+            }
+        }
+
+        async function handleTranslationResult(result) {
+            if (result.english && result.chinese) {
+                const translation = {
+                    id: Date.now(),
+                    timestamp: result.timestamp || new Date().toLocaleString("zh-TW"),
+                    english: result.english,
+                    chinese: result.chinese
+                };
+                
+                translations.push(translation);
+                updateTranslationsList();
+                
+                await saveToDatabase(translation);
+                
+                updateStatus("翻譯完成");
+            } else {
+                showError("翻譯結果格式錯誤");
+            }
+        }
+
+        async function saveToDatabase(translation) {
+            try {
+                const saveData = {
+                    session_id: currentSession,
+                    timestamp: translation.timestamp,
+                    english_text: translation.english,
+                    chinese_text: translation.chinese
+                };
+
+                const response = await fetch(saveUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(saveData)
+                });
+
+                if (response.ok) {
+                    recordCount++;
+                    elements.recordCount.textContent = recordCount;
+                    updateGenerateButton();
+                }
+            } catch (error) {
+                console.error("儲存失敗:", error);
+            }
+        }
+
+        async function generateQuestions() {
+            if (recordCount < 2) {
+                showError("需要至少2筆翻譯記錄才能生成提問建議");
+                return;
+            }
+
+            try {
+                setProcessing(true);
+                
+                const response = await fetch(questionsUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ session_id: currentSession })
+                });
+
+                if (!response.ok) {
+                    throw new Error("生成提問失敗");
+                }
+
+                const result = await response.json();
+                displayQuestions(result.questions || "");
+                updateStatus("提問建議已生成");
+
+            } catch (error) {
+                showError("生成提問失敗: " + error.message);
+            } finally {
+                setProcessing(false);
+            }
+        }
+
+        elements.newSessionBtn.addEventListener("click", startNewSession);
+        elements.recordBtn.addEventListener("click", toggleRecording);
+        elements.generateBtn.addEventListener("click", generateQuestions);
+
+        document.addEventListener("DOMContentLoaded", function() {
+            startNewSession();
+        });
+    </script>
+</body>
+</html>
