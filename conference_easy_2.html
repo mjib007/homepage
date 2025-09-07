@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>研討會即時翻譯助理</title>
+    <title>研討會快速翻譯助理</title>
     <style>
         * {
             margin: 0;
@@ -128,28 +128,31 @@
             display: none;
         }
 
-        .section-title {
-            color: #007acc;
-            font-weight: bold;
-            font-size: 1.1em;
-            margin: 20px 0 10px 0;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 5px;
-        }
-
         .waiting-text {
             color: #999;
             font-style: italic;
             text-align: center;
             padding: 80px 20px;
         }
+
+        .link-style {
+            color: #007acc;
+            text-decoration: underline;
+            margin-left: 5px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .link-style:hover {
+            color: #005580;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎤 研討會即時翻譯助理</h1>
-            <p>點擊開始錄音，即時獲得翻譯和回應建議</p>
+            <h1>🎤 研討會快速翻譯助理</h1>
+            <p>點擊開始錄音，即時獲得英文轉錄和中文翻譯</p>
         </div>
 
         <div class="control-panel">
@@ -168,8 +171,7 @@
                     正在處理中，請稍候...
                 </div>
                 <div id="resultText" class="waiting-text">
-                    等待語音輸入...
-                    <br><br>
+                    等待語音輸入...<br><br>
                     點擊上方的錄音按鈕開始錄製研討會內容
                 </div>
             </div>
@@ -182,7 +184,6 @@
                 this.isRecording = false;
                 this.mediaRecorder = null;
                 this.audioChunks = [];
-                // 請將這裡的網址替換成您的 n8n Webhook 網址
                 this.webhookUrl = 'https://kf0630.zeabur.app/webhook/quick-translate';
                 
                 this.recordBtn = document.getElementById('recordBtn');
@@ -301,19 +302,20 @@
             displayResults(result) {
                 this.hideLoading();
                 
-                // 支援多種回應格式
                 if (result.english || result.original_english || (result.status === 'success')) {
                     const english = result.english || result.original_english || '無法轉錄';
                     const chinese = result.chinese || result.chinese_translation || '翻譯失敗';
-                    const suggestions = result.suggestions || result.response_suggestions || '無建議';
                     const timestamp = result.timestamp || new Date().toLocaleString('zh-TW');
                     
                     let displayText = `📝 研討會翻譯結果\n`;
                     displayText += `🕐 處理時間：${timestamp}\n\n`;
                     displayText += `🇺🇸 英文原文：\n${english}\n\n`;
                     displayText += `🇹🇼 中文翻譯：\n${chinese}\n\n`;
+                    displayText += `💡 建議回應：本版本只有單純翻譯，如需建議回應請點選`;
                     
                     this.resultText.innerHTML = displayText.replace(/\n/g, '<br>');
+                    this.resultText.innerHTML += `<a href="https://mjib007.github.io/homepage/conference_easy_1.html" target="_blank" class="link-style">《建議回應》網頁版本</a>`;
+                    
                     this.resultText.className = '';
                 } else {
                     this.showError(result.message || '處理失敗');
@@ -347,7 +349,6 @@
             }
         }
 
-        // 初始化應用程式
         document.addEventListener('DOMContentLoaded', () => {
             new ConferenceTranslator();
         });
