@@ -503,7 +503,9 @@
                 
                 // 檢查回應結構並提取 questions
                 let questionsContent = "";
-                if (result.questions) {
+                if (result.ai_response) {
+                    questionsContent = result.ai_response;
+                } else if (result.questions) {
                     questionsContent = result.questions;
                 } else if (result.choices && result.choices[0] && result.choices[0].message) {
                     questionsContent = result.choices[0].message.content;
