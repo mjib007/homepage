@@ -12,204 +12,33 @@
             padding: 20px;
             margin: 0;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background: #2c3e50;
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .session-info {
-            background: #34495e;
-            color: white;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .control-panel {
-            padding: 30px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            border: none;
-            border-radius: 10px;
-            padding: 15px 25px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: bold;
-        }
-
-        .btn-new-session {
-            background: #27ae60;
-            color: white;
-        }
-
-        .record-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            width: 120px;
-            height: 120px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .record-btn.recording {
-            background: #c0392b;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .btn-generate {
-            background: #8e44ad;
-            color: white;
-        }
-
-        .btn-generate:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-        }
-
-        .status {
-            margin-top: 20px;
-            font-size: 18px;
-            color: #666;
-        }
-
-        .content-area {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            padding: 30px;
-        }
-
-        .search-section {
-            grid-column: 1 / -1;
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .search-controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            min-width: 200px;
-        }
-
-        .search-select {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        .btn-search {
-            background: #3498db;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .section {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
-            min-height: 400px;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 5px;
-        }
-
-        .translation-item {
-            background: white;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            border-left: 4px solid #3498db;
-        }
-
-        .search-result-item {
-            background: white;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            border-left: 3px solid #3498db;
-        }
-
-        .empty-state {
-            text-align: center;
-            color: #7f8c8d;
-            padding: 40px 20px;
-            font-style: italic;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .error {
-            color: #e74c3c;
-            background: #fdf2f2;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 10px;
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-            .content-area {
-                grid-template-columns: 1fr;
-            }
-        }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: #2c3e50; color: white; padding: 30px; text-align: center; }
+        .session-info { background: #34495e; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .control-panel { padding: 30px; text-align: center; border-bottom: 1px solid #eee; }
+        .button-group { display: flex; gap: 20px; justify-content: center; align-items: center; flex-wrap: wrap; }
+        .btn { border: none; border-radius: 10px; padding: 15px 25px; font-size: 16px; cursor: pointer; transition: all 0.3s; font-weight: bold; }
+        .btn-new-session { background: #27ae60; color: white; }
+        .record-btn { background: #e74c3c; color: white; border: none; border-radius: 50px; width: 120px; height: 120px; font-size: 16px; cursor: pointer; transition: all 0.3s; }
+        .record-btn.recording { background: #c0392b; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .btn-generate { background: #8e44ad; color: white; }
+        .btn-generate:disabled { background: #bdc3c7; cursor: not-allowed; }
+        .status { margin-top: 20px; font-size: 18px; color: #666; }
+        .content-area { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 30px; }
+        .search-section { grid-column: 1 / -1; background: #f8f9fa; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        .search-controls { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 15px; margin-bottom: 15px; align-items: end; }
+        .search-input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; min-width: 200px; }
+        .search-select { padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .btn-search { background: #3498db; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        .section { background: #f8f9fa; border-radius: 15px; padding: 20px; min-height: 400px; }
+        .section-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        .translation-item { background: white; padding: 15px; margin-bottom: 15px; border-radius: 10px; border-left: 4px solid #3498db; }
+        .search-result-item { background: white; padding: 15px; margin-bottom: 10px; border-radius: 5px; border-left: 3px solid #3498db; }
+        .empty-state { text-align: center; color: #7f8c8d; padding: 40px 20px; font-style: italic; }
+        .loading { display: none; text-align: center; padding: 20px; }
+        .error { color: #e74c3c; background: #fdf2f2; padding: 15px; border-radius: 5px; margin-top: 10px; display: none; }
+        @media (max-width: 768px) { .content-area { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -226,19 +55,10 @@
 
         <div class="control-panel">
             <div class="button-group">
-                <button id="newSessionBtn" class="btn btn-new-session">
-                    新報告人
-                </button>
-                
-                <button id="recordBtn" class="record-btn">
-                    <div>開始錄音</div>
-                </button>
-
-                <button id="generateBtn" class="btn btn-generate" disabled>
-                    重點摘要&提問建議
-                </button>
+                <button id="newSessionBtn" class="btn btn-new-session">新報告人</button>
+                <button id="recordBtn" class="record-btn"><div>開始錄音</div></button>
+                <button id="generateBtn" class="btn btn-generate" disabled>重點摘要&提問建議</button>
             </div>
-            
             <div id="status" class="status">準備就緒</div>
             <div id="error" class="error"></div>
             <div class="loading" id="loading">處理中...</div>
@@ -255,45 +75,29 @@
                     <option value="chinese">僅中文</option>
                     <option value="session">會話ID</option>
                 </select>
+                <!-- 新增日期區間 -->
+                <input type="date" id="searchStartDate" class="search-select" />
+                <input type="date" id="searchEndDate" class="search-select" />
                 <button id="searchBtn" class="btn-search">搜尋</button>
             </div>
-            <div id="searchResults">
-                <div class="empty-state">輸入關鍵字開始搜尋</div>
-            </div>
+            <div id="searchResults"><div class="empty-state">輸入關鍵字開始搜尋</div></div>
         </div>
 
         <div class="content-area">
             <div class="section">
                 <div class="section-title">📝 翻譯記錄</div>
-                <div id="translationsList">
-                    <div class="empty-state">
-                        尚無翻譯記錄<br>
-                        點擊錄音按鈕開始使用
-                    </div>
-                </div>
+                <div id="translationsList"><div class="empty-state">尚無翻譯記錄<br>點擊錄音按鈕開始使用</div></div>
             </div>
-
             <div class="section">
                 <div class="section-title">💡 智能分析</div>
-                <div id="questionsArea">
-                    <div class="empty-state">
-                        需要至少2筆翻譯記錄<br>
-                        才能生成分析建議
-                    </div>
-                </div>
+                <div id="questionsArea"><div class="empty-state">需要至少2筆翻譯記錄<br>才能生成分析建議</div></div>
             </div>
         </div>
     </div>
 
     <script>
-        let isRecording = false;
-        let mediaRecorder = null;
-        let audioChunks = [];
-        let currentSession = "";
-        let translations = [];
-        let recordCount = 0;
-        let isProcessing = false;
-
+        let isRecording = false, mediaRecorder = null, audioChunks = [];
+        let currentSession = "", translations = [], recordCount = 0, isProcessing = false;
         const API_BASE = "https://kf0630.zeabur.app/webhook";
 
         const elements = {
@@ -310,7 +114,9 @@
             searchKeyword: document.getElementById("searchKeyword"),
             searchType: document.getElementById("searchType"),
             searchBtn: document.getElementById("searchBtn"),
-            searchResults: document.getElementById("searchResults")
+            searchResults: document.getElementById("searchResults"),
+            searchStartDate: document.getElementById("searchStartDate"),
+            searchEndDate: document.getElementById("searchEndDate")
         };
 
         function generateSessionId() {
@@ -566,11 +372,16 @@
         async function performSearch() {
             const keyword = elements.searchKeyword.value.trim();
             const searchType = elements.searchType.value;
-            const startDate = elements.searchStartDate.value;
-            const endDate = elements.searchEndDate.value;
+            const startDate = elements.searchStartDate ? elements.searchStartDate.value : "";
+            const endDate = elements.searchEndDate ? elements.searchEndDate.value : "";
 
             if (!keyword) {
                 showError("請輸入搜尋關鍵字");
+                return;
+            }
+
+            if (startDate && endDate && startDate > endDate) {
+                showError("開始日期不可晚於結束日期");
                 return;
             }
 
@@ -588,6 +399,8 @@
                     if (startDate) searchData.dateRange.start = startDate;
                     if (endDate) searchData.dateRange.end = endDate;
                 }
+
+                console.log("搜尋請求資料:", searchData);
 
                 const response = await fetch(API_BASE + "/search-records", {
                     method: "POST",
@@ -644,10 +457,22 @@
                 performSearch();
             }
         });
-        
+
         // 初始化
         document.addEventListener("DOMContentLoaded", function() {
             startNewSession();
+            
+            // 設定預設日期範圍
+            const s = elements.searchStartDate;
+            const e = elements.searchEndDate;
+            if (s && e) {
+                const now = new Date();
+                const yyyy = now.getFullYear();
+                const mm = String(now.getMonth() + 1).padStart(2, "0");
+                const dd = String(now.getDate()).padStart(2, "0");
+                s.value = `${yyyy}-${mm}-01`;
+                e.value = `${yyyy}-${mm}-${dd}`;
+            }
         });
     </script>
 </body>
