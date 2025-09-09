@@ -566,8 +566,6 @@
         async function performSearch() {
             const keyword = elements.searchKeyword.value.trim();
             const searchType = elements.searchType.value;
-            const startDate = elements.searchStartDate.value;
-            const endDate = elements.searchEndDate.value;
 
             if (!keyword) {
                 showError("請輸入搜尋關鍵字");
@@ -581,13 +579,6 @@
                     keyword: keyword,
                     searchType: searchType
                 };
-
-                // 添加日期範圍
-                if (startDate || endDate) {
-                    searchData.dateRange = {};
-                    if (startDate) searchData.dateRange.start = startDate;
-                    if (endDate) searchData.dateRange.end = endDate;
-                }
 
                 const response = await fetch(API_BASE + "/search-records", {
                     method: "POST",
