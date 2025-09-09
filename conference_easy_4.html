@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>研討會快速翻譯助理</title>
+    <title>LinguaExpert第四代翻譯機器人</title>
     <style>
         body {
             font-family: 'Microsoft JhengHei', sans-serif;
@@ -113,6 +113,44 @@
             padding: 30px;
         }
 
+        .search-section {
+            grid-column: 1 / -1;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            min-width: 200px;
+        }
+
+        .search-select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .btn-search {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
         .section {
             background: #f8f9fa;
             border-radius: 15px;
@@ -135,6 +173,14 @@
             margin-bottom: 15px;
             border-radius: 10px;
             border-left: 4px solid #3498db;
+        }
+
+        .search-result-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #3498db;
         }
 
         .empty-state {
@@ -169,8 +215,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>研討會快速翻譯助理</h1>
-            <p>即時語音翻譯與智能提問建議系統</p>
+            <h1>LinguaExpert第四代翻譯機器人</h1>
+            <p>即時語音翻譯與智能分析系統</p>
         </div>
 
         <div class="session-info">
@@ -181,7 +227,7 @@
         <div class="control-panel">
             <div class="button-group">
                 <button id="newSessionBtn" class="btn btn-new-session">
-                    開始新報告
+                    新報告人
                 </button>
                 
                 <button id="recordBtn" class="record-btn">
@@ -189,7 +235,7 @@
                 </button>
 
                 <button id="generateBtn" class="btn btn-generate" disabled>
-                    生成提問
+                    重點摘要&提問建議
                 </button>
             </div>
             
@@ -198,9 +244,27 @@
             <div class="loading" id="loading">處理中...</div>
         </div>
 
+        <!-- 搜尋區塊 -->
+        <div class="search-section">
+            <div class="section-title">🔍 歷史記錄搜尋</div>
+            <div class="search-controls">
+                <input type="text" id="searchKeyword" class="search-input" placeholder="輸入搜尋關鍵字..." />
+                <select id="searchType" class="search-select">
+                    <option value="all">全文搜尋</option>
+                    <option value="english">僅英文</option>
+                    <option value="chinese">僅中文</option>
+                    <option value="session">會話ID</option>
+                </select>
+                <button id="searchBtn" class="btn-search">搜尋</button>
+            </div>
+            <div id="searchResults">
+                <div class="empty-state">輸入關鍵字開始搜尋</div>
+            </div>
+        </div>
+
         <div class="content-area">
             <div class="section">
-                <div class="section-title">翻譯記錄</div>
+                <div class="section-title">📝 翻譯記錄</div>
                 <div id="translationsList">
                     <div class="empty-state">
                         尚無翻譯記錄<br>
@@ -210,11 +274,11 @@
             </div>
 
             <div class="section">
-                <div class="section-title">智能提問建議</div>
+                <div class="section-title">💡 智能分析</div>
                 <div id="questionsArea">
                     <div class="empty-state">
                         需要至少2筆翻譯記錄<br>
-                        才能生成提問建議
+                        才能生成分析建議
                     </div>
                 </div>
             </div>
@@ -230,9 +294,7 @@
         let recordCount = 0;
         let isProcessing = false;
 
-        const translateUrl = "https://kf0630.zeabur.app/webhook/quick-translate";
-        const saveUrl = "https://kf0630.zeabur.app/webhook/save-record";
-        const questionsUrl = "https://kf0630.zeabur.app/webhook/generate-questions";
+        const API_BASE = "https://kf0630.zeabur.app/webhook";
 
         const elements = {
             currentSession: document.getElementById("currentSession"),
@@ -244,7 +306,11 @@
             error: document.getElementById("error"),
             loading: document.getElementById("loading"),
             translationsList: document.getElementById("translationsList"),
-            questionsArea: document.getElementById("questionsArea")
+            questionsArea: document.getElementById("questionsArea"),
+            searchKeyword: document.getElementById("searchKeyword"),
+            searchType: document.getElementById("searchType"),
+            searchBtn: document.getElementById("searchBtn"),
+            searchResults: document.getElementById("searchResults")
         };
 
         function generateSessionId() {
@@ -311,7 +377,7 @@
         }
 
         function updateQuestionsArea() {
-            elements.questionsArea.innerHTML = '<div class="empty-state">需要至少2筆翻譯記錄<br>才能生成提問建議</div>';
+            elements.questionsArea.innerHTML = '<div class="empty-state">需要至少2筆翻譯記錄<br>才能生成分析建議</div>';
         }
 
         function displayQuestions(questions) {
@@ -371,7 +437,7 @@
                 const formData = new FormData();
                 formData.append("audio_file", audioBlob, "recording.webm");
 
-                const response = await fetch(translateUrl, {
+                const response = await fetch(API_BASE + "/quick-translate", {
                     method: "POST",
                     body: formData
                 });
@@ -407,14 +473,12 @@
                 translations.push(translation);
                 updateTranslationsList();
                 
-                // 嘗試自動儲存到資料庫
                 const saveSuccess = await saveToDatabase(translation);
                 
                 if (saveSuccess) {
                     updateStatus("翻譯完成並已儲存");
                 } else {
                     updateStatus("翻譯完成，但儲存失敗");
-                    showError("資料儲存失敗，請檢查網路連接或稍後重試");
                 }
             } else {
                 showError("翻譯結果格式錯誤");
@@ -423,11 +487,9 @@
 
         async function saveToDatabase(translation) {
             try {
-                // 使用 ISO 格式的時間戳記
                 const now = new Date();
                 const isoTimestamp = now.toISOString();
                 
-                // 確保欄位名稱與 Airtable 完全匹配
                 const saveData = {
                     Session_ID: currentSession,
                     Timestamp: isoTimestamp,
@@ -436,9 +498,7 @@
                     Created_Date: now.toISOString().split('T')[0]
                 };
 
-                console.log("準備儲存的資料:", saveData);
-
-                const response = await fetch(saveUrl, {
+                const response = await fetch(API_BASE + "/save-record", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -447,40 +507,29 @@
                     body: JSON.stringify(saveData)
                 });
 
-                console.log("儲存回應狀態:", response.status);
-                
                 if (response.ok) {
-                    const result = await response.json();
-                    console.log("儲存成功，回應:", result);
                     recordCount++;
                     elements.recordCount.textContent = recordCount;
                     updateGenerateButton();
                     return true;
                 } else {
-                    const errorText = await response.text();
-                    console.error("儲存失敗 - 狀態:", response.status);
-                    console.error("錯誤內容:", errorText);
                     return false;
                 }
             } catch (error) {
-                console.error("儲存發生異常:", error);
                 return false;
             }
         }
 
         async function generateQuestions() {
             if (recordCount < 2) {
-                showError("需要至少2筆翻譯記錄才能生成提問建議");
+                showError("需要至少2筆翻譯記錄才能生成分析建議");
                 return;
             }
 
             try {
                 setProcessing(true);
                 
-                console.log("準備生成提問，當前會話:", currentSession);
-                console.log("傳送的資料:", { session_id: currentSession });
-                
-                const response = await fetch(questionsUrl, {
+                const response = await fetch(API_BASE + "/generate-questions", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -489,45 +538,105 @@
                     body: JSON.stringify({ session_id: currentSession })
                 });
 
-                console.log("提問生成回應狀態:", response.status);
-
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error("提問生成失敗 - 狀態:", response.status);
-                    console.error("錯誤內容:", errorText);
-                    throw new Error("生成提問失敗，HTTP " + response.status);
+                    throw new Error("生成分析失敗");
                 }
 
                 const result = await response.json();
-                console.log("提問生成成功，完整回應:", result);
                 
-                // 檢查回應結構並提取 questions
                 let questionsContent = "";
                 if (result.ai_response) {
                     questionsContent = result.ai_response;
                 } else if (result.questions) {
                     questionsContent = result.questions;
-                } else if (result.choices && result.choices[0] && result.choices[0].message) {
-                    questionsContent = result.choices[0].message.content;
                 } else {
-                    console.log("無法找到 questions 內容，回應結構:", result);
-                    questionsContent = "無法解析提問內容";
+                    questionsContent = "無法解析分析內容";
                 }
                 
-                console.log("提取的提問內容:", questionsContent);
                 displayQuestions(questionsContent);
-                updateStatus("提問建議已生成");
+                updateStatus("分析建議已生成");
 
             } catch (error) {
-                console.error("生成提問發生異常:", error);
-                showError("生成提問失敗: " + error.message);
+                showError("生成分析失敗: " + error.message);
             } finally {
                 setProcessing(false);
             }
+        }
+
+        async function performSearch() {
+            const keyword = elements.searchKeyword.value.trim();
+            const searchType = elements.searchType.value;
+
+            if (!keyword) {
+                showError("請輸入搜尋關鍵字");
+                return;
+            }
+
+            try {
+                setProcessing(true);
+                
+                const searchData = {
+                    keyword: keyword,
+                    searchType: searchType
+                };
+
+                const response = await fetch(API_BASE + "/search-records", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(searchData)
+                });
+
+                if (!response.ok) {
+                    throw new Error("搜尋失敗");
+                }
+
+                const result = await response.json();
+                displaySearchResults(result);
+
+            } catch (error) {
+                showError("搜尋失敗: " + error.message);
+                elements.searchResults.innerHTML = '<div class="empty-state">搜尋過程中發生錯誤</div>';
+            } finally {
+                setProcessing(false);
+            }
+        }
+
+        function displaySearchResults(result) {
+            const results = result.results || [];
+            
+            if (results.length === 0) {
+                elements.searchResults.innerHTML = '<div class="empty-state">沒有找到符合條件的記錄</div>';
+                return;
+            }
+
+            let html = "";
+            results.forEach(item => {
+                html += '<div class="search-result-item">';
+                html += '<div style="font-size: 12px; color: #666; margin-bottom: 5px;">會話: ' + item.session_id + ' | 時間: ' + new Date(item.timestamp).toLocaleString() + '</div>';
+                html += '<div style="background: #f0f8ff; padding: 8px; margin-bottom: 5px; border-radius: 3px;"><strong>英文:</strong> ' + item.english + '</div>';
+                html += '<div style="background: #f0fff0; padding: 8px; border-radius: 3px;"><strong>中文:</strong> ' + item.chinese + '</div>';
+                html += '</div>';
+            });
+            
+            elements.searchResults.innerHTML = html;
+            updateStatus("找到 " + results.length + " 筆記錄");
+        }
+
+        // 事件監聽器
         elements.newSessionBtn.addEventListener("click", startNewSession);
         elements.recordBtn.addEventListener("click", toggleRecording);
         elements.generateBtn.addEventListener("click", generateQuestions);
+        elements.searchBtn.addEventListener("click", performSearch);
         
+        elements.searchKeyword.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                performSearch();
+            }
+        });
+        
+        // 初始化
         document.addEventListener("DOMContentLoaded", function() {
             startNewSession();
         });
