@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>研討會快速翻譯助理</title>
+    <title>LinguaExpert三號AI Agent</title>
     <style>
         body {
             font-family: 'Microsoft JhengHei', sans-serif;
@@ -169,8 +169,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>研討會快速翻譯助理</h1>
-            <p>即時語音翻譯與智能提問建議系統</p>
+            <h1>LinguaExpert三號AI Agent</h1>
+            <p>即時語音翻譯　＆　智能提問建議系統</p>
         </div>
 
         <div class="session-info">
@@ -503,7 +503,9 @@
                 
                 // 檢查回應結構並提取 questions
                 let questionsContent = "";
-                if (result.questions) {
+                if (result.ai_response) {
+                    questionsContent = result.ai_response;
+                } else if (result.questions) {
                     questionsContent = result.questions;
                 } else if (result.choices && result.choices[0] && result.choices[0].message) {
                     questionsContent = result.choices[0].message.content;
