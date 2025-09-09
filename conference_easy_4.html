@@ -115,12 +115,11 @@
             searchType: document.getElementById("searchType"),
             searchBtn: document.getElementById("searchBtn"),
             searchResults: document.getElementById("searchResults"),
-            // 新增的兩個元素
             searchStartDate: document.getElementById("searchStartDate"),
             searchEndDate: document.getElementById("searchEndDate")
         };
 
-        // function generateSessionId() {
+        function generateSessionId() {
             const now = new Date();
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -463,21 +462,6 @@
         document.addEventListener("DOMContentLoaded", function() {
             startNewSession();
             
-            // 設定預設日期範圍
-            const s = elements.searchStartDate;
-            const e = elements.searchEndDate;
-            if (s && e) {
-                const now = new Date();
-                const yyyy = now.getFullYear();
-                const mm = String(now.getMonth() + 1).padStart(2, "0");
-                const dd = String(now.getDate()).padStart(2, "0");
-                s.value = `${yyyy}-${mm}-01`;
-                e.value = `${yyyy}-${mm}-${dd}`;
-            }
-        });
-
-        document.addEventListener("DOMContentLoaded", function() {
-            startNewSession();
             // 設定預設日期範圍
             const s = elements.searchStartDate;
             const e = elements.searchEndDate;
