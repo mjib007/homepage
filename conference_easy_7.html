@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>LinguaExpert第四代翻譯機器人 - 含搜尋摘要功能</title>
+  <title>LinguaExpert第七代翻譯機器人 - 含搜尋摘要功能</title>
   <style>
     body{font-family:'Microsoft JhengHei',sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px;margin:0}
     .container{max-width:1200px;margin:0 auto;background:#fff;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,.1);overflow:hidden}
@@ -60,8 +60,8 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>LinguaExpert第四代翻譯機器人</h1>
-      <p>即時語音翻譯與智能分析系統 - 含搜尋摘要功能</p>
+      <h1>LinguaExpert第七代翻譯機器人</h1>
+      <p>即時語音翻譯 ＆ 智能分析系統 - 搜尋內容一鍵摘要</p>
     </div>
 
     <div class="session-info">
@@ -364,36 +364,94 @@
       return map[t]||t;
     }
 
-    // 生成摘要：重送一次 /search-records，但加 summarize:true
-    async function generateSearchSummary(){
-      if(lastSearchResults.length===0){ showError("沒有可用的搜尋結果進行摘要"); return; }
-      try{
-        setProcessing(true);
-        updateStatus("正在生成搜尋內容摘要...");
-        const keyword=elements.searchKeyword.value.trim();
-        const searchType=elements.searchType.value;
-        const startDate=elements.searchStartDate?elements.searchStartDate.value:"";
-        const endDate=elements.searchEndDate?elements.searchEndDate.value:"";
-
-        const data={ keyword, searchType, summarize:true };
-        if(startDate||endDate){ data.dateRange={}; if(startDate) data.dateRange.start=startDate; if(endDate) data.dateRange.end=endDate; }
-
-        const resp=await fetch(API_BASE+"/search-records",{method:"POST",headers:{ "Content-Type":"application/json"}, body:JSON.stringify(data)});
-        if(!resp.ok) throw new Error("摘要請求失敗");
-        const result=await resp.json();
-
-        if(result.summary){
-          elements.searchSummarySection.style.display="block";
-          elements.searchSummaryContent.textContent=result.summary;
-          updateStatus("摘要完成");
-        }else{
-          elements.searchSummarySection.style.display="none";
-          elements.searchSummaryContent.textContent='';
-          updateStatus("本次無法生成摘要（結果太少或格式不符）");
-        }
-      }catch(err){ showError("摘要失敗: "+err.message); }
-      finally{ setProcessing(false); }
+// 生成摘要：重送一次 /search-records，但加 summarize:true
+async function generateSearchSummary(){
+  console.log("=== 開始生成摘要 ===");
+  console.log("lastSearchResults.length:", lastSearchResults.length);
+  
+  if(lastSearchResults.length===0){ 
+    console.log("錯誤：沒有搜尋結果");
+    showError("沒有可用的搜尋結果進行摘要"); 
+    return; 
+  }
+  
+  try{
+    console.log("設定處理狀態...");
+    setProcessing(true);
+    updateStatus("正在生成搜尋內容摘要...");
+    
+    const keyword=elements.searchKeyword.value.trim();
+    const searchType=elements.searchType.value;
+    const startDate=elements.searchStartDate?elements.searchStartDate.value:"";
+    const endDate=elements.searchEndDate?elements.searchEndDate.value:"";
+    
+    const data={ keyword, searchType, summarize:true };
+    if(startDate||endDate){ 
+      data.dateRange={}; 
+      if(startDate) data.dateRange.start=startDate; 
+      if(endDate) data.dateRange.end=endDate; 
     }
+    
+    console.log("準備發送請求，資料:", data);
+    console.log("API_BASE:", API_BASE);
+    
+    const resp=await fetch(API_BASE+"/search-records",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json"}, 
+      body:JSON.stringify(data)
+    });
+    
+    console.log("收到回應，狀態:", resp.status, resp.statusText);
+    
+    if(!resp.ok) {
+      console.log("回應不正常");
+      throw new Error("摘要請求失敗");
+    }
+    
+    console.log("正在解析 JSON...");
+    const result=await resp.json();
+    console.log("完整的 API 回應:", result);
+    console.log("result.summary:", result.summary);
+    console.log("result.message:", result.message);
+    console.log("result.content:", result.content);
+    
+    // 修正：檢查多種可能的摘要格式
+    let summaryContent = '';
+    
+    if(result.summary && typeof result.summary === 'string'){
+      console.log("找到 result.summary");
+      summaryContent = result.summary;
+    } else if(result.message && result.message.content){
+      console.log("找到 result.message.content");
+      summaryContent = result.message.content;
+    } else if(result.content){
+      console.log("找到 result.content");
+      summaryContent = result.content;
+    }
+    
+    console.log("最終的摘要內容:", summaryContent);
+    
+    if(summaryContent && summaryContent.trim() !== ''){
+      console.log("顯示摘要內容");
+      elements.searchSummarySection.style.display="block";
+      elements.searchSummaryContent.textContent=summaryContent;
+      updateStatus("摘要完成");
+    }else{
+      console.log("沒有找到有效的摘要內容");
+      elements.searchSummarySection.style.display="none";
+      elements.searchSummaryContent.textContent='';
+      updateStatus("本次無法生成摘要（結果太少或格式不符）");
+    }
+    
+  }catch(err){ 
+    console.log("發生錯誤:", err);
+    showError("摘要失敗: "+err.message); 
+  }
+  finally{ 
+    console.log("結束處理");
+    setProcessing(false); 
+  }
+}
 
     // 事件
     elements.newSessionBtn.addEventListener("click", startNewSession);
