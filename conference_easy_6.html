@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinguaExpert第四代翻譯機器人</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .session-info {
+            background: #34495e;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 註記區域樣式 */
+        .notes-section {
+            background: #f39c12;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .notes-input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .notes-clear-btn {
+            background: #e67e22;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .notes-clear-btn:hover {
+            background: #d35400;
+        }
+
+        .control-panel {
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 15px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-new-session {
+            background: #27ae60;
+            color: white;
+        }
+
+        .record-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            width: 120px;
+            height: 120px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .record-btn.recording {
+            background: #c0392b;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .btn-generate {
+            background: #8e44ad;
+            color: white;
+        }
+
+        .btn-generate:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .content-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .search-section {
+            grid-column: 1 / -1;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .search-controls {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: end;
+        }
+
+        .search-input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .search-select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .btn-search {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+
+        .translation-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        /* 註記顯示樣式 */
+        .notes-display {
+            background: #fff3cd;
+            color: #856404;
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            border: 1px solid #ffeaa7;
+        }
+
+        .search-result-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #3498db;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 40px 20px;
+            font-style: italic;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .error {
+            color: #e74c3c;
+            background: #fdf2f2;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .content-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-controls {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+            
+            .search-input, .search-select, .btn-search {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .btn-search {
+                padding: 15px 20px;
+                font-size: 18px;
+            }
+            
+            .session-info {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+
+            .notes-section {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>LinguaExpert第四代翻譯機器人</h1>
+            <p>即時語音翻譯與智能分析系統</p>
+        </div>
+
+        <div class="session-info">
+            <div>當前會話：<span id="currentSession">等待初始化</span></div>
+            <div>記錄數：<span id="recordCount">0</span></div>
+        </div>
+
+        <!-- 新增註記區域 -->
+        <div class="notes-section">
+            <div style="font-weight: bold;">📝 錄音註記：</div>
+            <input type="text" id="notesInput" class="notes-input" placeholder="輸入錄音註記（例如：報告人錢世傑）" maxlength="100" />
+            <button id="clearNotesBtn" class="notes-clear-btn">清空</button>
+        </div>
+
+        <div class="control-panel">
+            <div class="button-group">
+                <button id="newSessionBtn" class="btn btn-new-session">新報告人</button>
+                <button id="recordBtn" class="record-btn"><div>開始錄音</div></button>
+                <button id="generateBtn" class="btn btn-generate" disabled>重點摘要&提問建議</button>
+            </div>
+            <div id="status" class="status">準備就緒</div>
+            <div id="error" class="error"></div>
+            <div class="loading" id="loading">處理中...</div>
+        </div>
+
+        <!-- 搜尋區塊 -->
+        <div class="search-section">
+            <div class="section-title">🔍 歷史記錄搜尋</div>
+            <div class="search-controls">
+                <input type="text" id="searchKeyword" class="search-input" placeholder="輸入搜尋關鍵字..." />
+                <select id="searchType" class="search-select">
+                    <option value="all">全文搜尋</option>
+                    <option value="english">僅英文</option>
+                    <option value="chinese">僅中文</option>
+                    <option value="notes">僅註記</option>
+                    <option value="session">會話ID</option>
+                </select>
+                <input type="date" id="searchStartDate" class="search-select" />
+                <input type="date" id="searchEndDate" class="search-select" />
+                <button id="searchBtn" class="btn-search">搜尋</button>
+            </div>
+            <div id="searchResults"><div class="empty-state">輸入關鍵字開始搜尋</div></div>
+        </div>
+
+        <div class="content-area">
+            <div class="section">
+                <div class="section-title">📝 翻譯記錄</div>
+                <div id="translationsList"><div class="empty-state">尚無翻譯記錄<br>點擊錄音按鈕開始使用</div></div>
+            </div>
+            <div class="section">
+                <div class="section-title">💡 智能分析</div>
+                <div id="questionsArea"><div class="empty-state">需要至少2筆翻譯記錄<br>才能生成分析建議</div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isRecording = false, mediaRecorder = null, audioChunks = [];
+        let currentSession = "", translations = [], recordCount = 0, isProcessing = false;
+        const API_BASE = "https://kf0630.zeabur.app/webhook";
+
+        const elements = {
+            currentSession: document.getElementById("currentSession"),
+            recordCount: document.getElementById("recordCount"),
+            newSessionBtn: document.getElementById("newSessionBtn"),
+            recordBtn: document.getElementById("recordBtn"),
+            generateBtn: document.getElementById("generateBtn"),
+            status: document.getElementById("status"),
+            error: document.getElementById("error"),
+            loading: document.getElementById("loading"),
+            translationsList: document.getElementById("translationsList"),
+            questionsArea: document.getElementById("questionsArea"),
+            searchKeyword: document.getElementById("searchKeyword"),
+            searchType: document.getElementById("searchType"),
+            searchBtn: document.getElementById("searchBtn"),
+            searchResults: document.getElementById("searchResults"),
+            searchStartDate: document.getElementById("searchStartDate"),
+            searchEndDate: document.getElementById("searchEndDate"),
+            // 新增註記相關元素
+            notesInput: document.getElementById("notesInput"),
+            clearNotesBtn: document.getElementById("clearNotesBtn")
+        };
+
+        function generateSessionId() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, "0");
+            const day = String(now.getDate()).padStart(2, "0");
+            const hour = String(now.getHours()).padStart(2, "0");
+            const minute = String(now.getMinutes()).padStart(2, "0");
+            return "Session_" + year + month + day + "_" + hour + minute;
+        }
+
+        function startNewSession() {
+            currentSession = generateSessionId();
+            translations = [];
+            recordCount = 0;
+            elements.currentSession.textContent = currentSession;
+            elements.recordCount.textContent = recordCount;
+            updateTranslationsList();
+            updateQuestionsArea();
+            updateGenerateButton();
+            updateStatus("新會話已開始");
+        }
+
+        function updateStatus(message) {
+            elements.status.textContent = message;
+            elements.error.style.display = "none";
+        }
+
+        function showError(message) {
+            elements.error.textContent = message;
+            elements.error.style.display = "block";
+        }
+
+        function setProcessing(processing) {
+            isProcessing = processing;
+            elements.loading.style.display = processing ? "block" : "none";
+            updateGenerateButton();
+        }
+
+        function updateGenerateButton() {
+            elements.generateBtn.disabled = recordCount < 2 || isProcessing;
+        }
+
+        function updateTranslationsList() {
+            if (translations.length === 0) {
+                elements.translationsList.innerHTML = '<div class="empty-state">尚無翻譯記錄<br>點擊錄音按鈕開始使用</div>';
+            } else {
+                let html = "";
+                for (let i = 0; i < translations.length; i++) {
+                    const t = translations[i];
+                    html += '<div class="translation-item">';
+                    
+                    // 顯示註記（如果有的話）
+                    if (t.notes && t.notes.trim() !== '') {
+                        html += '<div class="notes-display">📝 ' + t.notes + '</div>';
+                    }
+                    
+                    html += '<div style="font-size: 12px; color: #666; margin-bottom: 10px;">' + t.timestamp + '</div>';
+                    html += '<div style="background: #ebf3fd; padding: 10px; border-radius: 5px; margin-bottom: 10px;">';
+                    html += '<strong>英文：</strong><br>' + t.english;
+                    html += '</div>';
+                    html += '<div style="background: #e8f5e8; padding: 10px; border-radius: 5px;">';
+                    html += '<strong>中文：</strong><br>' + t.chinese;
+                    html += '</div>';
+                    html += '</div>';
+                }
+                elements.translationsList.innerHTML = html;
+            }
+        }
+
+        function updateQuestionsArea() {
+            elements.questionsArea.innerHTML = '<div class="empty-state">需要至少2筆翻譯記錄<br>才能生成分析建議</div>';
+        }
+
+        function displayQuestions(questions) {
+            elements.questionsArea.innerHTML = '<div style="background: white; padding: 15px; border-radius: 10px; white-space: pre-wrap; line-height: 1.6;">' + questions + '</div>';
+        }
+
+        // 清空註記功能
+        function clearNotes() {
+            elements.notesInput.value = '';
+            updateStatus("註記已清空");
+        }
+
+        async function toggleRecording() {
+            if (!isRecording) {
+                await startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = function(event) {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = function() {
+                    processAudio();
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                
+                elements.recordBtn.classList.add("recording");
+                elements.recordBtn.innerHTML = "<div>停止錄音</div>";
+                
+                // 顯示當前註記狀態
+                const currentNotes = elements.notesInput.value.trim();
+                if (currentNotes) {
+                    updateStatus("錄音中... (註記: " + currentNotes + ")");
+                } else {
+                    updateStatus("錄音中...");
+                }
+
+            } catch (error) {
+                showError("錄音啟動失敗: " + error.message);
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+                mediaRecorder.stop();
+            }
+
+            isRecording = false;
+            elements.recordBtn.classList.remove("recording");
+            elements.recordBtn.innerHTML = "<div>開始錄音</div>";
+            updateStatus("處理中...");
+        }
+
+        async function processAudio() {
+            try {
+                setProcessing(true);
+                const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+                
+                const formData = new FormData();
+                formData.append("audio_file", audioBlob, "recording.webm");
+
+                const response = await fetch(API_BASE + "/quick-translate", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error("翻譯請求失敗");
+                }
+
+                const result = await response.json();
+                await handleTranslationResult(result);
+
+            } catch (error) {
+                showError("處理失敗: " + error.message);
+            } finally {
+                setProcessing(false);
+                if (mediaRecorder && mediaRecorder.stream) {
+                    mediaRecorder.stream.getTracks().forEach(function(track) {
+                        track.stop();
+                    });
+                }
+            }
+        }
+
+        async function handleTranslationResult(result) {
+            if (result.english && result.chinese) {
+                // 獲取當前註記
+                const currentNotes = elements.notesInput.value.trim();
+                
+                const translation = {
+                    id: Date.now(),
+                    timestamp: result.timestamp || new Date().toLocaleString("zh-TW"),
+                    english: result.english,
+                    chinese: result.chinese,
+                    notes: currentNotes // 加入註記
+                };
+                
+                translations.push(translation);
+                updateTranslationsList();
+                
+                const saveSuccess = await saveToDatabase(translation);
+                
+                if (saveSuccess) {
+                    if (currentNotes) {
+                        updateStatus("翻譯完成並已儲存 (含註記: " + currentNotes + ")");
+                    } else {
+                        updateStatus("翻譯完成並已儲存");
+                    }
+                } else {
+                    updateStatus("翻譯完成，但儲存失敗");
+                }
+            } else {
+                showError("翻譯結果格式錯誤");
+            }
+        }
+
+        async function saveToDatabase(translation) {
+            try {
+                const now = new Date();
+                const isoTimestamp = now.toISOString();
+                
+                const saveData = {
+                    Session_ID: currentSession,
+                    Timestamp: isoTimestamp,
+                    English_Text: translation.english,
+                    Chinese_Text: translation.chinese,
+                    Notes: translation.notes || '', // 加入註記欄位
+                    Created_Date: now.toISOString().split('T')[0]
+                };
+
+                console.log("準備儲存的資料:", saveData);
+
+                const response = await fetch(API_BASE + "/save-record", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify(saveData)
+                });
+
+                if (response.ok) {
+                    recordCount++;
+                    elements.recordCount.textContent = recordCount;
+                    updateGenerateButton();
+                    return true;
+                } else {
+                    console.error("儲存失敗，狀態:", response.status);
+                    return false;
+                }
+            } catch (error) {
+                console.error("儲存發生異常:", error);
+                return false;
+            }
+        }
+
+        async function generateQuestions() {
+            if (recordCount < 2) {
+                showError("需要至少2筆翻譯記錄才能生成分析建議");
+                return;
+            }
+
+            try {
+                setProcessing(true);
+                
+                const response = await fetch(API_BASE + "/generate-questions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({ session_id: currentSession })
+                });
+
+                if (!response.ok) {
+                    throw new Error("生成分析失敗");
+                }
+
+                const result = await response.json();
+                
+                let questionsContent = "";
+                if (result.ai_response) {
+                    questionsContent = result.ai_response;
+                } else if (result.questions) {
+                    questionsContent = result.questions;
+                } else {
+                    questionsContent = "無法解析分析內容";
+                }
+                
+                displayQuestions(questionsContent);
+                updateStatus("分析建議已生成");
+
+            } catch (error) {
+                showError("生成分析失敗: " + error.message);
+            } finally {
+                setProcessing(false);
+            }
+        }
+
+        async function performSearch() {
+            const keyword = elements.searchKeyword.value.trim();
+            const searchType = elements.searchType.value;
+            const startDate = elements.searchStartDate ? elements.searchStartDate.value : "";
+            const endDate = elements.searchEndDate ? elements.searchEndDate.value : "";
+
+            if (!keyword) {
+                showError("請輸入搜尋關鍵字");
+                return;
+            }
+
+            if (startDate && endDate && startDate > endDate) {
+                showError("開始日期不可晚於結束日期");
+                return;
+            }
+
+            try {
+                setProcessing(true);
+                
+                const searchData = {
+                    keyword: keyword,
+                    searchType: searchType
+                };
+
+                // 添加日期範圍
+                if (startDate || endDate) {
+                    searchData.dateRange = {};
+                    if (startDate) searchData.dateRange.start = startDate;
+                    if (endDate) searchData.dateRange.end = endDate;
+                }
+
+                console.log("搜尋請求資料:", searchData);
+
+                const response = await fetch(API_BASE + "/search-records", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(searchData)
+                });
+
+                if (!response.ok) {
+                    throw new Error("搜尋失敗");
+                }
+
+                const result = await response.json();
+                displaySearchResults(result);
+
+            } catch (error) {
+                showError("搜尋失敗: " + error.message);
+                elements.searchResults.innerHTML = '<div class="empty-state">搜尋過程中發生錯誤</div>';
+            } finally {
+                setProcessing(false);
+            }
+        }
+
+        function displaySearchResults(result) {
+            const results = result.results || [];
+            
+            if (results.length === 0) {
+                elements.searchResults.innerHTML = '<div class="empty-state">沒有找到符合條件的記錄</div>';
+                return;
+            }
+
+            let html = "";
+            results.forEach(item => {
+                html += '<div class="search-result-item">';
+                html += '<div style="font-size: 12px; color: #666; margin-bottom: 5px;">會話: ' + item.session_id + ' | 時間: ' + new Date(item.timestamp).toLocaleString() + '</div>';
+                
+                // 顯示註記（如果有的話）
+                if (item.notes && item.notes.trim() !== '') {
+                    html += '<div class="notes-display">📝 ' + item.notes + '</div>';
+                }
+                
+                html += '<div style="background: #f0f8ff; padding: 8px; margin-bottom: 5px; border-radius: 3px;"><strong>英文:</strong> ' + item.english + '</div>';
+                html += '<div style="background: #f0fff0; padding: 8px; border-radius: 3px;"><strong>中文:</strong> ' + item.chinese + '</div>';
+                html += '</div>';
+            });
+            
+            elements.searchResults.innerHTML = html;
+            updateStatus("找到 " + results.length + " 筆記錄");
+        }
+
+        // 事件監聽器
+        elements.newSessionBtn.addEventListener("click", startNewSession);
+        elements.recordBtn.addEventListener("click", toggleRecording);
+        elements.generateBtn.addEventListener("click", generateQuestions);
+        elements.searchBtn.addEventListener("click", performSearch);
+        elements.clearNotesBtn.addEventListener("click", clearNotes);
+        
+        elements.searchKeyword.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                performSearch();
+            }
+        });
+
+        // 初始化
+        document.addEventListener("DOMContentLoaded", function() {
+            startNewSession();
+            
+            // 設定預設日期範圍
+            const s = elements.searchStartDate;
+            const e = elements.searchEndDate;
+            if (s && e) {
+                const now = new Date();
+                const yyyy = now.getFullYear();
+                const mm = String(now.getMonth() + 1).padStart(2, "0");
+                const dd = String(now.getDate()).padStart(2, "0");
+                s.value = `${yyyy}-${mm}-01`;
+                e.value = `${yyyy}-${mm}-${dd}`;
+            }
+        });
+    </script>
+</body>
+</html>
