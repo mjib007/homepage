@@ -276,11 +276,12 @@
   </div>
 
   <script>
-    // 配置：請將這些 URL 替換為你的實際 n8n webhook URLs
+    // 配置：n8n webhook URLs
+    const API_BASE = "https://kf0630.zeabur.app/webhook";
     const CONFIG = {
-      uploadUrl: 'https://your-n8n-instance.com/webhook/upload-notes',
-      searchUrl: 'https://your-n8n-instance.com/webhook/search-records',
-      discussUrl: 'https://your-n8n-instance.com/webhook/discuss-note'
+      uploadUrl: API_BASE + '/upload-notes',
+      searchUrl: API_BASE + '/search-records',
+      discussUrl: API_BASE + '/discuss-note'
     };
 
     // DOM 元素
@@ -318,10 +319,12 @@
       saveBtn.textContent = '處理中...';
       
       try {
+        console.log('正在發送請求到:', CONFIG.uploadUrl);
         const response = await fetch(CONFIG.uploadUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json'
           },
           body: JSON.stringify({
             userId: userId,
@@ -331,18 +334,29 @@
           })
         });
 
+        console.log('收到回應，狀態:', response.status, response.statusText);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
         const result = await response.json();
+        console.log('API 回應:', result);
         
         if (result.success) {
           showStatus('筆記已成功儲存並分析！', 'success');
           document.getElementById('noteTitle').value = '';
           document.getElementById('fileContent').value = '';
         } else {
-          showStatus('儲存失敗，請重試', 'error');
+          showStatus('儲存失敗：' + (result.message || '未知錯誤'), 'error');
         }
       } catch (error) {
-        console.error('Error:', error);
-        showStatus('連接失敗，請檢查網路連線', 'error');
+        console.error('詳細錯誤:', error);
+        if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+          showStatus('連接失敗：無法連接到服務器，請檢查網路或服務狀態', 'error');
+        } else {
+          showStatus('處理失敗：' + error.message, 'error');
+        }
       } finally {
         saveBtn.disabled = false;
         saveBtn.textContent = '💾 儲存並分析';
