@@ -61,7 +61,7 @@
   <div class="container">
     <div class="header">
       <h1>LinguaExpert第七代翻譯機器人</h1>
-      <p>即時語音翻譯 ＆ 智能分析系統 - 搜尋內容一鍵摘要</p>
+      <p>即時語音翻譯 ＆ 智能分析系統 - 搜尋內容一鍵摘要0919</p>
     </div>
 
     <div class="session-info">
@@ -301,7 +301,7 @@
 
       try{
         setProcessing(true);
-        const data={ keyword, searchType }; /* 若想一開始就有摘要，打開下一行 */ /* , summarize: true */
+        const data={ keyword, searchType };
         if(startDate||endDate){ data.dateRange={}; if(startDate) data.dateRange.start=startDate; if(endDate) data.dateRange.end=endDate; }
 
         const resp=await fetch(API_BASE+"/search-records",{method:"POST",headers:{ "Content-Type":"application/json"}, body:JSON.stringify(data)});
