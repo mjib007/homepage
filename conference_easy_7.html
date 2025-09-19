@@ -301,7 +301,7 @@
 
       try{
         setProcessing(true);
-        const data={ keyword, searchType /* 若想一開始就有摘要，打開下一行 */ /* , summarize: true */ };
+        const data={ keyword, searchType }; /* 若想一開始就有摘要，打開下一行 */ /* , summarize: true */
         if(startDate||endDate){ data.dateRange={}; if(startDate) data.dateRange.start=startDate; if(endDate) data.dateRange.end=endDate; }
 
         const resp=await fetch(API_BASE+"/search-records",{method:"POST",headers:{ "Content-Type":"application/json"}, body:JSON.stringify(data)});
