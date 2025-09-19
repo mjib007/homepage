@@ -131,6 +131,8 @@
       padding: 10px;
       border-radius: 8px;
       position: relative;
+      white-space: pre-wrap; /* 保留換行符號 */
+      word-wrap: break-word; /* 長單字自動換行 */
     }
 
     .chat-message.user {
@@ -649,19 +651,37 @@
         if (result.success) {
           const aiDiv = document.createElement('div');
           aiDiv.className = 'chat-message ai';
-          aiDiv.innerHTML = `
-            <span class="message-content">${result.answer}</span>
-            <button class="copy-btn" onclick="copyText(this, \`${result.answer.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`)">📋</button>
-          `;
+          
+          // 創建文字內容容器
+          const messageContent = document.createElement('span');
+          messageContent.className = 'message-content';
+          messageContent.textContent = result.answer; // 使用 textContent 保留換行
+          
+          // 創建複製按鈕
+          const copyButton = document.createElement('button');
+          copyButton.className = 'copy-btn';
+          copyButton.textContent = '📋';
+          copyButton.onclick = () => copyText(copyButton, result.answer);
+          
+          aiDiv.appendChild(messageContent);
+          aiDiv.appendChild(copyButton);
           chatBox.appendChild(aiDiv);
         } else {
           const aiDiv = document.createElement('div');
           aiDiv.className = 'chat-message ai';
           const errorMsg = '抱歉，我現在無法回答這個問題，請稍後再試。';
-          aiDiv.innerHTML = `
-            <span class="message-content">${errorMsg}</span>
-            <button class="copy-btn" onclick="copyText(this, '${errorMsg}')">📋</button>
-          `;
+          
+          const messageContent = document.createElement('span');
+          messageContent.className = 'message-content';
+          messageContent.textContent = errorMsg;
+          
+          const copyButton = document.createElement('button');
+          copyButton.className = 'copy-btn';
+          copyButton.textContent = '📋';
+          copyButton.onclick = () => copyText(copyButton, errorMsg);
+          
+          aiDiv.appendChild(messageContent);
+          aiDiv.appendChild(copyButton);
           chatBox.appendChild(aiDiv);
         }
       } catch (error) {
@@ -669,10 +689,18 @@
         const aiDiv = document.createElement('div');
         aiDiv.className = 'chat-message ai';
         const errorMsg = '連接失敗，請檢查網路連線。';
-        aiDiv.innerHTML = `
-          <span class="message-content">${errorMsg}</span>
-          <button class="copy-btn" onclick="copyText(this, '${errorMsg}')">📋</button>
-        `;
+        
+        const messageContent = document.createElement('span');
+        messageContent.className = 'message-content';
+        messageContent.textContent = errorMsg;
+        
+        const copyButton = document.createElement('button');
+        copyButton.className = 'copy-btn';
+        copyButton.textContent = '📋';
+        copyButton.onclick = () => copyText(copyButton, errorMsg);
+        
+        aiDiv.appendChild(messageContent);
+        aiDiv.appendChild(copyButton);
         chatBox.appendChild(aiDiv);
       } finally {
         sendBtn.disabled = false;
