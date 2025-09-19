@@ -410,8 +410,8 @@
         const div = document.createElement('div');
         div.className = 'search-item';
         div.innerHTML = `
-          <strong>${record.fields?.FileName || '無標題'}</strong>
-          <p>${(record.fields?.Content || '').substring(0, 100)}...</p>
+          <strong>${record.json?.FileName || '無標題'}</strong>
+          <p>${(record.json?.Content || '').substring(0, 100)}...</p>
         `;
         
         div.addEventListener('click', () => {
@@ -425,7 +425,7 @@
           
           // 設定當前選中的筆記
           currentSelectedNote = record;
-          selectedNote.textContent = `選定的筆記：${record.fields?.FileName || '無標題'}`;
+          selectedNote.textContent = `選定的筆記：${record.json?.FileName || '無標題'}`;
           
           // 啟用聊天功能
           chatInput.disabled = false;
@@ -462,7 +462,7 @@
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            noteContent: currentSelectedNote.fields?.Content || '',
+            noteContent: currentSelectedNote.json?.Content || '',
             question: userMessage
           })
         });
