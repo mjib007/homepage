@@ -334,7 +334,7 @@
 </head>
 <body>
   <header class="page-header">
-    <h1>📝 AI 隨身筆記</h1>
+    <h1>📝 AI 學習筆記整理與討論</h1>
     <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論</p>
   </header>
 
@@ -405,29 +405,72 @@
 
     // 複製功能
     function copyText(button, text) {
-      navigator.clipboard.writeText(text).then(() => {
-        button.textContent = '✓';
-        button.classList.add('copy-success');
-        setTimeout(() => {
-          button.textContent = '📋';
-          button.classList.remove('copy-success');
-        }, 1000);
-      }).catch(() => {
-        // 如果瀏覽器不支援 clipboard API，使用舊方法
+      console.log('嘗試複製文字:', text);
+      
+      // 先取得純文字內容（去除HTML標籤）
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = text;
+      const cleanText = tempDiv.textContent || tempDiv.innerText || text;
+      
+      console.log('清理後的文字:', cleanText);
+      
+      // 嘗試使用新的 clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(cleanText).then(() => {
+          console.log('複製成功 (clipboard API)');
+          button.textContent = '✓';
+          button.classList.add('copy-success');
+          setTimeout(() => {
+            button.textContent = '📋';
+            button.classList.remove('copy-success');
+          }, 1000);
+        }).catch((err) => {
+          console.error('clipboard API 失敗:', err);
+          fallbackCopy(button, cleanText);
+        });
+      } else {
+        console.log('使用備用複製方法');
+        fallbackCopy(button, cleanText);
+      }
+    }
+
+    // 備用複製方法
+    function fallbackCopy(button, text) {
+      try {
         const textArea = document.createElement('textarea');
         textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        textArea.style.top = '-9999px';
         document.body.appendChild(textArea);
+        textArea.focus();
         textArea.select();
-        document.execCommand('copy');
+        
+        const successful = document.execCommand('copy');
         document.body.removeChild(textArea);
         
-        button.textContent = '✓';
-        button.classList.add('copy-success');
+        if (successful) {
+          console.log('複製成功 (execCommand)');
+          button.textContent = '✓';
+          button.classList.add('copy-success');
+          setTimeout(() => {
+            button.textContent = '📋';
+            button.classList.remove('copy-success');
+          }, 1000);
+        } else {
+          console.error('execCommand 複製失敗');
+          button.textContent = '❌';
+          setTimeout(() => {
+            button.textContent = '📋';
+          }, 1000);
+        }
+      } catch (err) {
+        console.error('備用複製方法失敗:', err);
+        button.textContent = '❌';
         setTimeout(() => {
           button.textContent = '📋';
-          button.classList.remove('copy-success');
         }, 1000);
-      });
+      }
     }
 
     // 顯示狀態訊息
@@ -606,10 +649,9 @@
         if (result.success) {
           const aiDiv = document.createElement('div');
           aiDiv.className = 'chat-message ai';
-          const safeAnswer = result.answer.replace(/'/g, "&#39;");
           aiDiv.innerHTML = `
-            ${result.answer}
-            <button class="copy-btn" onclick="copyText(this, '${safeAnswer}')">📋</button>
+            <span class="message-content">${result.answer}</span>
+            <button class="copy-btn" onclick="copyText(this, \`${result.answer.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`)">📋</button>
           `;
           chatBox.appendChild(aiDiv);
         } else {
@@ -617,7 +659,7 @@
           aiDiv.className = 'chat-message ai';
           const errorMsg = '抱歉，我現在無法回答這個問題，請稍後再試。';
           aiDiv.innerHTML = `
-            ${errorMsg}
+            <span class="message-content">${errorMsg}</span>
             <button class="copy-btn" onclick="copyText(this, '${errorMsg}')">📋</button>
           `;
           chatBox.appendChild(aiDiv);
@@ -628,7 +670,7 @@
         aiDiv.className = 'chat-message ai';
         const errorMsg = '連接失敗，請檢查網路連線。';
         aiDiv.innerHTML = `
-          ${errorMsg}
+          <span class="message-content">${errorMsg}</span>
           <button class="copy-btn" onclick="copyText(this, '${errorMsg}')">📋</button>
         `;
         chatBox.appendChild(aiDiv);
