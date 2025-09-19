@@ -130,6 +130,7 @@
       margin-bottom: 12px;
       padding: 10px;
       border-radius: 8px;
+      position: relative;
     }
 
     .chat-message.user {
@@ -142,6 +143,33 @@
       background: #f5f5f5;
       margin-right: 20%;
       text-align: left;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(0, 0, 0, 0.1);
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .copy-btn:hover {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .chat-message:hover .copy-btn {
+      opacity: 1;
+    }
+
+    .copy-success {
+      background: #28a745 !important;
+      color: white !important;
     }
 
     .chat-input {
@@ -223,89 +251,90 @@
       color: #0c5460;
       border: 1px solid #bee5eb;
     }
-/* 手機版樣式 */
-@media (max-width: 768px) {
-  .container {
-    flex-direction: column;
-    max-width: 100%;
-    margin: 0 10px;
-  }
 
-  .left-panel {
-    border-right: none;
-    border-bottom: 2px solid #f0f0f0;
-    padding: 20px;
-  }
+    /* 手機版樣式 */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        max-width: 100%;
+        margin: 0 10px;
+      }
 
-  .right-panel {
-    padding: 20px;
-  }
+      .left-panel {
+        border-right: none;
+        border-bottom: 2px solid #f0f0f0;
+        padding: 20px;
+      }
 
-  .chat-box {
-    max-height: 300px;
-    min-height: 250px;
-  }
+      .right-panel {
+        padding: 20px;
+      }
 
-  .chat-input textarea {
-    height: 80px;
-    font-size: 16px; /* 防止 iOS 縮放 */
-  }
+      .chat-box {
+        max-height: 300px;
+        min-height: 250px;
+      }
 
-  .chat-input {
-    flex-direction: column;
-    gap: 10px;
-  }
+      .chat-input textarea {
+        height: 80px;
+        font-size: 16px; /* 防止 iOS 縮放 */
+      }
 
-  .chat-input button {
-    width: 100%;
-    padding: 15px;
-  }
+      .chat-input {
+        flex-direction: column;
+        gap: 10px;
+      }
 
-  .page-header h1 {
-    font-size: 1.5rem;
-  }
+      .chat-input button {
+        width: 100%;
+        padding: 15px;
+      }
 
-  .page-header p {
-    font-size: 1rem;
-  }
+      .page-header h1 {
+        font-size: 1.5rem;
+      }
 
-  body {
-    padding: 10px;
-  }
+      .page-header p {
+        font-size: 1rem;
+      }
 
-  .search-results {
-    max-height: 150px;
-  }
+      body {
+        padding: 10px;
+      }
 
-  .btn {
-    width: 100%;
-    padding: 15px;
-    margin-bottom: 10px;
-  }
+      .search-results {
+        max-height: 150px;
+      }
 
-  /* 增加對話框的可視區域 */
-  .chat-message {
-    margin-left: 5%;
-    margin-right: 5%;
-    font-size: 14px;
-    line-height: 1.5;
-  }
+      .btn {
+        width: 100%;
+        padding: 15px;
+        margin-bottom: 10px;
+      }
 
-  .chat-message.user {
-    margin-left: 10%;
-    margin-right: 5%;
-  }
+      /* 增加對話框的可視區域 */
+      .chat-message {
+        margin-left: 5%;
+        margin-right: 5%;
+        font-size: 14px;
+        line-height: 1.5;
+      }
 
-  .chat-message.ai {
-    margin-left: 5%;
-    margin-right: 10%;
-  }
-}
+      .chat-message.user {
+        margin-left: 10%;
+        margin-right: 5%;
+      }
+
+      .chat-message.ai {
+        margin-left: 5%;
+        margin-right: 10%;
+      }
+    }
   </style>
 </head>
 <body>
   <header class="page-header">
-    <h1>📝 AI 學習筆記整理與討論</h1>
+    <h1>📝 AI 隨身筆記</h1>
     <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論</p>
   </header>
 
@@ -373,6 +402,33 @@
     const selectedNote = document.getElementById('selectedNote');
 
     let currentSelectedNote = null;
+
+    // 複製功能
+    function copyText(button, text) {
+      navigator.clipboard.writeText(text).then(() => {
+        button.textContent = '✓';
+        button.classList.add('copy-success');
+        setTimeout(() => {
+          button.textContent = '📋';
+          button.classList.remove('copy-success');
+        }, 1000);
+      }).catch(() => {
+        // 如果瀏覽器不支援 clipboard API，使用舊方法
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        button.textContent = '✓';
+        button.classList.add('copy-success');
+        setTimeout(() => {
+          button.textContent = '📋';
+          button.classList.remove('copy-success');
+        }, 1000);
+      });
+    }
 
     // 顯示狀態訊息
     function showStatus(message, type = 'info') {
@@ -550,19 +606,31 @@
         if (result.success) {
           const aiDiv = document.createElement('div');
           aiDiv.className = 'chat-message ai';
-          aiDiv.textContent = result.answer;
+          const safeAnswer = result.answer.replace(/'/g, "&#39;");
+          aiDiv.innerHTML = `
+            ${result.answer}
+            <button class="copy-btn" onclick="copyText(this, '${safeAnswer}')">📋</button>
+          `;
           chatBox.appendChild(aiDiv);
         } else {
           const aiDiv = document.createElement('div');
           aiDiv.className = 'chat-message ai';
-          aiDiv.textContent = '抱歉，我現在無法回答這個問題，請稍後再試。';
+          const errorMsg = '抱歉，我現在無法回答這個問題，請稍後再試。';
+          aiDiv.innerHTML = `
+            ${errorMsg}
+            <button class="copy-btn" onclick="copyText(this, '${errorMsg}')">📋</button>
+          `;
           chatBox.appendChild(aiDiv);
         }
       } catch (error) {
         console.error('Error:', error);
         const aiDiv = document.createElement('div');
         aiDiv.className = 'chat-message ai';
-        aiDiv.textContent = '連接失敗，請檢查網路連線。';
+        const errorMsg = '連接失敗，請檢查網路連線。';
+        aiDiv.innerHTML = `
+          ${errorMsg}
+          <button class="copy-btn" onclick="copyText(this, '${errorMsg}')">📋</button>
+        `;
         chatBox.appendChild(aiDiv);
       } finally {
         sendBtn.disabled = false;
