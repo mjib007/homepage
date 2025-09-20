@@ -491,7 +491,7 @@
 <body>
   <header class="page-header">
     <h1>📝 AI 瞬間筆記</h1>
-    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論v41</p>
+    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論v42</p>
   </header>
 
   <div class="container">
@@ -856,23 +856,21 @@
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
-        const result = await response.json();
-        console.log('API 回應:', result);
+        const result = await response.text();
+        console.log('API 文字回應:', result);
         
-        if (result.success) {
+        if (result && result.length > 0) {
           showStatus('筆記已成功儲存並分析！', 'success');
           
-          // 如果有 AI 摘要，顯示在狀態區域
-          if (result.data && result.data.summary) {
-            setTimeout(() => {
-              showAISummary(result.data.summary);
-            }, 1000);
-          }
+          // 1秒後顯示 AI 摘要
+          setTimeout(() => {
+            showAISummary(result);
+          }, 1000);
           
           document.getElementById('noteTitle').value = '';
           document.getElementById('fileContent').value = '';
         } else {
-          showStatus('儲存失敗：' + (result.message || '未知錯誤'), 'error');
+          showStatus('儲存失敗：未收到有效回應', 'error');
         }
       } catch (error) {
         console.error('詳細錯誤:', error);
