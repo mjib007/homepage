@@ -218,6 +218,9 @@
       margin-bottom: 10px;
       cursor: pointer;
       transition: background-color 0.3s;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
     }
 
     .search-item:hover {
@@ -227,6 +230,27 @@
     .search-item.selected {
       background-color: #e3f2fd;
       border-color: #667eea;
+    }
+
+    .search-item input[type="checkbox"] {
+      margin-top: 5px;
+      transform: scale(1.2);
+    }
+
+    .search-item-content {
+      flex: 1;
+    }
+
+    .selection-controls {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .selection-controls .btn {
+      padding: 8px 12px;
+      font-size: 12px;
+      width: auto;
     }
 
     .status-message {
@@ -404,6 +428,7 @@
     const selectedNote = document.getElementById('selectedNote');
 
     let currentSelectedNote = null;
+    let selectedNotes = []; // 儲存多個選中的筆記
 
     // 複製功能
     function copyText(button, text) {
@@ -581,41 +606,110 @@
       }
     });
 
-    // 顯示搜尋結果
+    // 顯示搜尋結果 - 支援多選
     function displaySearchResults(records) {
       searchResults.innerHTML = '';
       
-      records.forEach(record => {
+      // 加入選擇控制按鈕
+      const controlsDiv = document.createElement('div');
+      controlsDiv.className = 'selection-controls';
+      controlsDiv.innerHTML = `
+        <button class="btn" id="selectAllBtn">全選</button>
+        <button class="btn" id="clearSelectionBtn">清空選擇</button>
+        <span id="selectedCount">已選擇: 0 篇</span>
+      `;
+      searchResults.appendChild(controlsDiv);
+      
+      // 全選按鈕事件
+      document.getElementById('selectAllBtn').addEventListener('click', () => {
+        const checkboxes = searchResults.querySelectorAll('.note-checkbox');
+        checkboxes.forEach(checkbox => {
+          if (!checkbox.checked) {
+            checkbox.checked = true;
+            checkbox.dispatchEvent(new Event('change'));
+          }
+        });
+      });
+      
+      // 清空選擇按鈕事件
+      document.getElementById('clearSelectionBtn').addEventListener('click', () => {
+        const checkboxes = searchResults.querySelectorAll('.note-checkbox');
+        checkboxes.forEach(checkbox => {
+          if (checkbox.checked) {
+            checkbox.checked = false;
+            checkbox.dispatchEvent(new Event('change'));
+          }
+        });
+      });
+      
+      records.forEach((record, index) => {
         const div = document.createElement('div');
         div.className = 'search-item';
         div.innerHTML = `
-          <strong>${record.json?.FileName || '無標題'}</strong>
-          <p>${(record.json?.Content || '').substring(0, 100)}...</p>
+          <input type="checkbox" id="note_${index}" class="note-checkbox" data-index="${index}">
+          <div class="search-item-content">
+            <label for="note_${index}">
+              <strong>${record.json?.FileName || '無標題'}</strong>
+              <p>${(record.json?.Content || '').substring(0, 100)}...</p>
+            </label>
+          </div>
         `;
         
-        div.addEventListener('click', () => {
-          // 移除其他選中狀態
-          document.querySelectorAll('.search-item').forEach(item => {
-            item.classList.remove('selected');
-          });
+        // 複選框事件
+        const checkbox = div.querySelector('.note-checkbox');
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) {
+            selectedNotes.push(record);
+            div.classList.add('selected');
+          } else {
+            selectedNotes = selectedNotes.filter(note => 
+              note.json?.FileName !== record.json?.FileName
+            );
+            div.classList.remove('selected');
+          }
           
-          // 添加選中狀態
-          div.classList.add('selected');
-          
-          // 設定當前選中的筆記
-          currentSelectedNote = record;
-          selectedNote.textContent = `選定的筆記：${record.json?.FileName || '無標題'}`;
-          
-          // 啟用聊天功能
-          chatInput.disabled = false;
-          sendBtn.disabled = false;
-          
-          // 清空聊天記錄
-          chatBox.innerHTML = '<div class="chat-message ai">已選定筆記，現在你可以問我任何相關問題！</div>';
+          updateSelectedNotes();
+        });
+        
+        // 點擊整個區域也能選擇
+        div.addEventListener('click', (e) => {
+          if (e.target.type !== 'checkbox') {
+            checkbox.checked = !checkbox.checked;
+            checkbox.dispatchEvent(new Event('change'));
+          }
         });
         
         searchResults.appendChild(div);
       });
+    }
+
+    // 更新選中的筆記狀態
+    function updateSelectedNotes() {
+      const count = selectedNotes.length;
+      document.getElementById('selectedCount').textContent = `已選擇: ${count} 篇`;
+      
+      if (count > 0) {
+        currentSelectedNote = selectedNotes;
+        selectedNote.textContent = `選定的筆記：${count} 篇 (${selectedNotes.map(note => note.json?.FileName || '無標題').join(', ')})`;
+        chatInput.disabled = false;
+        sendBtn.disabled = false;
+        
+        // 清空聊天記錄，顯示選中的筆記
+        chatBox.innerHTML = `
+          <div class="chat-message ai">
+            已選定 ${count} 篇筆記：<br>
+            ${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('<br>')}
+            <br><br>現在你可以問我關於這些筆記的任何問題！
+          </div>
+        `;
+      } else {
+        currentSelectedNote = null;
+        selectedNote.textContent = '選定的筆記：尚未選擇';
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
+        
+        chatBox.innerHTML = '<div class="chat-message ai">請先選擇一個或多個筆記，然後我們就可以開始討論了！</div>';
+      }
     }
 
     // AI 討論
