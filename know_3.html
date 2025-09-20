@@ -361,7 +361,7 @@
 <body>
   <header class="page-header">
     <h1>📝 AI 學習筆記整理與討論</h1>
-    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論</p>
+    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論0920</p>
   </header>
 
   <div class="container">
@@ -429,6 +429,17 @@
 
     let currentSelectedNote = null;
     let selectedNotes = []; // 儲存多個選中的筆記
+
+    // 合併多個筆記內容的函數
+    function combineNotesContent(notes) {
+      if (!Array.isArray(notes) || notes.length === 0) return '';
+      
+      return notes.map((note, index) => {
+        const title = note.json?.FileName || `筆記 ${index + 1}`;
+        const content = note.json?.Content || '';
+        return `=== ${title} ===\n${content}`;
+      }).join('\n\n');
+    }
 
     // 複製功能
     function copyText(button, text) {
@@ -729,13 +740,29 @@
       sendBtn.textContent = '思考中...';
 
       try {
+        // 準備筆記內容
+        let noteContent = '';
+        
+        if (Array.isArray(currentSelectedNote)) {
+          // 多選筆記的情況
+          console.log('多選筆記數量:', currentSelectedNote.length);
+          noteContent = combineNotesContent(currentSelectedNote);
+        } else {
+          // 單選筆記的情況（向下相容）
+          console.log('單選筆記:', currentSelectedNote.json?.FileName);
+          noteContent = currentSelectedNote.json?.Content || '';
+        }
+        
+        console.log('準備發送的筆記內容長度:', noteContent.length);
+        console.log('筆記內容前100字:', noteContent.substring(0, 100));
+        
         const response = await fetch(CONFIG.discussUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            noteContent: currentSelectedNote.json?.Content || '',
+            noteContent: noteContent,
             question: userMessage
           })
         });
