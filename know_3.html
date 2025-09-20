@@ -174,6 +174,59 @@
       color: white !important;
     }
 
+    .voice-controls {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .voice-btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      width: auto;
+      min-width: 120px;
+    }
+
+    .voice-btn.recording {
+      background: #dc3545;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+
+    #recordingStatus {
+      font-size: 14px;
+      color: #666;
+      font-weight: 500;
+    }
+
+    #recordingStatus.recording {
+      color: #dc3545;
+    }
+
+    .audio-wave {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      margin-left: 5px;
+    }
+
+    .audio-wave.active {
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23dc3545"><path d="M12 1l3.09 6.26L22 9l-5 4.87L18.18 21 12 17.77 5.82 21 7 13.87 2 9l6.91-1.74L12 1z"/></svg>') no-repeat center;
+      background-size: contain;
+      animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
     .chat-input {
       display: flex;
       gap: 10px;
@@ -363,7 +416,7 @@
 </head>
 <body>
   <header class="page-header">
-    <h1>📝 瞬間筆記</h1>
+    <h1>📝 AI 學習筆記整理與討論</h1>
     <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論</p>
   </header>
 
@@ -383,6 +436,10 @@
       <div class="form-group">
         <label for="fileContent">學習內容：</label>
         <textarea id="fileContent" placeholder="貼上你的學習內容..."></textarea>
+        <div class="voice-controls">
+          <button type="button" class="btn voice-btn" id="voiceBtn">🔴 開始錄音</button>
+          <span id="recordingStatus"></span>
+        </div>
       </div>
       <button class="btn" id="saveBtn">💾 儲存並分析</button>
 
@@ -429,9 +486,139 @@
     const saveStatus = document.getElementById('saveStatus');
     const searchResults = document.getElementById('searchResults');
     const selectedNote = document.getElementById('selectedNote');
+    const voiceBtn = document.getElementById('voiceBtn');
+    const recordingStatus = document.getElementById('recordingStatus');
 
     let currentSelectedNote = null;
     let selectedNotes = []; // 儲存多個選中的筆記
+
+    // 語音錄音相關變數
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+
+    // 語音錄音功能
+    async function initVoiceRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunks.push(event.data);
+          }
+        };
+        
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          audioChunks = [];
+          
+          // 上傳音檔並轉文字
+          await uploadAudioForTranscription(audioBlob);
+          
+          // 停止錄音後關閉麥克風
+          stream.getTracks().forEach(track => track.stop());
+        };
+        
+        return true;
+      } catch (error) {
+        console.error('無法存取麥克風:', error);
+        showStatus('無法存取麥克風，請檢查權限設定', 'error');
+        return false;
+      }
+    }
+
+    // 開始/停止錄音
+    async function toggleRecording() {
+      if (!isRecording) {
+        // 開始錄音
+        const canRecord = await initVoiceRecording();
+        if (!canRecord) return;
+        
+        mediaRecorder.start();
+        isRecording = true;
+        
+        voiceBtn.textContent = '⏹️ 停止錄音';
+        voiceBtn.classList.add('recording');
+        recordingStatus.textContent = '正在錄音中... 按停止錄音結束';
+        recordingStatus.classList.add('recording');
+        
+      } else {
+        // 停止錄音並自動儲存分析
+        mediaRecorder.stop();
+        isRecording = false;
+        
+        voiceBtn.textContent = '🔴 開始錄音';
+        voiceBtn.classList.remove('recording');
+        recordingStatus.textContent = '處理中...';
+        recordingStatus.classList.remove('recording');
+        
+        // 停用所有按鈕避免重複操作
+        voiceBtn.disabled = true;
+        saveBtn.disabled = true;
+      }
+    }
+
+    // 上傳音檔並自動儲存分析
+    async function uploadAudioForTranscription(audioBlob) {
+      try {
+        const userId = document.getElementById('userId').value;
+        const fileName = document.getElementById('noteTitle').value || '語音筆記 ' + new Date().toLocaleString();
+        
+        const formData = new FormData();
+        formData.append('audio_file', audioBlob, 'recording.wav');
+        formData.append('userId', userId);
+        formData.append('fileName', fileName);
+        formData.append('fileType', 'voice');
+        formData.append('isVoice', 'true');
+
+        recordingStatus.textContent = '語音轉文字並分析中...';
+
+        const response = await fetch(CONFIG.uploadUrl, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        
+        if (result.success) {
+          // 語音轉錄完成，自動填入並完成儲存
+          if (result.transcription) {
+            document.getElementById('fileContent').value = result.transcription;
+          }
+          
+          showStatus('語音筆記已成功儲存並分析！', 'success');
+          recordingStatus.textContent = '完成！';
+          
+          // 清空表單
+          setTimeout(() => {
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('fileContent').value = '';
+            recordingStatus.textContent = '';
+          }, 2000);
+          
+        } else {
+          showStatus('語音處理失敗：' + (result.message || '未知錯誤'), 'error');
+          recordingStatus.textContent = '';
+        }
+
+      } catch (error) {
+        console.error('語音上傳錯誤:', error);
+        showStatus('語音上傳失敗：' + error.message, 'error');
+        recordingStatus.textContent = '';
+      } finally {
+        // 重新啟用按鈕
+        voiceBtn.disabled = false;
+        saveBtn.disabled = false;
+      }
+    }
+
+    // 語音按鈕事件
+    voiceBtn.addEventListener('click', toggleRecording);
 
     // 合併多個筆記內容的函數
     function combineNotesContent(notes) {
