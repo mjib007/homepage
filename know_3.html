@@ -364,7 +364,7 @@
 <body>
   <header class="page-header">
     <h1>📝 AI 學習筆記整理與討論</h1>
-    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論0919</p>
+    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論</p>
   </header>
 
   <div class="container">
@@ -547,6 +547,7 @@
           body: JSON.stringify({
             userId: userId,
             fileName: fileName,
+            title: fileName,          // 新增：專門存放標題
             fileType: 'text',
             fileContent: fileContent
           })
@@ -663,7 +664,7 @@
           <input type="checkbox" id="note_${index}" class="note-checkbox" data-index="${index}">
           <div class="search-item-content">
             <label for="note_${index}">
-              <strong>${record.json?.FileName || '無標題'}</strong>
+              <strong>${record.json?.Title || record.json?.FileName || '無標題'}</strong>
               <p>${(record.json?.Content || '').substring(0, 100)}...</p>
             </label>
           </div>
@@ -704,7 +705,7 @@
       
       if (count > 0) {
         currentSelectedNote = selectedNotes;
-        selectedNote.textContent = `選定的筆記：${count} 篇 (${selectedNotes.map(note => note.json?.FileName || '無標題').join(', ')})`;
+        selectedNote.textContent = `選定的筆記：${count} 篇 (${selectedNotes.map(note => note.json?.Title || note.json?.FileName || '無標題').join(', ')})`;
         chatInput.disabled = false;
         sendBtn.disabled = false;
         
@@ -712,7 +713,7 @@
         chatBox.innerHTML = `
           <div class="chat-message ai">
             已選定 ${count} 篇筆記：<br>
-            ${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('<br>')}
+            ${selectedNotes.map(note => `• ${note.json?.Title || note.json?.FileName || '無標題'}`).join('<br>')}
             <br><br>現在你可以問我關於這些筆記的任何問題！
           </div>
         `;
