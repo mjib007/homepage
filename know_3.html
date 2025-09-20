@@ -177,14 +177,24 @@
     .voice-controls {
       margin-top: 10px;
       display: flex;
-      align-items: center;
+      justify-content: center;
       gap: 15px;
     }
 
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .save-btn {
+      flex: 1;
+      background: linear-gradient(45deg, #28a745, #20c997);
+    }
+
     .voice-btn {
-      padding: 8px 16px;
-      font-size: 14px;
-      width: auto;
+      flex: 1;
+      background: linear-gradient(45deg, #dc3545, #e74c3c);
       min-width: 120px;
     }
 
@@ -437,11 +447,13 @@
         <label for="fileContent">學習內容：</label>
         <textarea id="fileContent" placeholder="貼上你的學習內容..."></textarea>
         <div class="voice-controls">
-          <button type="button" class="btn voice-btn" id="voiceBtn">🔴 開始錄音</button>
           <span id="recordingStatus"></span>
         </div>
       </div>
-      <button class="btn" id="saveBtn">💾 儲存並分析</button>
+      <div class="action-buttons">
+        <button class="btn save-btn" id="saveBtn">💾 儲存並分析</button>
+        <button type="button" class="btn voice-btn" id="voiceBtn">🔴 開始錄音</button>
+      </div>
 
       <h2 style="margin-top:30px;">搜尋筆記</h2>
       <div class="form-group">
