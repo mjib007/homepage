@@ -933,8 +933,9 @@
         chatBox.innerHTML = `
           <div class="chat-message ai">
             已選定 ${count} 篇筆記：<br>
-            ${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('<br>')}
-            <br><br>現在你可以問我關於這些筆記的任何問題！
+${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('<br>')}
+<br>
+現在你可以問我關於這些筆記的任何問題！
           </div>
         `;
       } else {
