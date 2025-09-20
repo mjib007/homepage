@@ -491,7 +491,7 @@
 <body>
   <header class="page-header">
     <h1>📝 AI 瞬間筆記</h1>
-    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論v42</p>
+    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論v45</p>
   </header>
 
   <div class="container">
@@ -659,16 +659,24 @@
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
-        const result = await response.json();
+        const result = await response.text();
+        console.log('語音處理結果:', result);
         
-        if (result.success) {
-          // 語音轉錄完成，自動填入並完成儲存
-          if (result.transcription) {
-            document.getElementById('fileContent').value = result.transcription;
-          }
-          
-          showStatus('語音筆記已成功儲存並分析！', 'success');
+        if (result && result.includes('成功儲存')) {
+          showStatus('語音筆記已成功儲存！', 'success');
           recordingStatus.textContent = '完成！';
+          
+          // 清空表單
+          setTimeout(() => {
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('fileContent').value = '';
+            recordingStatus.textContent = '';
+          }, 2000);
+          
+        } else {
+          showStatus('語音處理失敗：未收到有效回應', 'error');
+          recordingStatus.textContent = '';
+        }Status.textContent = '完成！';
           
           // 如果有 AI 摘要，顯示摘要結果
           if (result.data && result.data.summary) {
@@ -859,14 +867,8 @@
         const result = await response.text();
         console.log('API 文字回應:', result);
         
-        if (result && result.length > 0) {
-          showStatus('筆記已成功儲存並分析！', 'success');
-          
-          // 1秒後顯示 AI 摘要
-          setTimeout(() => {
-            showAISummary(result);
-          }, 1000);
-          
+        if (result && result.includes('成功儲存')) {
+          showStatus('筆記已成功儲存！', 'success');
           document.getElementById('noteTitle').value = '';
           document.getElementById('fileContent').value = '';
         } else {
