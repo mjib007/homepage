@@ -207,7 +207,7 @@
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            🤖 AI 聊天助手
+            🤖 AI 聊天助手v11
         </div>
         
         <div class="chat-messages" id="chatMessages">
@@ -271,11 +271,12 @@
                     body: JSON.stringify({
                         chatInput: message,
                         timestamp: new Date().toISOString()
-                    })
+                    }),
+                    mode: 'cors'
                 });
 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
 
                 const result = await response.json();
@@ -300,9 +301,19 @@
                 addMessage(botMessage || '抱歉，我沒有收到回應。', 'bot');
                 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('詳細錯誤:', error);
                 removeLoadingMessage(loadingMessageId);
-                addMessage('抱歉，發生錯誤：' + error.message, 'bot');
+                
+                let errorMessage = '發生錯誤：';
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    errorMessage += '無法連接到伺服器，可能是網路問題或CORS設定問題。';
+                } else if (error.message.includes('HTTP')) {
+                    errorMessage += error.message;
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                addMessage(errorMessage + '\n\n請檢查：\n1. n8n工作流程是否已啟動\n2. webhook URL是否正確\n3. 網路連線是否正常', 'bot');
             } finally {
                 setLoading(false);
             }
@@ -312,7 +323,11 @@
             const messagesContainer = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}-message`;
-            messageDiv.textContent = text;
+            
+            // 處理換行符號
+            const formattedText = text.replace(/\n/g, '<br>');
+            messageDiv.innerHTML = formattedText;
+            
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
