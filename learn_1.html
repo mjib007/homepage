@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 瞬間筆記 - 簡化版</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e1e5e9;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    textarea {
+      height: 120px;
+      resize: vertical;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      margin: 5px;
+      min-width: 120px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .voice-btn {
+      background: linear-gradient(45deg, #dc3545, #e74c3c);
+    }
+
+    .voice-btn.recording {
+      background: #dc3545;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+
+    .status {
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+      text-align: center;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .search-section {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 2px solid #f0f0f0;
+    }
+
+    .search-results {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 15px;
+    }
+
+    .search-item {
+      padding: 15px;
+      border: 1px solid #e1e5e9;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .search-item:hover {
+      background-color: #f0f7ff;
+    }
+
+    .search-item.selected {
+      background-color: #e3f2fd;
+      border-color: #667eea;
+    }
+
+    .chat-section {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 2px solid #f0f0f0;
+    }
+
+    .chat-box {
+      border: 2px solid #e1e5e9;
+      border-radius: 10px;
+      padding: 15px;
+      height: 200px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      background: #fafafa;
+    }
+
+    .chat-message {
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .chat-message.user {
+      background: #e3f2fd;
+      text-align: right;
+    }
+
+    .chat-message.ai {
+      background: #f5f5f5;
+      text-align: left;
+    }
+
+    .chat-input {
+      display: flex;
+      gap: 10px;
+    }
+
+    .chat-input textarea {
+      flex: 1;
+      height: 60px;
+    }
+
+    #recordingStatus {
+      text-align: center;
+      margin: 10px 0;
+      font-weight: 500;
+      color: #666;
+    }
+
+    #recordingStatus.recording {
+      color: #dc3545;
+    }
+
+    /* 反饋功能 */
+    .feedback-section {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .feedback-section.show {
+      display: block;
+    }
+
+    .rating {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      margin: 10px 0;
+    }
+
+    .rating button {
+      background: #ddd;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .rating button.selected {
+      background: #667eea;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📝 AI 瞬間筆記 - 簡化版</h1>
+      <p>具備學習記憶功能的智能筆記系統</p>
+    </div>
+
+    <!-- 狀態顯示 -->
+    <div id="status"></div>
+
+    <!-- 新增筆記區 -->
+    <div class="form-group">
+      <label for="userId">用戶ID：</label>
+      <input type="text" id="userId" value="demo_user">
+    </div>
+
+    <div class="form-group">
+      <label for="noteTitle">標題：</label>
+      <input type="text" id="noteTitle" placeholder="輸入標題...">
+    </div>
+
+    <div class="form-group">
+      <label for="taskType">任務類型：</label>
+      <select id="taskType" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px;">
+        <option value="會議記錄">會議記錄</option>
+        <option value="課程筆記">課程筆記</option>
+        <option value="研究整理">研究整理</option>
+        <option value="法條摘要">法條摘要</option>
+        <option value="其他">其他</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="estimatedTime">預估手動完成時間（分鐘）：</label>
+      <input type="number" id="estimatedTime" placeholder="例如：30" style="width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px;">
+    </div>
+
+    <div class="form-group">
+      <label for="fileContent">內容：</label>
+      <textarea id="fileContent" placeholder="輸入內容或使用語音錄音..."></textarea>
+    </div>
+
+    <div style="text-align: center;">
+      <button class="btn" id="saveBtn">💾 儲存</button>
+      <button class="btn voice-btn" id="voiceBtn">🔴 開始錄音</button>
+    </div>
+
+    <div id="recordingStatus"></div>
+
+    <!-- 搜尋區 -->
+    <div class="search-section">
+      <h3>搜尋筆記</h3>
+      <div class="form-group">
+        <input type="text" id="searchKeyword" placeholder="輸入關鍵字...">
+        <button class="btn" id="searchBtn">🔍 搜尋</button>
+      </div>
+      <div id="searchResults" class="search-results"></div>
+    </div>
+
+    <!-- AI對話區 -->
+    <div class="chat-section">
+      <h3>AI 討論</h3>
+      <p id="selectedNote">選定的筆記：尚未選擇</p>
+      <div class="chat-box" id="chatBox">
+        <div class="chat-message ai">歡迎使用具備學習功能的AI筆記系統！</div>
+      </div>
+      <div class="chat-input">
+        <textarea id="chatInput" placeholder="輸入問題..." disabled>摘要與抓重點</textarea>
+        <button class="btn" id="sendBtn" disabled>💬 討論</button>
+      </div>
+    </div>
+
+    <!-- 反饋區 -->
+    <div id="feedbackSection" class="feedback-section">
+      <h4>請為這次的回答評分</h4>
+      <div class="rating" id="rating">
+        <button data-score="1">1⭐</button>
+        <button data-score="2">2⭐</button>
+        <button data-score="3">3⭐</button>
+        <button data-score="4">4⭐</button>
+        <button data-score="5">5⭐</button>
+      </div>
+      <button class="btn" id="submitFeedback">提交反饋</button>
+    </div>
+  </div>
+
+  <script>
+    // 配置
+    const API_BASE = "https://kf0630.zeabur.app/webhook";
+    const CONFIG = {
+      uploadUrl: API_BASE + '/upload-notes',
+      searchUrl: API_BASE + '/search-records',
+      discussUrl: API_BASE + '/discuss-note',
+      feedbackUrl: API_BASE + '/feedback-notes'  // 修正反饋endpoint路徑
+    };
+
+    // DOM 元素
+    const saveBtn = document.getElementById('saveBtn');
+    const voiceBtn = document.getElementById('voiceBtn');
+    const searchBtn = document.getElementById('searchBtn');
+    const sendBtn = document.getElementById('sendBtn');
+    const status = document.getElementById('status');
+    const chatBox = document.getElementById('chatBox');
+    const feedbackSection = document.getElementById('feedbackSection');
+
+    let currentSelectedNote = null;
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+    let lastInteractionId = null;
+
+    // 顯示狀態
+    function showStatus(message, type = 'success') {
+      status.innerHTML = `<div class="status ${type}">${message}</div>`;
+      setTimeout(() => status.innerHTML = '', 3000);
+    }
+
+    // 文字儲存
+    let startTime = Date.now();
+
+    saveBtn.addEventListener('click', async () => {
+      const userId = document.getElementById('userId').value;
+      const fileName = document.getElementById('noteTitle').value;
+      const fileContent = document.getElementById('fileContent').value;
+      const taskType = document.getElementById('taskType').value;
+      const estimatedTime = document.getElementById('estimatedTime').value;
+
+      if (!fileName || !fileContent) {
+        showStatus('請填寫標題和內容', 'error');
+        return;
+      }
+
+      const actualTime = Math.round((Date.now() - startTime) / 60000); // 轉換為分鐘
+      const timeSaved = estimatedTime ? Math.max(0, estimatedTime - actualTime) : 0;
+      const costSaved = timeSaved * (500 / 60); // 假設時薪500元
+
+      saveBtn.disabled = true;
+      try {
+        const response = await fetch(CONFIG.uploadUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId, fileName, fileType: 'text', fileContent,
+            taskType, estimatedTime, actualTime, timeSaved, costSaved
+          })
+        });
+
+        if (response.ok) {
+          showStatus(`筆記已成功儲存！節省時間：${timeSaved}分鐘`);
+          document.getElementById('noteTitle').value = '';
+          document.getElementById('fileContent').value = '';
+          document.getElementById('estimatedTime').value = '';
+          startTime = Date.now(); // 重置計時
+        } else {
+          throw new Error('儲存失敗');
+        }
+      } catch (error) {
+        showStatus('儲存失敗：' + error.message, 'error');
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+
+    // 語音錄音（簡化版）
+    voiceBtn.addEventListener('click', async () => {
+      if (!isRecording) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) audioChunks.push(event.data);
+          };
+          
+          mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            audioChunks = [];
+            await uploadAudio(audioBlob);
+            stream.getTracks().forEach(track => track.stop());
+          };
+          
+          mediaRecorder.start();
+          isRecording = true;
+          voiceBtn.textContent = '⏹️ 停止錄音';
+          voiceBtn.classList.add('recording');
+          document.getElementById('recordingStatus').textContent = '正在錄音...';
+          
+        } catch (error) {
+          showStatus('無法存取麥克風', 'error');
+        }
+      } else {
+        mediaRecorder.stop();
+        isRecording = false;
+        voiceBtn.textContent = '🔴 開始錄音';
+        voiceBtn.classList.remove('recording');
+        document.getElementById('recordingStatus').textContent = '處理中...';
+      }
+    });
+
+    async function uploadAudio(audioBlob) {
+      const formData = new FormData();
+      formData.append('audio_file', audioBlob, 'recording.wav');
+      formData.append('userId', document.getElementById('userId').value);
+      formData.append('fileName', document.getElementById('noteTitle').value || '語音筆記');
+      formData.append('fileType', 'voice');
+      formData.append('isVoice', 'true');
+
+      try {
+        const response = await fetch(CONFIG.uploadUrl, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          showStatus('語音筆記已成功儲存！');
+          document.getElementById('recordingStatus').textContent = '';
+        } else {
+          throw new Error('上傳失敗');
+        }
+      } catch (error) {
+        showStatus('語音上傳失敗', 'error');
+        document.getElementById('recordingStatus').textContent = '';
+      }
+    }
+
+    // 搜尋功能
+    searchBtn.addEventListener('click', async () => {
+      const keyword = document.getElementById('searchKeyword').value;
+      if (!keyword) {
+        showStatus('請輸入搜尋關鍵字', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(CONFIG.searchUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ keyword })
+        });
+
+        const result = await response.json();
+        displaySearchResults(result.records || []);
+      } catch (error) {
+        showStatus('搜尋失敗', 'error');
+      }
+    });
+
+    function displaySearchResults(records) {
+      const container = document.getElementById('searchResults');
+      if (records.length === 0) {
+        container.innerHTML = '<p>沒有找到相關筆記</p>';
+        return;
+      }
+
+      container.innerHTML = records.map((record, index) => `
+        <div class="search-item" onclick="selectNote(${index}, this)">
+          <strong>${record.json?.FileName || '無標題'}</strong>
+          <p>${(record.json?.Content || '').substring(0, 100)}...</p>
+        </div>
+      `).join('');
+
+      // 儲存搜尋結果供選擇使用
+      window.searchResults = records;
+    }
+
+    function selectNote(index, element) {
+      document.querySelectorAll('.search-item').forEach(item => 
+        item.classList.remove('selected'));
+      element.classList.add('selected');
+      
+      currentSelectedNote = window.searchResults[index];
+      document.getElementById('selectedNote').textContent = 
+        `選定的筆記：${currentSelectedNote.json?.FileName || '無標題'}`;
+      
+      document.getElementById('chatInput').disabled = false;
+      sendBtn.disabled = false;
+    }
+
+    // AI討論
+    sendBtn.addEventListener('click', async () => {
+      const userMessage = document.getElementById('chatInput').value.trim();
+      if (!userMessage || !currentSelectedNote) return;
+
+      // 添加用戶訊息到聊天框
+      chatBox.innerHTML += `<div class="chat-message user">${userMessage}</div>`;
+      document.getElementById('chatInput').value = '';
+      sendBtn.disabled = true;
+
+      try {
+        const response = await fetch(CONFIG.discussUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            noteContent: currentSelectedNote.json?.Content || '',
+            question: userMessage
+          })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          chatBox.innerHTML += `<div class="chat-message ai">${result.answer}</div>`;
+          chatBox.scrollTop = chatBox.scrollHeight;
+          
+          // 顯示反饋區
+          feedbackSection.classList.add('show');
+          lastInteractionId = Date.now(); // 簡單的ID生成
+        }
+      } catch (error) {
+        chatBox.innerHTML += `<div class="chat-message ai">抱歉，回答時發生錯誤</div>`;
+      } finally {
+        sendBtn.disabled = false;
+      }
+    });
+
+    // 反饋功能
+    document.getElementById('rating').addEventListener('click', (e) => {
+      if (e.target.dataset.score) {
+        document.querySelectorAll('.rating button').forEach(btn => 
+          btn.classList.remove('selected'));
+        e.target.classList.add('selected');
+      }
+    });
+
+    document.getElementById('submitFeedback').addEventListener('click', async () => {
+      const selectedRating = document.querySelector('.rating button.selected');
+      if (!selectedRating) {
+        showStatus('請選擇評分', 'error');
+        return;
+      }
+
+      const score = selectedRating.dataset.score;
+      
+      try {
+        // 這裡會發送反饋到新的webhook
+        await fetch(CONFIG.feedbackUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: document.getElementById('userId').value,
+            interactionId: lastInteractionId,
+            satisfaction: score,
+            timestamp: new Date().toISOString()
+          })
+        });
+
+        showStatus('感謝您的反饋！');
+        feedbackSection.classList.remove('show');
+        
+        // 重置評分
+        document.querySelectorAll('.rating button').forEach(btn => 
+          btn.classList.remove('selected'));
+          
+      } catch (error) {
+        showStatus('反饋提交失敗', 'error');
+      }
+    });
+  </script>
+</body>
+</html>
