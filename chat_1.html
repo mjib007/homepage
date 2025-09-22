@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 聊天機器人</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 800px;
+            height: 80vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #f8fafc;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            animation: messageSlide 0.3s ease-out;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .bot-message {
+            background: white;
+            color: #1f2937;
+            align-self: flex-start;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: #4f46e5;
+        }
+
+        .send-button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            min-width: 80px;
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .loading-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .loading-dot {
+            width: 6px;
+            height: 6px;
+            background: #6b7280;
+            border-radius: 50%;
+            animation: loadingDot 1.4s ease-in-out infinite both;
+        }
+
+        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
+        .loading-dot:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes loadingDot {
+            0%, 80%, 100% {
+                transform: scale(0);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .config-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            display: none;
+        }
+
+        .config-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                width: 95%;
+                height: 85vh;
+                border-radius: 15px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            🤖 AI 聊天助手
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <input type="hidden" 
+                   id="webhookUrl" 
+                   value="https://kf0630.zeabur.app/webhook/webhook/bd428294-266a-4447-97d6-e002c6c55593">
+            
+            <div class="bot-message">
+                👋 你好！我是 AI 助手，有什麼可以幫助你的嗎？
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <input type="text" 
+                   class="chat-input" 
+                   id="messageInput" 
+                   placeholder="輸入訊息..."
+                   onkeypress="handleKeyPress(event)">
+            <button class="send-button" onclick="sendMessage()" id="sendButton">
+                發送
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let isLoading = false;
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !isLoading) {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const webhookUrl = document.getElementById('webhookUrl').value.trim();
+            const message = messageInput.value.trim();
+            
+            if (!message || isLoading) return;
+            
+            if (!webhookUrl) {
+                alert('系統配置錯誤，請聯繫管理員！');
+                return;
+            }
+
+            // 添加用戶訊息
+            addMessage(message, 'user');
+            messageInput.value = '';
+            
+            // 顯示載入狀態
+            setLoading(true);
+            const loadingMessageId = addLoadingMessage();
+
+            try {
+                // 發送到 n8n webhook
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chatInput: message,
+                        timestamp: new Date().toISOString()
+                    }),
+                    mode: 'cors'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                
+                // 移除載入訊息
+                removeLoadingMessage(loadingMessageId);
+                
+                // 添加 AI 回應 - 處理不同的回應格式
+                let botMessage = '';
+                if (typeof result === 'string') {
+                    botMessage = result;
+                } else if (result.output) {
+                    botMessage = result.output;
+                } else if (result.text) {
+                    botMessage = result.text;
+                } else if (result.message) {
+                    botMessage = result.message;
+                } else {
+                    botMessage = '收到回應但格式不明確';
+                }
+                
+                addMessage(botMessage || '抱歉，我沒有收到回應。', 'bot');
+                
+            } catch (error) {
+                console.error('詳細錯誤:', error);
+                removeLoadingMessage(loadingMessageId);
+                
+                let errorMessage = '發生錯誤：';
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    errorMessage += '無法連接到伺服器，可能是網路問題或CORS設定問題。';
+                } else if (error.message.includes('HTTP')) {
+                    errorMessage += error.message;
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                addMessage(errorMessage + '\n\n請檢查：\n1. n8n工作流程是否已啟動\n2. webhook URL是否正確\n3. 網路連線是否正常', 'bot');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            // 處理換行符號
+            const formattedText = text.replace(/\n/g, '<br>');
+            messageDiv.innerHTML = formattedText;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addLoadingMessage() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const loadingDiv = document.createElement('div');
+            const loadingId = 'loading-' + Date.now();
+            loadingDiv.id = loadingId;
+            loadingDiv.className = 'message bot-message loading';
+            loadingDiv.innerHTML = `
+                正在思考中
+                <div class="loading-dots">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            `;
+            messagesContainer.appendChild(loadingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            return loadingId;
+        }
+
+        function removeLoadingMessage(loadingId) {
+            const loadingElement = document.getElementById(loadingId);
+            if (loadingElement) {
+                loadingElement.remove();
+            }
+        }
+
+        function setLoading(loading) {
+            isLoading = loading;
+            const sendButton = document.getElementById('sendButton');
+            const messageInput = document.getElementById('messageInput');
+            
+            sendButton.disabled = loading;
+            messageInput.disabled = loading;
+            sendButton.textContent = loading ? '發送中...' : '發送';
+        }
+
+        // 儲存 webhook URL 到本地 (隱藏功能)
+        document.getElementById('webhookUrl').addEventListener('input', function() {
+            localStorage.setItem('n8n-webhook-url', this.value);
+        });
+
+        // 載入儲存的 webhook URL
+        window.addEventListener('load', function() {
+            const savedUrl = localStorage.getItem('n8n-webhook-url');
+            if (savedUrl) {
+                document.getElementById('webhookUrl').value = savedUrl;
+            }
+        });
+    </script>
+</body>
+</html>
