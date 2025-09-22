@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI 瞬間筆記</title>
+  <title>AI 學習筆記助手</title>
   <style>
     * {
       margin: 0;
@@ -31,6 +31,7 @@
       overflow: hidden;
     }
 
+    /* 左側：筆記 */
     .left-panel {
       flex: 1;
       padding: 30px;
@@ -100,6 +101,79 @@
       transform: none;
     }
 
+    /* 右側：AI 討論 */
+    .right-panel {
+      flex: 1;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .right-panel h2 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .chat-box {
+      flex: 1;
+      border: 2px solid #e1e5e9;
+      border-radius: 12px;
+      padding: 15px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      background: #fafafa;
+      max-height: 400px;
+    }
+
+    .chat-message {
+      margin-bottom: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      position: relative;
+      white-space: pre-wrap; /* 保留換行符號 */
+      word-wrap: break-word; /* 長單字自動換行 */
+    }
+
+    .chat-message.user {
+      background: #e3f2fd;
+      margin-left: 20%;
+      text-align: right;
+    }
+
+    .chat-message.ai {
+      background: #f5f5f5;
+      margin-right: 20%;
+      text-align: left;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: rgba(0, 0, 0, 0.1);
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .copy-btn:hover {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .chat-message:hover .copy-btn {
+      opacity: 1;
+    }
+
+    .copy-success {
+      background: #28a745 !important;
+      color: white !important;
+    }
+
     .voice-controls {
       margin-top: 10px;
       display: flex;
@@ -145,49 +219,64 @@
       color: #dc3545;
     }
 
-    .right-panel {
-      flex: 1;
-      padding: 30px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+    .audio-wave {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      margin-left: 5px;
     }
 
-    .right-panel h2 {
-      margin-bottom: 15px;
-      color: #333;
+    .audio-wave.active {
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23dc3545"><path d="M12 1l3.09 6.26L22 9l-5 4.87L18.18 21 12 17.77 5.82 21 7 13.87 2 9l6.91-1.74L12 1z"/></svg>') no-repeat center;
+      background-size: contain;
+      animation: spin 2s linear infinite;
     }
 
-    .chat-box {
-      flex: 1;
-      border: 2px solid #e1e5e9;
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .ai-summary {
+      margin: 20px 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
       border-radius: 12px;
-      padding: 15px;
-      overflow-y: auto;
+      border-left: 4px solid #667eea;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: opacity 0.3s ease;
+    }
+
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 15px;
-      background: #fafafa;
-      max-height: 400px;
     }
 
-    .chat-message {
-      margin-bottom: 12px;
-      padding: 10px;
-      border-radius: 8px;
-      position: relative;
+    .summary-header h3 {
+      margin: 0;
+      color: #333;
+      font-size: 18px;
+    }
+
+    .summary-copy-btn {
+      position: static !important;
+      opacity: 1 !important;
+      background: rgba(102, 126, 234, 0.1) !important;
+      border: 1px solid #667eea !important;
+      padding: 6px 10px !important;
+      font-size: 12px !important;
+    }
+
+    .summary-copy-btn:hover {
+      background: rgba(102, 126, 234, 0.2) !important;
+    }
+
+    .summary-content {
+      line-height: 1.6;
+      color: #555;
       white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-
-    .chat-message.user {
-      background: #e3f2fd;
-      margin-left: 20%;
-      text-align: right;
-    }
-
-    .chat-message.ai {
-      background: #f5f5f5;
-      margin-right: 20%;
-      text-align: left;
     }
 
     .chat-input {
@@ -223,9 +312,9 @@
 
     .search-results {
       margin-top: 20px;
-      max-height: 400px;
+      max-height: 400px; /* 增加高度 */
       overflow-y: auto;
-      border: 1px solid #e1e5e9;
+      border: 1px solid #e1e5e9; /* 加個邊框讓滾動區域更明顯 */
       border-radius: 8px;
       padding: 10px;
     }
@@ -344,7 +433,7 @@
 
       .chat-input textarea {
         height: 80px;
-        font-size: 16px;
+        font-size: 16px; /* 防止 iOS 縮放 */
       }
 
       .chat-input {
@@ -370,7 +459,7 @@
       }
 
       .search-results {
-        max-height: 300px;
+        max-height: 300px; /* 手機版也增加高度 */
       }
 
       .btn {
@@ -379,6 +468,7 @@
         margin-bottom: 10px;
       }
 
+      /* 增加對話框的可視區域 */
       .chat-message {
         margin-left: 5%;
         margin-right: 5%;
@@ -476,29 +566,12 @@
     const recordingStatus = document.getElementById('recordingStatus');
 
     let currentSelectedNote = null;
-    let selectedNotes = [];
+    let selectedNotes = []; // 儲存多個選中的筆記
+
+    // 語音錄音相關變數
     let mediaRecorder;
     let audioChunks = [];
     let isRecording = false;
-
-    // 顯示狀態訊息
-    function showStatus(message, type = 'info') {
-      saveStatus.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
-      setTimeout(() => {
-        saveStatus.innerHTML = '';
-      }, 5000);
-    }
-
-    // 合併多個筆記內容的函數
-    function combineNotesContent(notes) {
-      if (!Array.isArray(notes) || notes.length === 0) return '';
-      
-      return notes.map((note, index) => {
-        const title = note.json?.FileName || `筆記 ${index + 1}`;
-        const content = note.json?.Content || '';
-        return `=== ${title} ===\n${content}`;
-      }).join('\n\n');
-    }
 
     // 語音錄音功能
     async function initVoiceRecording() {
@@ -516,7 +589,10 @@
           const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
           audioChunks = [];
           
+          // 上傳音檔並轉文字
           await uploadAudioForTranscription(audioBlob);
+          
+          // 停止錄音後關閉麥克風
           stream.getTracks().forEach(track => track.stop());
         };
         
@@ -528,8 +604,10 @@
       }
     }
 
+    // 開始/停止錄音
     async function toggleRecording() {
       if (!isRecording) {
+        // 開始錄音
         const canRecord = await initVoiceRecording();
         if (!canRecord) return;
         
@@ -542,6 +620,7 @@
         recordingStatus.classList.add('recording');
         
       } else {
+        // 停止錄音並自動儲存分析
         mediaRecorder.stop();
         isRecording = false;
         
@@ -550,11 +629,13 @@
         recordingStatus.textContent = '處理中...';
         recordingStatus.classList.remove('recording');
         
+        // 停用所有按鈕避免重複操作
         voiceBtn.disabled = true;
         saveBtn.disabled = true;
       }
     }
 
+    // 上傳音檔並自動儲存分析
     async function uploadAudioForTranscription(audioBlob) {
       try {
         const userId = document.getElementById('userId').value;
@@ -579,11 +660,13 @@
         }
 
         const result = await response.text();
+        console.log('語音處理結果:', result);
         
         if (result && result.includes('成功儲存')) {
           showStatus('語音筆記已成功儲存！', 'success');
           recordingStatus.textContent = '完成！';
           
+          // 清空表單
           setTimeout(() => {
             document.getElementById('noteTitle').value = '';
             document.getElementById('fileContent').value = '';
@@ -593,6 +676,25 @@
         } else {
           showStatus('語音處理失敗：未收到有效回應', 'error');
           recordingStatus.textContent = '';
+        }Status.textContent = '完成！';
+          
+          // 如果有 AI 摘要，顯示摘要結果
+          if (result.data && result.data.summary) {
+            setTimeout(() => {
+              showAISummary(result.data.summary);
+            }, 1000);
+          }
+          
+          // 清空表單
+          setTimeout(() => {
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('fileContent').value = '';
+            recordingStatus.textContent = '';
+          }, 2000);
+          
+        } else {
+          showStatus('語音處理失敗：' + (result.message || '未知錯誤'), 'error');
+          recordingStatus.textContent = '';
         }
 
       } catch (error) {
@@ -600,12 +702,133 @@
         showStatus('語音上傳失敗：' + error.message, 'error');
         recordingStatus.textContent = '';
       } finally {
+        // 重新啟用按鈕
         voiceBtn.disabled = false;
         saveBtn.disabled = false;
       }
     }
 
-    // 文字儲存功能
+    // 語音按鈕事件
+    voiceBtn.addEventListener('click', toggleRecording);
+
+    // 合併多個筆記內容的函數
+    function combineNotesContent(notes) {
+      if (!Array.isArray(notes) || notes.length === 0) return '';
+      
+      return notes.map((note, index) => {
+        const title = note.json?.FileName || `筆記 ${index + 1}`;
+        const content = note.json?.Content || '';
+        return `=== ${title} ===\n${content}`;
+      }).join('\n\n');
+    }
+
+    // 複製功能
+    function copyText(button, text) {
+      console.log('嘗試複製文字:', text);
+      
+      // 先取得純文字內容（去除HTML標籤）
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = text;
+      const cleanText = tempDiv.textContent || tempDiv.innerText || text;
+      
+      console.log('清理後的文字:', cleanText);
+      
+      // 嘗試使用新的 clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(cleanText).then(() => {
+          console.log('複製成功 (clipboard API)');
+          button.textContent = '✓';
+          button.classList.add('copy-success');
+          setTimeout(() => {
+            button.textContent = '📋';
+            button.classList.remove('copy-success');
+          }, 1000);
+        }).catch((err) => {
+          console.error('clipboard API 失敗:', err);
+          fallbackCopy(button, cleanText);
+        });
+      } else {
+        console.log('使用備用複製方法');
+        fallbackCopy(button, cleanText);
+      }
+    }
+
+    // 備用複製方法
+    function fallbackCopy(button, text) {
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        textArea.style.top = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+          console.log('複製成功 (execCommand)');
+          button.textContent = '✓';
+          button.classList.add('copy-success');
+          setTimeout(() => {
+            button.textContent = '📋';
+            button.classList.remove('copy-success');
+          }, 1000);
+        } else {
+          console.error('execCommand 複製失敗');
+          button.textContent = '❌';
+          setTimeout(() => {
+            button.textContent = '📋';
+          }, 1000);
+        }
+      } catch (err) {
+        console.error('備用複製方法失敗:', err);
+        button.textContent = '❌';
+        setTimeout(() => {
+          button.textContent = '📋';
+        }, 1000);
+      }
+    }
+
+    // 顯示狀態訊息
+    function showStatus(message, type = 'info') {
+      saveStatus.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+      setTimeout(() => {
+        saveStatus.innerHTML = '';
+      }, 5000);
+    }
+
+    // 顯示 AI 摘要結果
+    function showAISummary(summary) {
+      const summaryDiv = document.createElement('div');
+      summaryDiv.className = 'ai-summary';
+      summaryDiv.innerHTML = `
+        <div class="summary-header">
+          <h3>📊 AI 分析結果</h3>
+          <button class="copy-btn summary-copy-btn" onclick="copyText(this, '${summary.replace(/'/g, "\\'")}')">📋</button>
+        </div>
+        <div class="summary-content">${summary.replace(/\n/g, '<br>')}</div>
+      `;
+      
+      // 移除之前的摘要（如果有的話）
+      const existingSummary = document.querySelector('.ai-summary');
+      if (existingSummary) {
+        existingSummary.remove();
+      }
+      
+      // 插入到儲存按鈕後面
+      const actionButtons = document.querySelector('.action-buttons');
+      actionButtons.parentNode.insertBefore(summaryDiv, actionButtons.nextSibling);
+      
+      // 3 秒後淡出
+      setTimeout(() => {
+        summaryDiv.style.opacity = '0.7';
+      }, 8000);
+    }
+
+    // 儲存筆記
     saveBtn.addEventListener('click', async () => {
       const userId = document.getElementById('userId').value;
       const fileName = document.getElementById('noteTitle').value;
@@ -620,6 +843,7 @@
       saveBtn.textContent = '處理中...';
       
       try {
+        console.log('正在發送請求到:', CONFIG.uploadUrl);
         const response = await fetch(CONFIG.uploadUrl, {
           method: 'POST',
           headers: {
@@ -634,11 +858,14 @@
           })
         });
 
+        console.log('收到回應，狀態:', response.status, response.statusText);
+        
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
         const result = await response.text();
+        console.log('API 文字回應:', result);
         
         if (result && result.includes('成功儲存')) {
           showStatus('筆記已成功儲存！', 'success');
@@ -659,9 +886,6 @@
         saveBtn.textContent = '💾 儲存並分析';
       }
     });
-
-    // 語音按鈕事件
-    voiceBtn.addEventListener('click', toggleRecording);
 
     // 搜尋筆記
     searchBtn.addEventListener('click', async () => {
@@ -702,9 +926,11 @@
       }
     });
 
+    // 顯示搜尋結果 - 支援多選
     function displaySearchResults(records) {
       searchResults.innerHTML = '';
       
+      // 加入選擇控制按鈕
       const controlsDiv = document.createElement('div');
       controlsDiv.className = 'selection-controls';
       controlsDiv.innerHTML = `
@@ -714,6 +940,7 @@
       `;
       searchResults.appendChild(controlsDiv);
       
+      // 全選按鈕事件
       document.getElementById('selectAllBtn').addEventListener('click', () => {
         const checkboxes = searchResults.querySelectorAll('.note-checkbox');
         checkboxes.forEach(checkbox => {
@@ -724,6 +951,7 @@
         });
       });
       
+      // 清空選擇按鈕事件
       document.getElementById('clearSelectionBtn').addEventListener('click', () => {
         const checkboxes = searchResults.querySelectorAll('.note-checkbox');
         checkboxes.forEach(checkbox => {
@@ -747,6 +975,7 @@
           </div>
         `;
         
+        // 複選框事件
         const checkbox = div.querySelector('.note-checkbox');
         checkbox.addEventListener('change', () => {
           if (checkbox.checked) {
@@ -762,6 +991,7 @@
           updateSelectedNotes();
         });
         
+        // 點擊整個區域也能選擇
         div.addEventListener('click', (e) => {
           if (e.target.type !== 'checkbox') {
             checkbox.checked = !checkbox.checked;
@@ -773,6 +1003,7 @@
       });
     }
 
+    // 更新選中的筆記狀態
     function updateSelectedNotes() {
       const count = selectedNotes.length;
       document.getElementById('selectedCount').textContent = `已選擇: ${count} 篇`;
@@ -783,11 +1014,12 @@
         chatInput.disabled = false;
         sendBtn.disabled = false;
         
+        // 清空聊天記錄，顯示選中的筆記
         chatBox.innerHTML = `
           <div class="chat-message ai">
-已選定 ${count} 篇筆記：
-${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('\n')}
-
+            已選定 ${count} 篇筆記：<br>
+${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('<br>')}
+<br>
 現在你可以問我關於這些筆記的任何問題！
           </div>
         `;
@@ -807,6 +1039,7 @@ ${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('\
       
       if (!userMessage || !currentSelectedNote) return;
 
+      // 顯示使用者訊息
       const userDiv = document.createElement('div');
       userDiv.className = 'chat-message user';
       userDiv.textContent = userMessage;
@@ -817,13 +1050,21 @@ ${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('\
       sendBtn.textContent = '思考中...';
 
       try {
+        // 準備筆記內容
         let noteContent = '';
         
         if (Array.isArray(currentSelectedNote)) {
+          // 多選筆記的情況
+          console.log('多選筆記數量:', currentSelectedNote.length);
           noteContent = combineNotesContent(currentSelectedNote);
         } else {
+          // 單選筆記的情況（向下相容）
+          console.log('單選筆記:', currentSelectedNote.json?.FileName);
           noteContent = currentSelectedNote.json?.Content || '';
         }
+        
+        console.log('準備發送的筆記內容長度:', noteContent.length);
+        console.log('筆記內容前100字:', noteContent.substring(0, 100));
         
         const response = await fetch(CONFIG.discussUrl, {
           method: 'POST',
@@ -842,23 +1083,55 @@ ${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('\
           const aiDiv = document.createElement('div');
           aiDiv.className = 'chat-message ai';
           
+          // 創建文字內容容器
           const messageContent = document.createElement('span');
           messageContent.className = 'message-content';
-          messageContent.textContent = result.answer;
+          messageContent.textContent = result.answer; // 使用 textContent 保留換行
+          
+          // 創建複製按鈕
+          const copyButton = document.createElement('button');
+          copyButton.className = 'copy-btn';
+          copyButton.textContent = '📋';
+          copyButton.onclick = () => copyText(copyButton, result.answer);
           
           aiDiv.appendChild(messageContent);
+          aiDiv.appendChild(copyButton);
           chatBox.appendChild(aiDiv);
         } else {
           const aiDiv = document.createElement('div');
           aiDiv.className = 'chat-message ai';
-          aiDiv.textContent = '抱歉，我現在無法回答這個問題，請稍後再試。';
+          const errorMsg = '抱歉，我現在無法回答這個問題，請稍後再試。';
+          
+          const messageContent = document.createElement('span');
+          messageContent.className = 'message-content';
+          messageContent.textContent = errorMsg;
+          
+          const copyButton = document.createElement('button');
+          copyButton.className = 'copy-btn';
+          copyButton.textContent = '📋';
+          copyButton.onclick = () => copyText(copyButton, errorMsg);
+          
+          aiDiv.appendChild(messageContent);
+          aiDiv.appendChild(copyButton);
           chatBox.appendChild(aiDiv);
         }
       } catch (error) {
         console.error('Error:', error);
         const aiDiv = document.createElement('div');
         aiDiv.className = 'chat-message ai';
-        aiDiv.textContent = '連接失敗，請檢查網路連線。';
+        const errorMsg = '連接失敗，請檢查網路連線。';
+        
+        const messageContent = document.createElement('span');
+        messageContent.className = 'message-content';
+        messageContent.textContent = errorMsg;
+        
+        const copyButton = document.createElement('button');
+        copyButton.className = 'copy-btn';
+        copyButton.textContent = '📋';
+        copyButton.onclick = () => copyText(copyButton, errorMsg);
+        
+        aiDiv.appendChild(messageContent);
+        aiDiv.appendChild(copyButton);
         chatBox.appendChild(aiDiv);
       } finally {
         sendBtn.disabled = false;
