@@ -429,7 +429,7 @@
 <body>
   <header class="page-header">
     <h1>📝 AI 瞬間筆記</h1>
-    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論v48</p>
+    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論v01</p>
   </header>
 
   <div class="container">
@@ -944,10 +944,23 @@ if (result.success) {
   aiDiv.appendChild(messageContent);
   aiDiv.appendChild(copyButton);
   chatBox.appendChild(aiDiv);
-}
 } else {
   const aiDiv = document.createElement('div');
   aiDiv.className = 'chat-message ai';
+  
+  const messageContent = document.createElement('span');
+  messageContent.className = 'message-content';
+  messageContent.textContent = '抱歉，我現在無法回答這個問題，請稍後再試。';
+  
+  const copyButton = document.createElement('button');
+  copyButton.className = 'copy-btn';
+  copyButton.textContent = '📋';
+  copyButton.onclick = () => copyText(copyButton, '抱歉，我現在無法回答這個問題，請稍後再試。');
+  
+  aiDiv.appendChild(messageContent);
+  aiDiv.appendChild(copyButton);
+  chatBox.appendChild(aiDiv);
+}
   
   const messageContent = document.createElement('span');
   messageContent.className = 'message-content';
@@ -984,6 +997,7 @@ if (result.success) {
   sendBtn.textContent = '🤖 與 AI 討論';
   chatBox.scrollTop = chatBox.scrollHeight;
 }
+});  // ← 加上這個來結束 addEventListener
 
     // Enter 鍵發送訊息
     chatInput.addEventListener('keypress', (e) => {
