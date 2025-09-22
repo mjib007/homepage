@@ -188,6 +188,46 @@
       background: #f5f5f5;
       margin-right: 20%;
       text-align: left;
+      position: relative;
+    }
+
+    /* 複製按鈕樣式 */
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(102, 126, 234, 0.1);
+      border: 1px solid rgba(102, 126, 234, 0.3);
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      color: #667eea;
+      opacity: 0;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .chat-message.ai:hover .copy-btn {
+      opacity: 1;
+    }
+
+    .copy-btn:hover {
+      background: rgba(102, 126, 234, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .copy-btn.copied {
+      background: rgba(40, 167, 69, 0.1);
+      border-color: rgba(40, 167, 69, 0.3);
+      color: #28a745;
+    }
+
+    .copy-btn svg {
+      width: 14px;
+      height: 14px;
     }
 
     .chat-input {
@@ -395,13 +435,27 @@
         margin-left: 5%;
         margin-right: 10%;
       }
+
+      .copy-btn {
+        opacity: 1; /* 手機版直接顯示複製按鈕 */
+        position: relative;
+        top: auto;
+        right: auto;
+        margin-top: 8px;
+        align-self: flex-end;
+      }
+
+      .chat-message.ai {
+        display: flex;
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body>
   <header class="page-header">
     <h1>📝 AI 瞬間筆記</h1>
-    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論v48</p>
+    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論v01</p>
   </header>
 
   <div class="container">
@@ -481,6 +535,78 @@
     let audioChunks = [];
     let isRecording = false;
 
+    // 複製文字到剪貼簿的函數
+    async function copyToClipboard(text, button) {
+      try {
+        await navigator.clipboard.writeText(text);
+        
+        // 更新按鈕狀態
+        const originalContent = button.innerHTML;
+        button.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+          </svg>
+          已複製
+        `;
+        button.classList.add('copied');
+        
+        // 2秒後恢復原狀
+        setTimeout(() => {
+          button.innerHTML = originalContent;
+          button.classList.remove('copied');
+        }, 2000);
+        
+      } catch (err) {
+        console.error('複製失敗:', err);
+        // 如果現代API失敗，使用舊方法
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          button.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+            已複製
+          `;
+          button.classList.add('copied');
+          setTimeout(() => {
+            button.innerHTML = `
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+              </svg>
+              複製
+            `;
+            button.classList.remove('copied');
+          }, 2000);
+        } catch (err) {
+          alert('複製失敗，請手動選取文字複製');
+        }
+        document.body.removeChild(textArea);
+      }
+    }
+
+    // 創建複製按鈕
+    function createCopyButton(messageText) {
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'copy-btn';
+      copyBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+        </svg>
+        複製
+      `;
+      
+      copyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        copyToClipboard(messageText, copyBtn);
+      });
+      
+      return copyBtn;
+    }
+
     // 顯示狀態訊息
     function showStatus(message, type = 'info') {
       saveStatus.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
@@ -536,7 +662,7 @@
         mediaRecorder.start();
         isRecording = true;
         
-        voiceBtn.textContent = '⏹️ 停止錄音';
+        voiceBtn.textContent = ⏹️ 停止錄音';
         voiceBtn.classList.add('recording');
         recordingStatus.textContent = '正在錄音中... 按停止錄音結束';
         recordingStatus.classList.add('recording');
@@ -789,6 +915,8 @@
 ${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('\n')}
 
 現在你可以問我關於這些筆記的任何問題！
+          </div>
+        `;
           </div>
         `;
       } else {
