@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI 學習筆記助手</title>
+  <title>AI 瞬間筆記</title>
   <style>
     * {
       margin: 0;
@@ -26,12 +26,11 @@
       background: white;
       border-radius: 20px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-      width: 95%; /* 調整為95%讓背景可見 */
+      width: 95%;
       max-width: 1200px;
       overflow: hidden;
     }
 
-    /* 左側：筆記 */
     .left-panel {
       flex: 1;
       padding: 30px;
@@ -101,7 +100,6 @@
       transform: none;
     }
 
-    /* 語音錄音按鈕的樣式 */
     .voice-controls {
       margin-top: 10px;
       display: flex;
@@ -147,7 +145,6 @@
       color: #dc3545;
     }
 
-    /* 右側：AI 討論 */
     .right-panel {
       flex: 1;
       padding: 30px;
@@ -194,7 +191,6 @@
       padding-right: 40px; /* 避免文字被按鈕蓋住 */
     }
 
-    /* 參考您的版本，微調複製按鈕樣式 */
     .copy-btn {
       position: absolute;
       top: 8px;
@@ -432,8 +428,8 @@
 </head>
 <body>
   <header class="page-header">
-    <h1>📝 AI 學習筆記整理與討論</h1>
-    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論</p>
+    <h1>📝 AI 瞬間筆記</h1>
+    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論v48</p>
   </header>
 
   <div class="container">
@@ -474,7 +470,7 @@
       <p id="selectedNote">選定的筆記：尚未選擇</p>
       <div class="chat-box" id="chatBox">
         <div class="chat-message ai">
-          歡迎使用 AI 學習筆記整理與討論！輸入學習內容或搜尋筆記，我們就可以開始互動了！
+          歡迎使用 AI 瞬間筆記！搜尋筆記後，請選擇筆記開始AI智能對話，或直接以文字或錄音創建新筆記。
         </div>
       </div>
       <div class="chat-input">
@@ -510,62 +506,6 @@
     let mediaRecorder;
     let audioChunks = [];
     let isRecording = false;
-
-    // 複製功能
-    function copyText(button, text) {
-      // 優先使用現代的 clipboard API
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(() => {
-          button.textContent = '✓';
-          button.classList.add('copy-success');
-          setTimeout(() => {
-            button.textContent = '📋';
-            button.classList.remove('copy-success');
-          }, 1000);
-        }).catch((err) => {
-          console.error('clipboard API 失敗:', err);
-          fallbackCopy(button, text);
-        });
-      } else {
-        // 使用備用複製方法
-        fallbackCopy(button, text);
-      }
-    }
-
-    // 備用複製方法
-    function fallbackCopy(button, text) {
-      try {
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-9999px';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        const successful = document.execCommand('copy');
-        document.body.removeChild(textArea);
-
-        if (successful) {
-          button.textContent = '✓';
-          button.classList.add('copy-success');
-          setTimeout(() => {
-            button.textContent = '📋';
-            button.classList.remove('copy-success');
-          }, 1000);
-        } else {
-          button.textContent = '❌';
-          setTimeout(() => {
-            button.textContent = '📋';
-          }, 1000);
-        }
-      } catch (err) {
-        console.error('備用複製方法失敗:', err);
-        button.textContent = '❌';
-        setTimeout(() => {
-          button.textContent = '📋';
-        }, 1000);
-      }
-    }
 
     // 顯示狀態訊息
     function showStatus(message, type = 'info') {
@@ -788,6 +728,7 @@
       }
     });
 
+    // 顯示搜尋結果
     function displaySearchResults(records) {
       searchResults.innerHTML = '';
       
@@ -893,7 +834,6 @@ ${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('\
       
       if (!userMessage || !currentSelectedNote) return;
 
-      // 顯示使用者訊息
       const userDiv = document.createElement('div');
       userDiv.className = 'chat-message user';
       userDiv.textContent = userMessage;
@@ -928,11 +868,17 @@ ${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('\
         if (result.success) {
           const aiDiv = document.createElement('div');
           aiDiv.className = 'chat-message ai';
-          const escapedAnswer = result.answer.replace(/`/g, '\\`').replace(/'/g, "\\'").replace(/"/g, '\\"');
-          aiDiv.innerHTML = `
-            <span class="message-content">${result.answer}</span>
-            <button class="copy-btn" onclick="copyText(this, '${escapedAnswer}')">📋</button>
-          `;
+          
+          const messageContent = document.createElement('span');
+          messageContent.textContent = result.answer;
+          
+          const copyBtn = document.createElement('button');
+          copyBtn.className = 'copy-btn';
+          copyBtn.textContent = '📋';
+          copyBtn.onclick = () => copyText(copyBtn, result.answer);
+          
+          aiDiv.appendChild(messageContent);
+          aiDiv.appendChild(copyBtn);
           chatBox.appendChild(aiDiv);
         } else {
           const aiDiv = document.createElement('div');
@@ -963,4 +909,64 @@ ${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('\
 
     // Enter 鍵發送訊息
     chatInput.addEventListener('keypress', (e) => {
-      if (e.key
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (!sendBtn.disabled) {
+          sendBtn.click();
+        }
+      }
+    });
+
+    // 全新的複製功能函式，支援新舊 API 並加入視覺回饋
+    function copyText(button, text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+          button.textContent = '✓';
+          button.classList.add('copy-success');
+          setTimeout(() => {
+            button.textContent = '📋';
+            button.classList.remove('copy-success');
+          }, 1000);
+        }).catch((err) => {
+          console.error('Clipboard API failed:', err);
+          fallbackCopy(button, text);
+        });
+      } else {
+        fallbackCopy(button, text);
+      }
+    }
+
+    function fallbackCopy(button, text) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          button.textContent = '✓';
+          button.classList.add('copy-success');
+          setTimeout(() => {
+            button.textContent = '📋';
+            button.classList.remove('copy-success');
+          }, 1000);
+        } else {
+          button.textContent = '❌';
+          setTimeout(() => {
+            button.textContent = '📋';
+          }, 1000);
+        }
+      } catch (err) {
+        button.textContent = '❌';
+        setTimeout(() => {
+          button.textContent = '📋';
+        }, 1000);
+      }
+      document.body.removeChild(textArea);
+    }
+  </script>
+</body>
+</html>
