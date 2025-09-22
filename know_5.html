@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI 瞬間筆記</title>
+  <title>AI 學習筆記助手</title>
   <style>
     * {
       margin: 0;
@@ -26,10 +26,12 @@
       background: white;
       border-radius: 20px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-      width: 80%;
-      max-width: 1000px;
+      width: 95%; /* 調整為95%讓背景可見 */
+      max-width: 1200px;
+      overflow: hidden;
     }
 
+    /* 左側：筆記 */
     .left-panel {
       flex: 1;
       padding: 30px;
@@ -99,6 +101,7 @@
       transform: none;
     }
 
+    /* 語音錄音按鈕的樣式 */
     .voice-controls {
       margin-top: 10px;
       display: flex;
@@ -144,6 +147,7 @@
       color: #dc3545;
     }
 
+    /* 右側：AI 討論 */
     .right-panel {
       flex: 1;
       padding: 30px;
@@ -172,7 +176,7 @@
       margin-bottom: 12px;
       padding: 10px;
       border-radius: 8px;
-      position: relative; /* 為了複製按鈕定位 */
+      position: relative;
       white-space: pre-wrap;
       word-wrap: break-word;
     }
@@ -190,7 +194,7 @@
       padding-right: 40px; /* 避免文字被按鈕蓋住 */
     }
 
-    /* --- 新增複製按鈕樣式 --- */
+    /* 參考您的版本，微調複製按鈕樣式 */
     .copy-btn {
       position: absolute;
       top: 8px;
@@ -204,13 +208,19 @@
       opacity: 0.5;
       transition: opacity 0.3s, background-color 0.3s;
     }
+
     .chat-message.ai:hover .copy-btn {
       opacity: 1;
     }
+
     .copy-btn:hover {
       background-color: #b0b5bd;
     }
-    /* --- 樣式新增結束 --- */
+
+    .copy-success {
+      background: #28a745 !important;
+      color: white !important;
+    }
 
     .chat-input {
       display: flex;
@@ -422,12 +432,12 @@
 </head>
 <body>
   <header class="page-header">
-    <h1>📝 AI 瞬間筆記</h1>
-    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論v02</p>
+    <h1>📝 AI 學習筆記整理與討論</h1>
+    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論</p>
   </header>
 
   <div class="container">
-    <div class="left-panel">
+        <div class="left-panel">
       <h2>新增筆記</h2>
       <div id="saveStatus"></div>
       <div class="form-group">
@@ -459,12 +469,12 @@
       <div id="searchResults" class="search-results"></div>
     </div>
 
-    <div class="right-panel">
+        <div class="right-panel">
       <h2>AI 討論</h2>
       <p id="selectedNote">選定的筆記：尚未選擇</p>
       <div class="chat-box" id="chatBox">
         <div class="chat-message ai">
-          歡迎使用 AI 瞬間筆記！搜尋筆記後，請選擇筆記開始AI智能對話，或直接以文字或錄音創建新筆記。
+          歡迎使用 AI 學習筆記整理與討論！輸入學習內容或搜尋筆記，我們就可以開始互動了！
         </div>
       </div>
       <div class="chat-input">
@@ -500,6 +510,62 @@
     let mediaRecorder;
     let audioChunks = [];
     let isRecording = false;
+
+    // 複製功能
+    function copyText(button, text) {
+      // 優先使用現代的 clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+          button.textContent = '✓';
+          button.classList.add('copy-success');
+          setTimeout(() => {
+            button.textContent = '📋';
+            button.classList.remove('copy-success');
+          }, 1000);
+        }).catch((err) => {
+          console.error('clipboard API 失敗:', err);
+          fallbackCopy(button, text);
+        });
+      } else {
+        // 使用備用複製方法
+        fallbackCopy(button, text);
+      }
+    }
+
+    // 備用複製方法
+    function fallbackCopy(button, text) {
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+
+        if (successful) {
+          button.textContent = '✓';
+          button.classList.add('copy-success');
+          setTimeout(() => {
+            button.textContent = '📋';
+            button.classList.remove('copy-success');
+          }, 1000);
+        } else {
+          button.textContent = '❌';
+          setTimeout(() => {
+            button.textContent = '📋';
+          }, 1000);
+        }
+      } catch (err) {
+        console.error('備用複製方法失敗:', err);
+        button.textContent = '❌';
+        setTimeout(() => {
+          button.textContent = '📋';
+        }, 1000);
+      }
+    }
 
     // 顯示狀態訊息
     function showStatus(message, type = 'info') {
@@ -827,6 +893,7 @@ ${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('\
       
       if (!userMessage || !currentSelectedNote) return;
 
+      // 顯示使用者訊息
       const userDiv = document.createElement('div');
       userDiv.className = 'chat-message user';
       userDiv.textContent = userMessage;
@@ -859,47 +926,33 @@ ${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('\
         const result = await response.json();
         
         if (result.success) {
-            /* --- 核心修改處 --- */
           const aiDiv = document.createElement('div');
           aiDiv.className = 'chat-message ai';
-
-            // 建立訊息內容元素
-          const messageContent = document.createElement('span');
-          messageContent.textContent = result.answer;
-
-            // 建立複製按鈕
-          const copyBtn = document.createElement('button');
-          copyBtn.className = 'copy-btn';
-          copyBtn.textContent = '📋'; // 複製圖示
-            
-            // 幫複製按鈕加上點擊事件
-          copyBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(result.answer).then(() => {
-              copyBtn.textContent = '✅ 已複製';
-              setTimeout(() => {
-                copyBtn.textContent = '📋';
-              }, 2000); // 2秒後恢復
-            }).catch(err => {
-              console.error('複製失敗:', err);
-            });
-          });
-
-            // 將訊息內容和按鈕都加入到 AI 訊息框中
-          aiDiv.appendChild(messageContent);
-          aiDiv.appendChild(copyBtn);
+          const escapedAnswer = result.answer.replace(/`/g, '\\`').replace(/'/g, "\\'").replace(/"/g, '\\"');
+          aiDiv.innerHTML = `
+            <span class="message-content">${result.answer}</span>
+            <button class="copy-btn" onclick="copyText(this, '${escapedAnswer}')">📋</button>
+          `;
           chatBox.appendChild(aiDiv);
-            /* --- 修改結束 --- */
         } else {
           const aiDiv = document.createElement('div');
           aiDiv.className = 'chat-message ai';
-          aiDiv.textContent = '抱歉，我現在無法回答這個問題，請稍後再試。';
+          const errorMsg = '抱歉，我現在無法回答這個問題，請稍後再試。';
+          aiDiv.innerHTML = `
+            <span class="message-content">${errorMsg}</span>
+            <button class="copy-btn" onclick="copyText(this, '${errorMsg}')">📋</button>
+          `;
           chatBox.appendChild(aiDiv);
         }
       } catch (error) {
         console.error('Error:', error);
         const aiDiv = document.createElement('div');
         aiDiv.className = 'chat-message ai';
-        aiDiv.textContent = '連接失敗，請檢查網路連線。';
+        const errorMsg = '連接失敗，請檢查網路連線。';
+        aiDiv.innerHTML = `
+          <span class="message-content">${errorMsg}</span>
+          <button class="copy-btn" onclick="copyText(this, '${errorMsg}')">📋</button>
+        `;
         chatBox.appendChild(aiDiv);
       } finally {
         sendBtn.disabled = false;
@@ -910,13 +963,4 @@ ${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('\
 
     // Enter 鍵發送訊息
     chatInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        if (!sendBtn.disabled) {
-          sendBtn.click();
-        }
-      }
-    });
-  </script>
-</body>
-</html>
+      if (e.key
