@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 瞬間筆記</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      display: flex;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 1200px;
+      overflow: hidden;
+    }
+
+    .left-panel {
+      flex: 1;
+      padding: 30px;
+      border-right: 2px solid #f0f0f0;
+      overflow-y: auto;
+    }
+
+    .left-panel h2 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    input[type="text"], 
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e1e5e9;
+      border-radius: 10px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus, 
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    textarea {
+      resize: vertical;
+      font-family: inherit;
+      height: 120px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 20px;
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .voice-controls {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .save-btn {
+      flex: 1;
+      background: linear-gradient(45deg, #28a745, #20c997);
+    }
+
+    .voice-btn {
+      flex: 1;
+      background: linear-gradient(45deg, #dc3545, #e74c3c);
+      min-width: 120px;
+    }
+
+    .voice-btn.recording {
+      background: #dc3545;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+
+    #recordingStatus {
+      font-size: 14px;
+      color: #666;
+      font-weight: 500;
+    }
+
+    #recordingStatus.recording {
+      color: #dc3545;
+    }
+
+    .right-panel {
+      flex: 1;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .right-panel h2 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .chat-box {
+      flex: 1;
+      border: 2px solid #e1e5e9;
+      border-radius: 12px;
+      padding: 15px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      background: #fafafa;
+      max-height: 400px;
+    }
+
+    .chat-message {
+      margin-bottom: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      position: relative;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .chat-message.user {
+      background: #e3f2fd;
+      margin-left: 20%;
+      text-align: right;
+    }
+
+    .chat-message.ai {
+      background: #f5f5f5;
+      margin-right: 20%;
+      text-align: left;
+    }
+
+    .chat-input {
+      display: flex;
+      gap: 10px;
+    }
+
+    .chat-input textarea {
+      flex: 1;
+      height: 60px;
+      resize: none;
+    }
+
+    .chat-input button {
+      flex-shrink: 0;
+    }
+
+    .page-header {
+      text-align: center;
+      color: white;
+      margin-bottom: 20px;
+    }
+
+    .page-header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .page-header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .search-results {
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #e1e5e9;
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .search-item {
+      padding: 10px;
+      border: 1px solid #e1e5e9;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .search-item:hover {
+      background-color: #f0f7ff;
+    }
+
+    .search-item.selected {
+      background-color: #e3f2fd;
+      border-color: #667eea;
+    }
+
+    .search-item input[type="checkbox"] {
+      margin-top: 5px;
+      transform: scale(1.2);
+      flex-shrink: 0;
+    }
+
+    .search-item-content {
+      flex: 1;
+      text-align: left;
+    }
+
+    .search-item-content label {
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .search-item-content strong {
+      display: block;
+      margin-bottom: 5px;
+      text-align: left;
+    }
+
+    .search-item-content p {
+      margin: 0;
+      text-align: left;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    .selection-controls {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .selection-controls .btn {
+      padding: 8px 12px;
+      font-size: 12px;
+      width: auto;
+    }
+
+    .status-message {
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .status-success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .status-info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    /* 手機版樣式 */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        max-width: 100%;
+        margin: 0 10px;
+      }
+
+      .left-panel {
+        border-right: none;
+        border-bottom: 2px solid #f0f0f0;
+        padding: 20px;
+      }
+
+      .right-panel {
+        padding: 20px;
+      }
+
+      .chat-box {
+        max-height: 300px;
+        min-height: 250px;
+      }
+
+      .chat-input textarea {
+        height: 80px;
+        font-size: 16px;
+      }
+
+      .chat-input {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .chat-input button {
+        width: 100%;
+        padding: 15px;
+      }
+
+      .page-header h1 {
+        font-size: 1.5rem;
+      }
+
+      .page-header p {
+        font-size: 1rem;
+      }
+
+      body {
+        padding: 10px;
+      }
+
+      .search-results {
+        max-height: 300px;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 15px;
+        margin-bottom: 10px;
+      }
+
+      .chat-message {
+        margin-left: 5%;
+        margin-right: 5%;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .chat-message.user {
+        margin-left: 10%;
+        margin-right: 5%;
+      }
+
+      .chat-message.ai {
+        margin-left: 5%;
+        margin-right: 10%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>📝 AI 瞬間筆記</h1>
+    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論</p>
+  </header>
+
+  <div class="container">
+    <!-- 左側 -->
+    <div class="left-panel">
+      <h2>新增筆記</h2>
+      <div id="saveStatus"></div>
+      <div class="form-group">
+        <label for="userId">用戶ID：</label>
+        <input type="text" id="userId" value="demo_user">
+      </div>
+      <div class="form-group">
+        <label for="noteTitle">筆記標題：</label>
+        <input type="text" id="noteTitle" placeholder="輸入標題...">
+      </div>
+      <div class="form-group">
+        <label for="fileContent">學習內容：</label>
+        <textarea id="fileContent" placeholder="貼上你的學習內容..."></textarea>
+        <div class="voice-controls">
+          <span id="recordingStatus"></span>
+        </div>
+      </div>
+      <div class="action-buttons">
+        <button class="btn save-btn" id="saveBtn">💾 儲存並分析</button>
+        <button type="button" class="btn voice-btn" id="voiceBtn">🔴 開始錄音</button>
+      </div>
+
+      <h2 style="margin-top:30px;">搜尋筆記</h2>
+      <div class="form-group">
+        <input type="text" id="searchKeyword" placeholder="輸入關鍵字...">
+      </div>
+      <button class="btn" id="searchBtn">🔍 搜尋</button>
+      
+      <div id="searchResults" class="search-results"></div>
+    </div>
+
+    <!-- 右側 -->
+    <div class="right-panel">
+      <h2>AI 討論</h2>
+      <p id="selectedNote">選定的筆記：尚未選擇</p>
+      <div class="chat-box" id="chatBox">
+        <div class="chat-message ai">
+          歡迎使用 AI 瞬間筆記！搜尋筆記後，請選擇筆記開始AI智能對話，或直接以文字或錄音創建新筆記。
+        </div>
+      </div>
+      <div class="chat-input">
+        <textarea id="chatInput" placeholder="輸入你想討論的問題..." disabled>摘要與抓重點</textarea>
+        <button class="btn" id="sendBtn" disabled>🤖 與 AI 討論</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 配置：n8n webhook URLs
+    const API_BASE = "https://kf0630.zeabur.app/webhook";
+    const CONFIG = {
+      uploadUrl: API_BASE + '/upload-notes',
+      searchUrl: API_BASE + '/search-records',
+      discussUrl: API_BASE + '/discuss-note'
+    };
+
+    // DOM 元素
+    const chatBox = document.getElementById('chatBox');
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const searchBtn = document.getElementById('searchBtn');
+    const saveStatus = document.getElementById('saveStatus');
+    const searchResults = document.getElementById('searchResults');
+    const selectedNote = document.getElementById('selectedNote');
+    const voiceBtn = document.getElementById('voiceBtn');
+    const recordingStatus = document.getElementById('recordingStatus');
+
+    let currentSelectedNote = null;
+    let selectedNotes = [];
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+
+    // 顯示狀態訊息
+    function showStatus(message, type = 'info') {
+      saveStatus.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+      setTimeout(() => {
+        saveStatus.innerHTML = '';
+      }, 5000);
+    }
+
+    // 合併多個筆記內容的函數
+    function combineNotesContent(notes) {
+      if (!Array.isArray(notes) || notes.length === 0) return '';
+      
+      return notes.map((note, index) => {
+        const title = note.json?.FileName || `筆記 ${index + 1}`;
+        const content = note.json?.Content || '';
+        return `=== ${title} ===\n${content}`;
+      }).join('\n\n');
+    }
+
+    // 語音錄音功能
+    async function initVoiceRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunks.push(event.data);
+          }
+        };
+        
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          audioChunks = [];
+          
+          await uploadAudioForTranscription(audioBlob);
+          stream.getTracks().forEach(track => track.stop());
+        };
+        
+        return true;
+      } catch (error) {
+        console.error('無法存取麥克風:', error);
+        showStatus('無法存取麥克風，請檢查權限設定', 'error');
+        return false;
+      }
+    }
+
+    async function toggleRecording() {
+      if (!isRecording) {
+        const canRecord = await initVoiceRecording();
+        if (!canRecord) return;
+        
+        mediaRecorder.start();
+        isRecording = true;
+        
+        voiceBtn.textContent = '⏹️ 停止錄音';
+        voiceBtn.classList.add('recording');
+        recordingStatus.textContent = '正在錄音中... 按停止錄音結束';
+        recordingStatus.classList.add('recording');
+        
+      } else {
+        mediaRecorder.stop();
+        isRecording = false;
+        
+        voiceBtn.textContent = '🔴 開始錄音';
+        voiceBtn.classList.remove('recording');
+        recordingStatus.textContent = '處理中...';
+        recordingStatus.classList.remove('recording');
+        
+        voiceBtn.disabled = true;
+        saveBtn.disabled = true;
+      }
+    }
+
+    async function uploadAudioForTranscription(audioBlob) {
+      try {
+        const userId = document.getElementById('userId').value;
+        const fileName = document.getElementById('noteTitle').value || '語音筆記 ' + new Date().toLocaleString();
+        
+        const formData = new FormData();
+        formData.append('audio_file', audioBlob, 'recording.wav');
+        formData.append('userId', userId);
+        formData.append('fileName', fileName);
+        formData.append('fileType', 'voice');
+        formData.append('isVoice', 'true');
+
+        recordingStatus.textContent = '語音轉文字並分析中...';
+
+        const response = await fetch(CONFIG.uploadUrl, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.text();
+        
+        if (result && result.includes('成功儲存')) {
+          showStatus('語音筆記已成功儲存！', 'success');
+          recordingStatus.textContent = '完成！';
+          
+          setTimeout(() => {
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('fileContent').value = '';
+            recordingStatus.textContent = '';
+          }, 2000);
+          
+        } else {
+          showStatus('語音處理失敗：未收到有效回應', 'error');
+          recordingStatus.textContent = '';
+        }
+
+      } catch (error) {
+        console.error('語音上傳錯誤:', error);
+        showStatus('語音上傳失敗：' + error.message, 'error');
+        recordingStatus.textContent = '';
+      } finally {
+        voiceBtn.disabled = false;
+        saveBtn.disabled = false;
+      }
+    }
+
+    // 文字儲存功能
+    saveBtn.addEventListener('click', async () => {
+      const userId = document.getElementById('userId').value;
+      const fileName = document.getElementById('noteTitle').value;
+      const fileContent = document.getElementById('fileContent').value;
+
+      if (!fileName || !fileContent) {
+        showStatus('請填寫標題和內容', 'error');
+        return;
+      }
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = '處理中...';
+      
+      try {
+        const response = await fetch(CONFIG.uploadUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            userId: userId,
+            fileName: fileName,
+            fileType: 'text',
+            fileContent: fileContent
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.text();
+        
+        if (result && result.includes('成功儲存')) {
+          showStatus('筆記已成功儲存！', 'success');
+          document.getElementById('noteTitle').value = '';
+          document.getElementById('fileContent').value = '';
+        } else {
+          showStatus('儲存失敗：未收到有效回應', 'error');
+        }
+      } catch (error) {
+        console.error('詳細錯誤:', error);
+        if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+          showStatus('連接失敗：無法連接到服務器，請檢查網路或服務狀態', 'error');
+        } else {
+          showStatus('處理失敗：' + error.message, 'error');
+        }
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 儲存並分析';
+      }
+    });
+
+    // 語音按鈕事件
+    voiceBtn.addEventListener('click', toggleRecording);
+
+    // 搜尋筆記
+    searchBtn.addEventListener('click', async () => {
+      const keyword = document.getElementById('searchKeyword').value;
+      
+      if (!keyword) {
+        showStatus('請輸入搜尋關鍵字', 'error');
+        return;
+      }
+
+      searchBtn.disabled = true;
+      searchBtn.textContent = '搜尋中...';
+
+      try {
+        const response = await fetch(CONFIG.searchUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            keyword: keyword
+          })
+        });
+
+        const result = await response.json();
+        
+        if (result.success && result.records) {
+          displaySearchResults(result.records);
+        } else {
+          searchResults.innerHTML = '<p>沒有找到相關筆記</p>';
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        searchResults.innerHTML = '<p>搜尋失敗，請重試</p>';
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.textContent = '🔍 搜尋';
+      }
+    });
+
+    function displaySearchResults(records) {
+      searchResults.innerHTML = '';
+      
+      const controlsDiv = document.createElement('div');
+      controlsDiv.className = 'selection-controls';
+      controlsDiv.innerHTML = `
+        <button class="btn" id="selectAllBtn">全選</button>
+        <button class="btn" id="clearSelectionBtn">清空選擇</button>
+        <span id="selectedCount">已選擇: 0 篇</span>
+      `;
+      searchResults.appendChild(controlsDiv);
+      
+      document.getElementById('selectAllBtn').addEventListener('click', () => {
+        const checkboxes = searchResults.querySelectorAll('.note-checkbox');
+        checkboxes.forEach(checkbox => {
+          if (!checkbox.checked) {
+            checkbox.checked = true;
+            checkbox.dispatchEvent(new Event('change'));
+          }
+        });
+      });
+      
+      document.getElementById('clearSelectionBtn').addEventListener('click', () => {
+        const checkboxes = searchResults.querySelectorAll('.note-checkbox');
+        checkboxes.forEach(checkbox => {
+          if (checkbox.checked) {
+            checkbox.checked = false;
+            checkbox.dispatchEvent(new Event('change'));
+          }
+        });
+      });
+      
+      records.forEach((record, index) => {
+        const div = document.createElement('div');
+        div.className = 'search-item';
+        div.innerHTML = `
+          <input type="checkbox" id="note_${index}" class="note-checkbox" data-index="${index}">
+          <div class="search-item-content">
+            <label for="note_${index}">
+              <strong>${record.json?.FileName || '無標題'}</strong>
+              <p>${(record.json?.Content || '').substring(0, 100)}...</p>
+            </label>
+          </div>
+        `;
+        
+        const checkbox = div.querySelector('.note-checkbox');
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) {
+            selectedNotes.push(record);
+            div.classList.add('selected');
+          } else {
+            selectedNotes = selectedNotes.filter(note => 
+              note.json?.FileName !== record.json?.FileName
+            );
+            div.classList.remove('selected');
+          }
+          
+          updateSelectedNotes();
+        });
+        
+        div.addEventListener('click', (e) => {
+          if (e.target.type !== 'checkbox') {
+            checkbox.checked = !checkbox.checked;
+            checkbox.dispatchEvent(new Event('change'));
+          }
+        });
+        
+        searchResults.appendChild(div);
+      });
+    }
+
+    function updateSelectedNotes() {
+      const count = selectedNotes.length;
+      document.getElementById('selectedCount').textContent = `已選擇: ${count} 篇`;
+      
+      if (count > 0) {
+        currentSelectedNote = selectedNotes;
+        selectedNote.textContent = `選定的筆記：${count} 篇 (${selectedNotes.map(note => note.json?.FileName || '無標題').join(', ')})`;
+        chatInput.disabled = false;
+        sendBtn.disabled = false;
+        
+        chatBox.innerHTML = `
+          <div class="chat-message ai">
+已選定 ${count} 篇筆記：
+${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('\n')}
+
+現在你可以問我關於這些筆記的任何問題！
+          </div>
+        `;
+      } else {
+        currentSelectedNote = null;
+        selectedNote.textContent = '選定的筆記：尚未選擇';
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
+        
+        chatBox.innerHTML = '<div class="chat-message ai">歡迎使用 AI 瞬間筆記！搜尋筆記後，請選擇筆記開始AI智能對話，或直接以文字或錄音創建新筆記。</div>';
+      }
+    }
+
+    // AI 討論
+    sendBtn.addEventListener('click', async () => {
+      const userMessage = chatInput.value.trim();
+      
+      if (!userMessage || !currentSelectedNote) return;
+
+      const userDiv = document.createElement('div');
+      userDiv.className = 'chat-message user';
+      userDiv.textContent = userMessage;
+      chatBox.appendChild(userDiv);
+
+      chatInput.value = '';
+      sendBtn.disabled = true;
+      sendBtn.textContent = '思考中...';
+
+      try {
+        let noteContent = '';
+        
+        if (Array.isArray(currentSelectedNote)) {
+          noteContent = combineNotesContent(currentSelectedNote);
+        } else {
+          noteContent = currentSelectedNote.json?.Content || '';
+        }
+        
+        const response = await fetch(CONFIG.discussUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            noteContent: noteContent,
+            question: userMessage
+          })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          const aiDiv = document.createElement('div');
+          aiDiv.className = 'chat-message ai';
+          
+          const messageContent = document.createElement('span');
+          messageContent.className = 'message-content';
+          messageContent.textContent = result.answer;
+          
+          aiDiv.appendChild(messageContent);
+          chatBox.appendChild(aiDiv);
+        } else {
+          const aiDiv = document.createElement('div');
+          aiDiv.className = 'chat-message ai';
+          aiDiv.textContent = '抱歉，我現在無法回答這個問題，請稍後再試。';
+          chatBox.appendChild(aiDiv);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        const aiDiv = document.createElement('div');
+        aiDiv.className = 'chat-message ai';
+        aiDiv.textContent = '連接失敗，請檢查網路連線。';
+        chatBox.appendChild(aiDiv);
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = '🤖 與 AI 討論';
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+    });
+
+    // Enter 鍵發送訊息
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (!sendBtn.disabled) {
+          sendBtn.click();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
