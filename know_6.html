@@ -959,6 +959,10 @@ if (result.success) {
     <button class="copy-btn" onclick="copyText(this, '${errorMsg}')">📋</button>
   `;
   chatBox.appendChild(aiDiv);
+} finally {
+  sendBtn.disabled = false;
+  sendBtn.textContent = '🤖 與 AI 討論';
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
     });
 
