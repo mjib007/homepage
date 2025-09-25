@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台股現金流量分析工具</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .input-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .input-field {
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            width: 200px;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .analyze-btn {
+            padding: 12px 30px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .analyze-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #666;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .results {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .charts-section {
+            flex: 1;
+            padding: 30px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .analysis-section {
+            flex: 1;
+            padding: 30px;
+            background: white;
+            overflow-y: auto;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .main-chart {
+            height: 350px;
+        }
+
+        .sub-charts {
+            display: flex;
+            gap: 20px;
+        }
+
+        .sub-chart {
+            flex: 1;
+            height: 200px;
+        }
+
+        .score-gauge {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            position: relative;
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+        }
+
+        .gauge-bg {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(#f44336 0deg 72deg, #ff9800 72deg 144deg, #4caf50 144deg 360deg);
+            padding: 10px;
+        }
+
+        .gauge-inner {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .gauge-score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .gauge-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .stock-info {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #2196f3;
+        }
+
+        .stock-info h2 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .rules-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .rules-table th {
+            background: #34495e;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .rules-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .rules-table tr:hover td {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-good {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-average {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-poor {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .recommendation {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .note {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        @media (max-width: 1024px) {
+            .results {
+                flex-direction: column;
+            }
+
+            .charts-section {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            .sub-charts {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            .input-field {
+                width: 100%;
+            }
+
+            .rules-table {
+                font-size: 0.8rem;
+            }
+
+            .rules-table th,
+            .rules-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 台股現金流量分析工具</h1>
+            <p>輸入股票代號，獲得專業現金流量健康度分析</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="stockCode" 
+                    class="input-field" 
+                    placeholder="請輸入股票代號 (例：2330)"
+                    maxlength="10"
+                >
+                <button id="analyzeBtn" class="analyze-btn">開始分析</button>
+            </div>
+        </div>
+
+        <div id="loadingSection" class="loading" style="display: none;">
+            正在分析現金流量數據，請稍候...
+        </div>
+
+        <div id="resultsSection" class="results" style="display: none;">
+            <!-- 左側圖表區 -->
+            <div class="charts-section">
+                <div class="chart-container">
+                    <div class="chart-title">📈 現金流量趨勢分析</div>
+                    <canvas id="trendChart" class="main-chart"></canvas>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #4CAF50;"></div>
+                            <span>營運現金流</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #FF9800;"></div>
+                            <span>投資現金流</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #2196F3;"></div>
+                            <span>融資現金流</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-charts">
+                    <div class="chart-container">
+                        <div class="chart-title">🎯 整體健康度</div>
+                        <div class="score-gauge" id="scoreGauge">
+                            <!-- 評分儀表板將在這裡顯示 -->
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-title">💰 現金流品質</div>
+                        <canvas id="qualityChart" class="sub-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側分析區 -->
+            <div class="analysis-section">
+                <div id="analysisContent">
+                    <!-- 分析內容將在這裡顯示 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API 基礎網址 - 已更新為實際部署網址
+        const API_BASE_URL = 'https://cashflow-api.zeabur.app';
+
+        const stockCodeInput = document.getElementById('stockCode');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loadingSection = document.getElementById('loadingSection');
+        const resultsSection = document.getElementById('resultsSection');
+
+        let trendChart = null;
+        let qualityChart = null;
+
+        // Enter 鍵觸發分析
+        stockCodeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeStock();
+            }
+        });
+
+        // 按鈕點擊觸發分析
+        analyzeBtn.addEventListener('click', analyzeStock);
+
+        async function analyzeStock() {
+            const stockCode = stockCodeInput.value.trim();
+            
+            if (!stockCode) {
+                alert('請輸入股票代號');
+                return;
+            }
+
+            if (stockCode.length < 4) {
+                alert('股票代號至少需要4位數');
+                return;
+            }
+
+            // 顯示載入狀態
+            loadingSection.style.display = 'block';
+            resultsSection.style.display = 'none';
+            analyzeBtn.disabled = true;
+
+            try {
+                // 同時獲取分析結果和原始資料
+                const [analysisResponse, rawDataResponse] = await Promise.all([
+                    fetch(`${API_BASE_URL}/analyze/${stockCode}`),
+                    fetch(`${API_BASE_URL}/raw-data/${stockCode}`)
+                ]);
+
+                const analysisData = await analysisResponse.json();
+                const rawData = await rawDataResponse.json();
+
+                if (analysisData.success && rawData.success) {
+                    displayResults(analysisData, rawData);
+                } else {
+                    displayError(analysisData.error || rawData.error || '分析失敗，請稍後再試');
+                }
+            } catch (error) {
+                console.error('API 請求錯誤:', error);
+                displayError('無法連接到分析服務，請檢查網路連線或聯絡管理員');
+            } finally {
+                loadingSection.style.display = 'none';
+                analyzeBtn.disabled = false;
+            }
+        }
+
+        function displayResults(analysisData, rawData) {
+            // 顯示結果區域
+            resultsSection.style.display = 'flex';
+
+            // 渲染圖表
+            renderCharts(rawData.financial_data, analysisData);
+
+            // 渲染分析內容
+            renderAnalysis(analysisData);
+        }
+
+        function renderCharts(financialData, analysisData) {
+            // 準備圖表數據
+            const labels = financialData.map(item => `${item.year}Q${item.quarter}`);
+            const operatingFlow = financialData.map(item => (item.CashFlowsFromOperatingActivities || 0) / 1e8);
+            const investingFlow = financialData.map(item => (item.CashProvidedByInvestingActivities || 0) / 1e8);
+            const financingFlow = financialData.map(item => (item.CashFlowsProvidedFromFinancingActivities || 0) / 1e8);
+            const netIncome = financialData.map(item => (item.NetIncomeBeforeTax || 0) / 1e8);
+
+            // 1. 現金流量趨勢圖
+            const ctx1 = document.getElementById('trendChart').getContext('2d');
+            if (trendChart) trendChart.destroy();
+            
+            trendChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '營運現金流',
+                            data: operatingFlow,
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: '投資現金流',
+                            data: investingFlow,
+                            borderColor: '#FF9800',
+                            backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: '融資現金流',
+                            data: financingFlow,
+                            borderColor: '#2196F3',
+                            backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: '現金流量 (十億台幣)'
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            radius: 4,
+                            hoverRadius: 6
+                        }
+                    }
+                }
+            });
+
+            // 2. 評分儀表板
+            renderScoreGauge(analysisData);
+
+            // 3. 現金流品質散點圖
+            const ctx3 = document.getElementById('qualityChart').getContext('2d');
+            if (qualityChart) qualityChart.destroy();
+
+            qualityChart = new Chart(ctx3, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: '現金流 vs 淨利',
+                        data: financialData.map(item => ({
+                            x: (item.NetIncomeBeforeTax || 0) / 1e8,
+                            y: (item.CashFlowsFromOperatingActivities || 0) / 1e8
+                        })),
+                        backgroundColor: 'rgba(103, 126, 234, 0.6)',
+                        borderColor: '#667eea',
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '稅前淨利 (十億)'
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '營運現金流 (十億)'
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderScoreGauge(analysisData) {
+            const rules = analysisData.analysis.rules_analysis;
+            const scores = Object.values(rules).map(rule => rule.score || 0);
+            const totalScore = scores.reduce((a, b) => a + b, 0);
+            const maxScore = scores.length * 3;
+            const percentage = Math.round((totalScore / maxScore) * 100);
+
+            let gaugeColor = '#f44336';
+            if (percentage >= 80) gaugeColor = '#4caf50';
+            else if (percentage >= 60) gaugeColor = '#ff9800';
+
+            const gaugeContainer = document.getElementById('scoreGauge');
+            gaugeContainer.innerHTML = `
+                <div class="gauge-container">
+                    <div class="gauge-bg">
+                        <div class="gauge-inner">
+                            <div class="gauge-score" style="color: ${gaugeColor};">${percentage}%</div>
+                            <div class="gauge-label">健康度評分</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAnalysis(data) {
+            const analysis = data.analysis;
+            const rules = analysis.rules_analysis;
+            
+            // 計算總分
+            const scores = Object.values(rules).map(rule => rule.score || 0);
+            const totalScore = scores.reduce((a, b) => a + b, 0);
+            const maxScore = scores.length * 3;
+            const percentage = Math.round((totalScore / maxScore) * 100);
+
+            // 判斷等級
+            let recommendation = '';
+            if (percentage >= 80) {
+                recommendation = '✅ 優秀的現金流量狀況，值得關注';
+            } else if (percentage >= 60) {
+                recommendation = '⚠️ 一般的現金流量狀況，需要觀察';
+            } else {
+                recommendation = '❌ 現金流量狀況不佳，請謹慎考慮';
+            }
+
+            const html = `
+                <div class="stock-info">
+                    <h2>股票代號：${data.stock_code}</h2>
+                    <p><strong>分析時間：</strong>${new Date(data.timestamp).toLocaleString('zh-TW')}</p>
+                    <p><strong>資料期間：</strong>${analysis.latest_date || '無資料'}</p>
+                    <p><strong>資料點數：</strong>${analysis.data_points} 個季度</p>
+                </div>
+
+                <div class="recommendation">
+                    <strong>投資建議：</strong>${recommendation}
+                </div>
+
+                <h3 style="margin-bottom: 15px; color: #2c3e50;">📋 六大分析規則</h3>
+                <table class="rules-table">
+                    <thead>
+                        <tr>
+                            <th>分析項目</th>
+                            <th>狀態</th>
+                            <th>得分</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${generateRulesTableRows(rules)}
+                    </tbody>
+                </table>
+
+                <div class="note">
+                    <strong>💡 說明：</strong>本分析基於季度現金流量數據，評分標準：優秀(3分) | 一般(2分) | 不佳(1分)
+                </div>
+            `;
+
+            document.getElementById('analysisContent').innerHTML = html;
+        }
+
+        function generateRulesTableRows(rules) {
+            const ruleNames = {
+                'operating_growth': '營運現金流成長',
+                'investment_health': '投資現金流健康度',
+                'cashflow_quality': '現金流品質',
+                'financing_stability': '融資穩定性',
+                'cash_conversion': '現金轉換效率',
+                'liquidity_management': '流動性管理'
+            };
+
+            let rows = '';
+            for (const [key, rule] of Object.entries(rules)) {
+                const ruleName = ruleNames[key] || key;
+                const statusClass = `status-${rule.status.toLowerCase()}`;
+                const statusText = rule.status === 'GOOD' ? '優秀' : 
+                                 rule.status === 'AVERAGE' ? '一般' : '不佳';
+
+                rows += `
+                    <tr>
+                        <td><strong>${ruleName}</strong><br><small style="color: #666;">${rule.description}</small></td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td><strong>${rule.score}/3</strong></td>
+                    </tr>
+                `;
+            }
+            return rows;
+        }
+
+        function displayError(message) {
+            resultsSection.innerHTML = `
+                <div class="error">
+                    <h3>❌ 分析失敗</h3>
+                    <p>${message}</p>
+                    <br>
+                    <p><strong>可能原因：</strong></p>
+                    <ul>
+                        <li>股票代號不存在或格式錯誤</li>
+                        <li>該股票缺乏現金流量數據</li>
+                        <li>網路連線問題</li>
+                        <li>API 服務暫時不可用</li>
+                    </ul>
+                </div>
+            `;
+            resultsSection.style.display = 'block';
+        }
+
+        // 頁面載入完成後自動聚焦輸入框
+        window.addEventListener('load', function() {
+            stockCodeInput.focus();
+        });
+    </script>
+</body>
+</html>
