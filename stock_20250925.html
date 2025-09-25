@@ -373,6 +373,7 @@
         <div class="header">
             <h1>📊 台股現金流量分析工具</h1>
             <p>輸入股票代號，獲得專業現金流量健康度分析</p>
+            <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 10px;">網頁版本: v2.1 | API: https://cashflow-api.zeabur.app</p>
         </div>
 
         <div class="input-section">
@@ -479,23 +480,39 @@
             analyzeBtn.disabled = true;
 
             try {
-                // 同時獲取分析結果和原始資料
-                const [analysisResponse, rawDataResponse] = await Promise.all([
-                    fetch(`${API_BASE_URL}/analyze/${stockCode}`),
-                    fetch(`${API_BASE_URL}/raw-data/${stockCode}`)
-                ]);
-
+                console.log('開始分析股票:', stockCode);
+                
+                // 先獲取分析結果
+                const analysisResponse = await fetch(`${API_BASE_URL}/analyze/${stockCode}`);
+                console.log('分析API回應狀態:', analysisResponse.status);
+                
                 const analysisData = await analysisResponse.json();
-                const rawData = await rawDataResponse.json();
+                console.log('分析資料:', analysisData);
 
-                if (analysisData.success && rawData.success) {
-                    displayResults(analysisData, rawData);
-                } else {
-                    displayError(analysisData.error || rawData.error || '分析失敗，請稍後再試');
+                if (!analysisData.success) {
+                    displayError(analysisData.error || '分析失敗，請稍後再試');
+                    return;
                 }
+
+                // 再獲取原始資料
+                const rawDataResponse = await fetch(`${API_BASE_URL}/raw-data/${stockCode}`);
+                console.log('原始資料API回應狀態:', rawDataResponse.status);
+                
+                const rawData = await rawDataResponse.json();
+                console.log('原始資料:', rawData);
+
+                if (!rawData.success) {
+                    // 如果原始資料失敗，只顯示分析結果
+                    console.warn('原始資料獲取失敗，只顯示分析結果');
+                    displayResults(analysisData, null);
+                    return;
+                }
+
+                displayResults(analysisData, rawData);
+                
             } catch (error) {
                 console.error('API 請求錯誤:', error);
-                displayError('無法連接到分析服務，請檢查網路連線或聯絡管理員');
+                displayError('無法連接到分析服務，請檢查網路連線或聯絡管理員\n錯誤詳情: ' + error.message);
             } finally {
                 loadingSection.style.display = 'none';
                 analyzeBtn.disabled = false;
@@ -506,24 +523,57 @@
             // 顯示結果區域
             resultsSection.style.display = 'flex';
 
-            // 渲染圖表
-            renderCharts(rawData.financial_data, analysisData);
+            if (rawData && rawData.financial_data && rawData.financial_data.length > 0) {
+                // 有原始資料，渲染圖表
+                renderCharts(rawData.financial_data, analysisData);
+            } else {
+                // 沒有原始資料，顯示提示訊息
+                console.warn('沒有圖表資料，只顯示分析結果');
+                document.querySelector('.charts-section').innerHTML = `
+                    <div class="chart-container">
+                        <div style="text-align: center; padding: 50px; color: #666;">
+                            <h3>📊 圖表資料不足</h3>
+                            <p>該股票的現金流量歷史資料不足以生成圖表</p>
+                            <p>但仍可查看右側的分析結果</p>
+                        </div>
+                    </div>
+                `;
+            }
 
             // 渲染分析內容
             renderAnalysis(analysisData);
         }
 
         function renderCharts(financialData, analysisData) {
+            console.log('開始渲染圖表，資料筆數:', financialData.length);
+            console.log('財務資料樣本:', financialData[0]);
+            
             // 準備圖表數據
             const labels = financialData.map(item => `${item.year}Q${item.quarter}`);
-            const operatingFlow = financialData.map(item => (item.CashFlowsFromOperatingActivities || 0) / 1e8);
-            const investingFlow = financialData.map(item => (item.CashProvidedByInvestingActivities || 0) / 1e8);
-            const financingFlow = financialData.map(item => (item.CashFlowsProvidedFromFinancingActivities || 0) / 1e8);
-            const netIncome = financialData.map(item => (item.NetIncomeBeforeTax || 0) / 1e8);
+            const operatingFlow = financialData.map(item => {
+                const value = item.CashFlowsFromOperatingActivities;
+                return (value && !isNaN(value)) ? value / 1e8 : 0;
+            });
+            const investingFlow = financialData.map(item => {
+                const value = item.CashProvidedByInvestingActivities;
+                return (value && !isNaN(value)) ? value / 1e8 : 0;
+            });
+            const financingFlow = financialData.map(item => {
+                const value = item.CashFlowsProvidedFromFinancingActivities;
+                return (value && !isNaN(value)) ? value / 1e8 : 0;
+            });
+
+            console.log('圖表標籤:', labels);
+            console.log('營運現金流:', operatingFlow);
+            console.log('投資現金流:', investingFlow);
+            console.log('融資現金流:', financingFlow);
 
             // 1. 現金流量趨勢圖
             const ctx1 = document.getElementById('trendChart').getContext('2d');
-            if (trendChart) trendChart.destroy();
+            if (trendChart) {
+                trendChart.destroy();
+                trendChart = null;
+            }
             
             trendChart = new Chart(ctx1, {
                 type: 'line',
@@ -536,7 +586,9 @@
                             borderColor: '#4CAF50',
                             backgroundColor: 'rgba(76, 175, 80, 0.1)',
                             tension: 0.4,
-                            fill: true
+                            fill: false,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
                         },
                         {
                             label: '投資現金流',
@@ -544,7 +596,9 @@
                             borderColor: '#FF9800',
                             backgroundColor: 'rgba(255, 152, 0, 0.1)',
                             tension: 0.4,
-                            fill: true
+                            fill: false,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
                         },
                         {
                             label: '融資現金流',
@@ -552,7 +606,9 @@
                             borderColor: '#2196F3',
                             backgroundColor: 'rgba(33, 150, 243, 0.1)',
                             tension: 0.4,
-                            fill: true
+                            fill: false,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
                         }
                     ]
                 },
@@ -562,6 +618,15 @@
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '十億';
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -580,30 +645,39 @@
                             }
                         }
                     },
-                    elements: {
-                        point: {
-                            radius: 4,
-                            hoverRadius: 6
-                        }
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
                     }
                 }
             });
+
+            console.log('趨勢圖創建完成');
 
             // 2. 評分儀表板
             renderScoreGauge(analysisData);
 
             // 3. 現金流品質散點圖
             const ctx3 = document.getElementById('qualityChart').getContext('2d');
-            if (qualityChart) qualityChart.destroy();
+            if (qualityChart) {
+                qualityChart.destroy();
+                qualityChart = null;
+            }
+
+            const netIncome = financialData.map(item => {
+                const value = item.NetIncomeBeforeTax;
+                return (value && !isNaN(value)) ? value / 1e8 : 0;
+            });
 
             qualityChart = new Chart(ctx3, {
                 type: 'scatter',
                 data: {
                     datasets: [{
                         label: '現金流 vs 淨利',
-                        data: financialData.map(item => ({
-                            x: (item.NetIncomeBeforeTax || 0) / 1e8,
-                            y: (item.CashFlowsFromOperatingActivities || 0) / 1e8
+                        data: financialData.map((item, index) => ({
+                            x: netIncome[index],
+                            y: operatingFlow[index]
                         })),
                         backgroundColor: 'rgba(103, 126, 234, 0.6)',
                         borderColor: '#667eea',
@@ -617,6 +691,13 @@
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `淨利: ${context.parsed.x.toFixed(1)}十億, 現金流: ${context.parsed.y.toFixed(1)}十億`;
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -641,6 +722,8 @@
                     }
                 }
             });
+
+            console.log('所有圖表渲染完成');
         }
 
         function renderScoreGauge(analysisData) {
@@ -723,12 +806,12 @@
 
         function generateRulesTableRows(rules) {
             const ruleNames = {
-                'operating_growth': '營運現金流成長',
-                'investment_health': '投資現金流健康度',
+                'operating_growth': '營運現金流成長趨勢',
+                'investment_discipline': '投資活動紀律',
+                'investment_effectiveness': '投資效益分析',
+                'financing_reasonableness': '融資活動合理性',
                 'cashflow_quality': '現金流品質',
-                'financing_stability': '融資穩定性',
-                'cash_conversion': '現金轉換效率',
-                'liquidity_management': '流動性管理'
+                'cash_stability': '現金餘額穩定性'
             };
 
             let rows = '';
@@ -753,7 +836,7 @@
             resultsSection.innerHTML = `
                 <div class="error">
                     <h3>❌ 分析失敗</h3>
-                    <p>${message}</p>
+                    <p style="white-space: pre-line;">${message}</p>
                     <br>
                     <p><strong>可能原因：</strong></p>
                     <ul>
@@ -761,6 +844,13 @@
                         <li>該股票缺乏現金流量數據</li>
                         <li>網路連線問題</li>
                         <li>API 服務暫時不可用</li>
+                    </ul>
+                    <br>
+                    <p><strong>建議：</strong></p>
+                    <ul>
+                        <li>請檢查股票代號是否正確（例如：2330、0050）</li>
+                        <li>嘗試查詢其他上市公司股票</li>
+                        <li>開啟瀏覽器開發者工具查看詳細錯誤訊息</li>
                     </ul>
                 </div>
             `;
