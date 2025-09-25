@@ -150,6 +150,27 @@
             padding: 15px;
             margin-bottom: 15px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-container canvas {
+            max-height: 100% !important;
+            height: auto !important;
+        }
+
+        .main-chart-container {
+            height: 280px !important;
+            max-height: 280px !important;
+            min-height: 280px !important;
+            overflow: hidden;
+        }
+
+        .sub-chart-container {
+            height: 150px !important;
+            max-height: 150px !important;
+            min-height: 150px !important;
+            overflow: hidden;
         }
 
         .chart-title {
@@ -377,7 +398,7 @@
         <div class="header">
             <h1>📊 台股現金流量分析工具</h1>
             <p>輸入股票代號，獲得專業現金流量健康度分析</p>
-            <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 10px;">網頁版本: v2.2 | API: https://cashflow-api.zeabur.app</p>
+            <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 10px;">網頁版本: v2.4 | API: https://cashflow-api.zeabur.app</p>
         </div>
 
         <div class="input-section">
@@ -591,8 +612,8 @@
                             backgroundColor: 'rgba(76, 175, 80, 0.1)',
                             tension: 0.4,
                             fill: false,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
+                            pointRadius: 3,
+                            pointHoverRadius: 5
                         },
                         {
                             label: '投資現金流',
@@ -601,8 +622,8 @@
                             backgroundColor: 'rgba(255, 152, 0, 0.1)',
                             tension: 0.4,
                             fill: false,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
+                            pointRadius: 3,
+                            pointHoverRadius: 5
                         },
                         {
                             label: '融資現金流',
@@ -611,15 +632,14 @@
                             backgroundColor: 'rgba(33, 150, 243, 0.1)',
                             tension: 0.4,
                             fill: false,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
+                            pointRadius: 3,
+                            pointHoverRadius: 5
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    aspectRatio: 2,
                     plugins: {
                         legend: {
                             display: false
@@ -662,11 +682,6 @@
                                 }
                             }
                         }
-                    },
-                    interaction: {
-                        mode: 'nearest',
-                        axis: 'x',
-                        intersect: false
                     }
                 }
             });
@@ -699,14 +714,13 @@
                         })),
                         backgroundColor: 'rgba(103, 126, 234, 0.6)',
                         borderColor: '#667eea',
-                        pointRadius: 6,
-                        pointHoverRadius: 8
+                        pointRadius: 4,
+                        pointHoverRadius: 6
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    aspectRatio: 1.5,
                     plugins: {
                         legend: {
                             display: false
