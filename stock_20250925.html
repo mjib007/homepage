@@ -123,7 +123,8 @@
 
         .results {
             display: flex;
-            min-height: 600px;
+            height: 800px;
+            max-height: 80vh;
         }
 
         .charts-section {
@@ -131,6 +132,8 @@
             padding: 30px;
             background: #f8f9fa;
             border-right: 1px solid #e9ecef;
+            overflow-y: auto;
+            max-height: 100%;
         }
 
         .analysis-section {
@@ -138,6 +141,7 @@
             padding: 30px;
             background: white;
             overflow-y: auto;
+            max-height: 100%;
         }
 
         .chart-container {
