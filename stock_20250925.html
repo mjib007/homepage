@@ -619,6 +619,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    aspectRatio: 2,
                     plugins: {
                         legend: {
                             display: false
@@ -637,15 +638,28 @@
                         y: {
                             title: {
                                 display: true,
-                                text: '現金流量 (十億台幣)'
+                                text: '現金流量 (十億台幣)',
+                                font: {
+                                    size: 12
+                                }
                             },
                             grid: {
                                 color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
                             }
                         },
                         x: {
                             grid: {
                                 display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 10
+                                }
                             }
                         }
                     },
@@ -692,6 +706,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    aspectRatio: 1.5,
                     plugins: {
                         legend: {
                             display: false
@@ -708,19 +723,35 @@
                         x: {
                             title: {
                                 display: true,
-                                text: '稅前淨利 (十億)'
+                                text: '稅前淨利 (十億)',
+                                font: {
+                                    size: 10
+                                }
                             },
                             grid: {
                                 color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 9
+                                }
                             }
                         },
                         y: {
                             title: {
                                 display: true,
-                                text: '營運現金流 (十億)'
+                                text: '營運現金流 (十億)',
+                                font: {
+                                    size: 10
+                                }
                             },
                             grid: {
                                 color: 'rgba(0,0,0,0.1)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 9
+                                }
                             }
                         }
                     }
