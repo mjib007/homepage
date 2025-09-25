@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台股現金流量分析查詢</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .version-info {
+            color: #95a5a6;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .stock-input {
+            width: 100%;
+            max-width: 300px;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            border: 3px solid #e9ecef;
+            border-radius: 10px;
+            text-align: center;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            outline: none;
+            font-weight: bold;
+        }
+
+        .stock-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .stock-input::placeholder {
+            color: #bdc3c7;
+            font-weight: normal;
+        }
+
+        .analyze-button {
+            width: 100%;
+            max-width: 300px;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .analyze-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .analyze-button:active {
+            transform: translateY(0);
+        }
+
+        .analyze-button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 20px;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #bdc3c7;
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .examples {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        .examples h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .example-stocks {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .example-stock {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            border: 2px solid #e9ecef;
+            font-size: 0.9rem;
+        }
+
+        .example-stock:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .features {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .features h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            color: #5a6c7d;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .error-message {
+            display: none;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .stock-input, .analyze-button {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 台股現金流量分析</h1>
+            <p>輸入股票代號，獲得專業現金流量健康度分析</p>
+            <div class="version-info">系統版本: v1.0 | 支援季度資料分析</div>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="stockCode" 
+                    class="stock-input" 
+                    placeholder="請輸入股票代號 (如: 2330)"
+                    maxlength="6"
+                    pattern="[0-9]+"
+                >
+                <button id="analyzeBtn" class="analyze-button">
+                    開始分析
+                </button>
+                <div id="loading" class="loading">
+                    正在分析現金流量數據，請稍候...
+                </div>
+                <div id="errorMessage" class="error-message"></div>
+            </div>
+        </div>
+
+        <div class="examples">
+            <h3>熱門股票範例</h3>
+            <div class="example-stocks">
+                <div class="example-stock" onclick="fillStock('2330')">2330 台積電</div>
+                <div class="example-stock" onclick="fillStock('2317')">2317 鴻海</div>
+                <div class="example-stock" onclick="fillStock('2454')">2454 聯發科</div>
+                <div class="example-stock" onclick="fillStock('2382')">2382 廣達</div>
+                <div class="example-stock" onclick="fillStock('2408')">2408 南亞科</div>
+                <div class="example-stock" onclick="fillStock('0050')">0050 元大台灣50</div>
+            </div>
+        </div>
+
+        <div class="features">
+            <h3>分析功能特色</h3>
+            <ul class="feature-list">
+                <li>完整的現金流量數據表格展示</li>
+                <li>六大專業分析規則評估</li>
+                <li>營運現金流成長趨勢分析</li>
+                <li>投資活動紀律與效益評估</li>
+                <li>融資活動合理性檢查</li>
+                <li>現金流品質與管理穩定性分析</li>
+                <li>綜合評分與投資建議</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const stockCodeInput = document.getElementById('stockCode');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // API URL - 您的 n8n webhook 網址
+        const API_BASE_URL = 'https://kf0630.zeabur.app/webhook/cashflow-analysis';
+
+        // Enter 鍵觸發
+        stockCodeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeStock();
+            }
+        });
+
+        // 按鈕點擊觸發
+        analyzeBtn.addEventListener('click', analyzeStock);
+
+        // 只允許輸入數字
+        stockCodeInput.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
+
+        // 範例股票填入功能
+        function fillStock(stockCode) {
+            stockCodeInput.value = stockCode;
+            stockCodeInput.focus();
+        }
+
+        // 主要分析函數
+        async function analyzeStock() {
+            const stockCode = stockCodeInput.value.trim();
+
+            // 輸入驗證
+            if (!stockCode) {
+                showError('請輸入股票代號');
+                return;
+            }
+
+            if (stockCode.length < 4) {
+                showError('股票代號至少需要4位數字');
+                return;
+            }
+
+            if (!/^\d+$/.test(stockCode)) {
+                showError('股票代號只能包含數字');
+                return;
+            }
+
+            // 開始分析
+            hideError();
+            setLoading(true);
+
+            try {
+                // 調用 n8n webhook
+                const response = await fetch(API_BASE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        stock_code: stockCode
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                // 獲取HTML結果並顯示
+                const htmlResult = await response.text();
+                
+                // 在新視窗中顯示結果
+                const newWindow = window.open('', '_blank');
+                newWindow.document.write(htmlResult);
+                newWindow.document.close();
+
+            } catch (error) {
+                console.error('分析錯誤:', error);
+                showError('分析失敗，請稍後再試。錯誤: ' + error.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                loading.style.display = 'block';
+                analyzeBtn.disabled = true;
+                analyzeBtn.textContent = '分析中...';
+            } else {
+                loading.style.display = 'none';
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = '開始分析';
+            }
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+
+        // 頁面載入時自動聚焦
+        window.addEventListener('load', function() {
+            stockCodeInput.focus();
+        });
+    </script>
+</body>
+</html>
