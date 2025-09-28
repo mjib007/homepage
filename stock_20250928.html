@@ -279,6 +279,7 @@
             display: flex;
             gap: 10px;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -296,6 +297,11 @@
 
         .btn-view {
             background: #3498db;
+            color: white;
+        }
+
+        .btn-download {
+            background: #27ae60;
             color: white;
         }
 
@@ -495,6 +501,10 @@
             .tabs {
                 flex-direction: column;
             }
+
+            .card-actions {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -597,6 +607,8 @@
         const ANALYZE_API_URL = 'https://kf0630.zeabur.app/webhook/cashflow-analysis';
         const SEARCH_API_URL = 'https://kf0630.zeabur.app/webhook/search-stock-reports';
         const DISCUSS_API_URL = 'https://kf0630.zeabur.app/webhook/discuss-report';
+
+        let currentFileId = null;
 
         // Tab 切換
         function switchTab(tabName) {
@@ -717,7 +729,7 @@
             if (!result.success || result.count === 0) {
                 resultsDiv.innerHTML = `
                     <div class="empty-state">
-                        <p>沒有找到 ${result.stock_code} 的分析記錄</p>
+                        <p>沒有找到 ${result.stock_code || '該'} 的分析記錄</p>
                         <p style="margin-top: 10px; font-size: 0.9rem; color: #aaa;">試試先做一次新分析，報告會自動儲存到 Google Drive</p>
                     </div>
                 `;
@@ -751,6 +763,88 @@
             `;
             
             resultsDiv.innerHTML = html;
+        }
+
+        // 討論功能
+        async function startDiscussion(fileId, stockCode) {
+            currentFileId = fileId;
+            document.getElementById('modalTitle').textContent = `${stockCode} - 現金流量分析討論`;
+            
+            // 重置對話記錄
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="message ai">
+                    <div class="message-label">AI 助手</div>
+                    <div>您好！我是專業的現金流量分析師。請問您對 ${stockCode} 的分析報告有什麼問題嗎？我可以幫您解釋具體的數據指標或投資建議。</div>
+                </div>
+            `;
+            
+            document.getElementById('discussModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('discussModal').style.display = 'none';
+            currentFileId = null;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const question = input.value.trim();
+            
+            if (!question || !currentFileId) return;
+
+            // 顯示用戶訊息
+            addMessage('user', question);
+            input.value = '';
+
+            try {
+                const response = await fetch(DISCUSS_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        file_id: currentFileId, 
+                        question: question 
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const result = await response.json();
+                addMessage('ai', result.answer);
+
+            } catch (error) {
+                console.error('討論錯誤:', error);
+                addMessage('ai', '抱歉，目前無法回應您的問題，請稍後再試。');
+            }
+        }
+
+        function addMessage(type, content) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const label = type === 'user' ? '您' : 'AI 助手';
+            messageDiv.innerHTML = `
+                <div class="message-label">${label}</div>
+                <div>${content}</div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Enter 鍵發送訊息
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // 點擊 modal 外部關閉
+        window.onclick = function(event) {
+            const modal = document.getElementById('discussModal');
+            if (event.target === modal) {
+                closeModal();
+            }
         }
 
         // 工具函數
