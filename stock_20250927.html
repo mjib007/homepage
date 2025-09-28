@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台股現金流量分析系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .version-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: white;
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .tab:hover:not(.active) {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 新分析頁面樣式 */
+        .analyze-section {
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .stock-input {
+            width: 100%;
+            max-width: 300px;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            border: 3px solid #e9ecef;
+            border-radius: 10px;
+            text-align: center;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            outline: none;
+            font-weight: bold;
+        }
+
+        .stock-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .analyze-button {
+            width: 100%;
+            max-width: 300px;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .analyze-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .analyze-button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .examples {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        .example-stocks {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .example-stock {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #e9ecef;
+            font-size: 0.9rem;
+        }
+
+        .example-stock:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* 搜尋頁面樣式 */
+        .search-form {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .search-btn {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s;
+            height: fit-content;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            border: 2px solid #ecf0f1;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .result-card:hover {
+            border-color: #3498db;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stock-code {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .file-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .file-info p {
+            margin: 5px 0;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-view {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-download {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #bdc3c7;
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            display: none;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+            text-align: center;
+        }
+
+        .success-message {
+            display: none;
+            margin: 15px 0;
+            padding: 15px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 50px;
+        }
+
+        .search-result-header {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e8f5e8;
+            border-radius: 8px;
+            text-align: center;
+            color: #2d5a2d;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                flex-direction: column;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>台股現金流量分析系統</h1>
+            <p>專業現金流量健康度分析與歷史記錄查詢</p>
+            <div class="version-info">系統版本: v1.0 | 支援季度資料分析 | 自動儲存至 Google Drive</div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('analyze')">新增分析</button>
+            <button class="tab" onclick="switchTab('search')">搜尋記錄</button>
+        </div>
+
+        <!-- 新增分析頁面 -->
+        <div id="analyzeTab" class="tab-content active">
+            <div class="analyze-section">
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="stockCode" 
+                        class="stock-input" 
+                        placeholder="請輸入股票代號 (如: 2330)"
+                        maxlength="6"
+                        pattern="[0-9]+"
+                    >
+                    <button id="analyzeBtn" class="analyze-button">開始分析</button>
+                </div>
+
+                <div id="analyzeLoading" class="loading">
+                    正在分析現金流量數據，請稍候...
+                </div>
+                <div id="analyzeError" class="error-message"></div>
+                <div id="analyzeSuccess" class="success-message"></div>
+
+                <div class="examples">
+                    <h3>熱門股票範例</h3>
+                    <div class="example-stocks">
+                        <div class="example-stock" onclick="fillStock('2330')">2330 台積電</div>
+                        <div class="example-stock" onclick="fillStock('2317')">2317 鴻海</div>
+                        <div class="example-stock" onclick="fillStock('2454')">2454 聯發科</div>
+                        <div class="example-stock" onclick="fillStock('2382')">2382 廣達</div>
+                        <div class="example-stock" onclick="fillStock('2408')">2408 南亞科</div>
+                        <div class="example-stock" onclick="fillStock('0050')">0050 元大台灣50</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 搜尋記錄頁面 -->
+        <div id="searchTab" class="tab-content">
+            <form class="search-form" id="searchForm">
+                <div class="form-group">
+                    <label for="searchStockCode">股票代號</label>
+                    <input type="text" id="searchStockCode" placeholder="例：2330" required>
+                </div>
+                <button type="submit" class="search-btn">搜尋 Google Drive 記錄</button>
+            </form>
+
+            <div id="searchLoading" class="loading">搜尋中...</div>
+            <div id="searchError" class="error-message"></div>
+            
+            <div id="resultsDiv">
+                <div class="empty-state">
+                    <p>請輸入股票代號開始查詢 Google Drive 中的歷史分析記錄</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API URLs
+        const ANALYZE_API_URL = 'https://kf0630.zeabur.app/webhook/cashflow-analysis';
+        const SEARCH_API_URL = 'https://kf0630.zeabur.app/webhook/search-stock-reports';
+
+        // Tab 切換
+        function switchTab(tabName) {
+            // 移除所有 active 類別
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // 添加 active 類別
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        // 新增分析功能
+        const stockCodeInput = document.getElementById('stockCode');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+
+        stockCodeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') analyzeStock();
+        });
+
+        stockCodeInput.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
+
+        analyzeBtn.addEventListener('click', analyzeStock);
+
+        function fillStock(stockCode) {
+            stockCodeInput.value = stockCode;
+            stockCodeInput.focus();
+        }
+
+        async function analyzeStock() {
+            const stockCode = stockCodeInput.value.trim();
+
+            if (!stockCode) {
+                showMessage('analyzeError', '請輸入股票代號');
+                return;
+            }
+
+            if (stockCode.length < 4) {
+                showMessage('analyzeError', '股票代號至少需要4位數字');
+                return;
+            }
+
+            hideMessage('analyzeError');
+            setAnalyzeLoading(true);
+
+            try {
+                const response = await fetch(ANALYZE_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stock_code: stockCode })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const htmlResult = await response.text();
+                const newWindow = window.open('', '_blank');
+                newWindow.document.write(htmlResult);
+                newWindow.document.close();
+
+                showMessage('analyzeSuccess', '分析完成！結果已在新視窗中開啟，並自動儲存至 Google Drive。');
+
+            } catch (error) {
+                console.error('分析錯誤:', error);
+                showMessage('analyzeError', '分析失敗，請稍後再試。錯誤: ' + error.message);
+            } finally {
+                setAnalyzeLoading(false);
+            }
+        }
+
+        // 搜尋功能
+        const searchForm = document.getElementById('searchForm');
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            searchRecords();
+        });
+
+        async function searchRecords() {
+            const stockCode = document.getElementById('searchStockCode').value.trim();
+
+            if (!stockCode) {
+                showMessage('searchError', '請輸入股票代號');
+                return;
+            }
+
+            hideMessage('searchError');
+            setSearchLoading(true);
+
+            try {
+                const response = await fetch(SEARCH_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stock_code: stockCode })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const result = await response.json();
+                displaySearchResults(result);
+
+            } catch (error) {
+                console.error('搜尋錯誤:', error);
+                showMessage('searchError', '搜尋失敗，請稍後再試。');
+                document.getElementById('resultsDiv').innerHTML = '<div class="empty-state"><p>搜尋失敗</p></div>';
+            } finally {
+                setSearchLoading(false);
+            }
+        }
+
+        function displaySearchResults(result) {
+            const resultsDiv = document.getElementById('resultsDiv');
+            
+            if (!result.success || result.count === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="empty-state">
+                        <p>沒有找到 ${result.stock_code} 的分析記錄</p>
+                        <p style="margin-top: 10px; font-size: 0.9rem; color: #aaa;">試試先做一次新分析，報告會自動儲存到 Google Drive</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = `
+                <div class="search-result-header">
+                    ${result.message}
+                </div>
+                <div class="results-grid">
+                    ${result.files.map(file => `
+                        <div class="result-card">
+                            <div class="card-header">
+                                <div class="stock-code">${file.stock_code}</div>
+                            </div>
+                            <div class="file-info">
+                                <p><strong>檔案名稱：</strong>${file.name}</p>
+                                <p><strong>分析日期：</strong>${file.analysis_date}</p>
+                                <p><strong>分析時間：</strong>${file.analysis_time}</p>
+                                <p><strong>檔案大小：</strong>${file.size}</p>
+                            </div>
+                            <div class="card-actions">
+                                <a href="${file.view_url}" target="_blank" class="btn btn-view">線上查看</a>
+                                <a href="${file.download_url}" class="btn btn-download">下載報告</a>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        // 工具函數
+        function setAnalyzeLoading(loading) {
+            document.getElementById('analyzeLoading').style.display = loading ? 'block' : 'none';
+            analyzeBtn.disabled = loading;
+            analyzeBtn.textContent = loading ? '分析中...' : '開始分析';
+        }
+
+        function setSearchLoading(loading) {
+            document.getElementById('searchLoading').style.display = loading ? 'block' : 'none';
+        }
+
+        function showMessage(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+
+        function hideMessage(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+
+        // 頁面載入時聚焦
+        window.addEventListener('load', function() {
+            stockCodeInput.focus();
+        });
+    </script>
+</body>
+</html>
