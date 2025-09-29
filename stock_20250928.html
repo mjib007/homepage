@@ -819,20 +819,29 @@
             }
         }
 
-        function addMessage(type, content) {
-            const messagesDiv = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}`;
-            
-            const label = type === 'user' ? '您' : 'AI 助手';
-            messageDiv.innerHTML = `
-                <div class="message-label">${label}</div>
-                <div>${content}</div>
-            `;
-            
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
+function addMessage(type, content) {
+    const messagesDiv = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}`;
+    
+    const label = type === 'user' ? '您' : 'AI 助手';
+    
+    // 建立標籤元素
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'message-label';
+    labelDiv.textContent = label;
+    
+    // 建立內容元素並設定換行樣式
+    const contentDiv = document.createElement('div');
+    contentDiv.style.whiteSpace = 'pre-wrap'; // 保留換行符號
+    contentDiv.textContent = content; // 使用 textContent 避免 HTML 轉義問題
+    
+    messageDiv.appendChild(labelDiv);
+    messageDiv.appendChild(contentDiv);
+    
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
 
         // Enter 鍵發送訊息
         document.getElementById('chatInput').addEventListener('keypress', function(e) {
