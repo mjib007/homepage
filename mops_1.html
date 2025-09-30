@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>公開資訊觀測站查詢</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .page-header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .page-header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .page-header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 900px;
+      padding: 40px;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e1e5e9;
+      border-radius: 10px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .date-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 14px 24px;
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: linear-gradient(45deg, #28a745, #20c997);
+    }
+
+    .info-box {
+      background: #f0f4ff;
+      border-left: 4px solid #667eea;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .info-box strong {
+      color: #667eea;
+    }
+
+    .status-message {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .status-success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .status-info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 30px 0 15px 0;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e1e5e9;
+    }
+
+    .results-header h2 {
+      color: #333;
+      font-size: 1.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-api {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .badge-web {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .result-count {
+      background: #f0f0f0;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      color: #666;
+      font-weight: 600;
+    }
+
+    .message-card {
+      background: #fafafa;
+      border: 2px solid #e1e5e9;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .message-card:hover {
+      border-color: #667eea;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    }
+
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .company-info {
+      flex: 1;
+    }
+
+    .company-code {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 5px;
+    }
+
+    .company-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .message-time {
+      text-align: right;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .message-subject {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .message-content {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    .message-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .tag {
+      background: #e1e5e9;
+      padding: 4px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .tag-highlight {
+      background: #fff3cd;
+      color: #856404;
+      font-weight: 600;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .page-header h1 {
+        font-size: 1.8rem;
+      }
+
+      .container {
+        padding: 25px;
+      }
+
+      .date-row {
+        grid-template-columns: 1fr;
+      }
+
+      .results-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .message-header {
+        flex-direction: column;
+      }
+
+      .message-time {
+        margin-top: 10px;
+        align-self: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>📊 公開資訊觀測站查詢</h1>
+    <p>智慧整合證交所API與網頁資料，快速查詢重大訊息</p>
+  </header>
+
+  <div class="container">
+    <div id="statusMsg"></div>
+
+    <div class="info-box">
+      <strong>智慧查詢：</strong>查詢今天自動使用證交所API（快速且有詳細說明），查詢歷史則使用網頁抓取（包含上市/上櫃/興櫃）
+    </div>
+
+    <div class="date-row">
+      <div class="form-group">
+        <label for="rocYear">民國年</label>
+        <input type="number" id="rocYear" placeholder="114">
+      </div>
+      <div class="form-group">
+        <label for="month">月</label>
+        <input type="number" id="month" min="1" max="12" placeholder="9">
+      </div>
+      <div class="form-group">
+        <label for="day">日</label>
+        <input type="number" id="day" min="1" max="31" placeholder="30">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="keyword">關鍵字（選填）</label>
+      <input type="text" id="keyword" placeholder="股利、併購、董事會...">
+    </div>
+
+    <button class="btn" id="searchBtn">🔍 查詢重大訊息</button>
+    <button class="btn btn-secondary" id="openMopsBtn">🌐 開啟觀測站網頁</button>
+
+    <div id="resultsContainer" style="display: none;">
+      <div class="results-header">
+        <div>
+          <h2>查詢結果</h2>
+          <span id="methodBadge"></span>
+        </div>
+        <span id="resultCount" class="result-count"></span>
+      </div>
+      <div id="resultsList"></div>
+    </div>
+  </div>
+
+  <script>
+    const N8N_WEBHOOK_URL = 'https://mjib007.zeabur.app/webhook/mops-search';
+
+    const statusMsg = document.getElementById('statusMsg');
+    const searchBtn = document.getElementById('searchBtn');
+    const openMopsBtn = document.getElementById('openMopsBtn');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const resultsList = document.getElementById('resultsList');
+    const methodBadge = document.getElementById('methodBadge');
+    const resultCount = document.getElementById('resultCount');
+
+    window.onload = function() {
+      const today = new Date();
+      document.getElementById('rocYear').value = today.getFullYear() - 1911;
+      document.getElementById('month').value = today.getMonth() + 1;
+      document.getElementById('day').value = today.getDate();
+    };
+
+    function showStatus(message, type = 'info') {
+      statusMsg.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+      setTimeout(() => {
+        statusMsg.innerHTML = '';
+      }, 5000);
+    }
+
+    openMopsBtn.addEventListener('click', () => {
+      const rocYear = document.getElementById('rocYear').value;
+      const month = document.getElementById('month').value;
+      const day = document.getElementById('day').value;
+      if (rocYear && month && day) {
+        window.open(`https://mops.twse.com.tw/mops/web/t05st02?year=${rocYear}&month=${month}&day=${day}`, '_blank');
+      }
+    });
+
+    searchBtn.addEventListener('click', async () => {
+      const rocYear = document.getElementById('rocYear').value;
+      const month = document.getElementById('month').value;
+      const day = document.getElementById('day').value;
+      const keyword = document.getElementById('keyword').value.trim();
+
+      if (!rocYear || !month || !day) {
+        showStatus('請輸入完整的日期', 'error');
+        return;
+      }
+
+      searchBtn.disabled = true;
+      searchBtn.textContent = '查詢中...';
+      resultsContainer.style.display = 'none';
+
+      try {
+        const response = await fetch(N8N_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rocYear, month, day, keyword })
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          displayResults(data);
+        } else {
+          throw new Error(data.message || '查詢失敗');
+        }
+      } catch (error) {
+        showStatus('查詢失敗：' + error.message, 'error');
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.textContent = '🔍 查詢重大訊息';
+      }
+    });
+
+    function displayResults(data) {
+      if (data.method === 'TWSE_API') {
+        methodBadge.innerHTML = '<span class="badge badge-api">證交所API</span>';
+      } else {
+        methodBadge.innerHTML = '<span class="badge badge-web">網頁抓取</span>';
+      }
+
+      resultCount.textContent = `共 ${data.totalResults} 筆`;
+      resultsContainer.style.display = 'block';
+
+      if (!data.messages || data.messages.length === 0) {
+        resultsList.innerHTML = `
+          <div class="empty-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p>查無資料</p>
+          </div>
+        `;
+        return;
+      }
+
+      resultsList.innerHTML = data.messages.map(msg => `
+        <div class="message-card">
+          <div class="message-header">
+            <div class="company-info">
+              <div class="company-code">${msg.公司代號}</div>
+              <div class="company-name">${msg.公司名稱}</div>
+            </div>
+            <div class="message-time">
+              ${msg.發言日期 || msg.出表日期 || ''}<br>
+              ${msg.發言時間 || ''}
+            </div>
+          </div>
+          
+          <div class="message-subject">${msg.主旨 || msg['主旨 '] || ''}</div>
+          
+          ${msg.說明 ? `<div class="message-content">${msg.說明}</div>` : ''}
+          
+          <div class="message-tags">
+            ${msg.source ? `<span class="tag">${msg.source === 'TWSE_API' ? 'API' : 'WEB'}</span>` : ''}
+            ${msg.符合條款 ? `<span class="tag">📋 ${msg.符合條款}</span>` : ''}
+            ${msg.事實發生日 ? `<span class="tag">📅 ${msg.事實發生日}</span>` : ''}
+            ${msg.匹配關鍵字 ? `<span class="tag tag-highlight">🔍 ${msg.匹配關鍵字}</span>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>
