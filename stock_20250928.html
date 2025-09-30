@@ -747,11 +747,11 @@
                                 <div class="stock-code">${file.stock_code}</div>
                             </div>
                             <div class="file-info">
-                                <p><strong>檔案名稱：</strong>${file.name}</p>
-                                <p><strong>分析日期：</strong>${file.analysis_date}</p>
-                                <p><strong>分析時間：</strong>${file.analysis_time}</p>
-                                <p><strong>檔案大小：</strong>${file.size}</p>
-                            </div>
+    				<p><strong>檔案名稱：</strong>${file.name || file.fileName || '未命名檔案'}</p>
+   				<p><strong>分析日期：</strong>${file.analysis_date || '未知'}</p>
+    				<p><strong>分析時間：</strong>${file.analysis_time || '未知'}</p>
+    				<p><strong>檔案大小：</strong>${file.size && !isNaN(parseFloat(file.size)) ? file.size : '未知'}</p>
+			    </div>
                             <div class="card-actions">
                                 <a href="${file.view_url}" target="_blank" class="btn btn-view">查看檔案（原始碼）</a>
                                 <a href="${file.download_url}" class="btn btn-download">下載並查看報告</a>
