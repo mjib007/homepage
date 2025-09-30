@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>今日重大訊息查詢</title>
+  <title>證交所重大訊息查詢</title>
   <style>
     * {
       margin: 0;
@@ -46,8 +46,22 @@
       padding: 40px;
     }
 
-    .form-group {
+    .query-section {
+      background: #f8f9fa;
+      border-radius: 15px;
+      padding: 25px;
       margin-bottom: 25px;
+      border: 2px solid #e1e5e9;
+    }
+
+    .query-section h3 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
     }
 
     label {
@@ -58,7 +72,8 @@
       font-size: 14px;
     }
 
-    input[type="text"] {
+    input[type="text"],
+    input[type="number"] {
       width: 100%;
       padding: 12px 15px;
       border: 2px solid #e1e5e9;
@@ -67,9 +82,17 @@
       transition: border-color 0.3s ease;
     }
 
-    input[type="text"]:focus {
+    input[type="text"]:focus,
+    input[type="number"]:focus {
       outline: none;
       border-color: #667eea;
+    }
+
+    .date-inputs {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
     }
 
     .btn {
@@ -84,7 +107,6 @@
       cursor: pointer;
       transition: all 0.3s ease;
       width: 100%;
-      margin-bottom: 10px;
     }
 
     .btn:hover {
@@ -96,6 +118,10 @@
       opacity: 0.6;
       cursor: not-allowed;
       transform: none;
+    }
+
+    .btn-success {
+      background: linear-gradient(45deg, #28a745, #20c997);
     }
 
     .info-box {
@@ -132,12 +158,6 @@
       border: 1px solid #f5c6cb;
     }
 
-    .status-info {
-      background-color: #d1ecf1;
-      color: #0c5460;
-      border: 1px solid #bee5eb;
-    }
-
     .results-header {
       display: flex;
       justify-content: space-between;
@@ -170,6 +190,25 @@
       font-size: 13px;
       font-weight: 600;
       margin-left: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .badge-api {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .badge-firecrawl {
+      background: #cce5ff;
+      color: #004085;
     }
 
     .message-card {
@@ -267,10 +306,6 @@
     }
 
     @media (max-width: 768px) {
-      body {
-        padding: 10px;
-      }
-
       .page-header h1 {
         font-size: 1.8rem;
       }
@@ -279,47 +314,61 @@
         padding: 25px;
       }
 
-      .results-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-
-      .message-header {
-        flex-direction: column;
-      }
-
-      .message-time {
-        margin-top: 10px;
-        align-self: flex-start;
+      .date-inputs {
+        grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
   <header class="page-header">
-    <h1>📊 今日重大訊息查詢</h1>
-    <p>即時查詢證交所今日重大訊息 (含前日下午5:30後發布)v0930</p>
+    <h1>證交所重大訊息查詢</h1>
+    <p>支援今日查詢與歷史查詢</p>
   </header>
 
   <div class="container">
     <div id="statusMsg"></div>
 
-    <div class="info-box">
-      <strong>即時資料：</strong>本系統使用證交所API，自動查詢今日重大訊息。可輸入關鍵字快速篩選，如：股利、併購、董事會等。
+    <!-- 今日查詢 -->
+    <div class="query-section">
+      <h3>⚡ 今日重大訊息 (API - 快速)</h3>
+      <div class="info-box">
+        <strong>說明:</strong>使用證交所官方API,速度快但資料可能較少
+      </div>
+      <div class="form-group">
+        <label for="keyword">關鍵字 (選填)</label>
+        <input type="text" id="keyword" placeholder="例如: 股利、併購、董事會">
+      </div>
+      <button class="btn" id="searchTodayBtn">查詢今日訊息</button>
     </div>
 
-    <div class="form-group">
-      <label for="keyword">關鍵字（選填,不填則顯示全部）</label>
-      <input type="text" id="keyword" placeholder="股利">
+    <!-- 歷史查詢 -->
+    <div class="query-section">
+      <h3>📅 歷史查詢 (Firecrawl - 完整資料)</h3>
+      <div class="info-box">
+        <strong>說明:</strong>使用網頁爬蟲,資料完整但速度較慢
+      </div>
+      <div class="form-group">
+        <label>查詢日期</label>
+        <div class="date-inputs">
+          <input type="number" id="rocYear" placeholder="民國年 (例: 114)">
+          <input type="number" id="month" placeholder="月 (1-12)" min="1" max="12">
+          <input type="number" id="day" placeholder="日 (1-31)" min="1" max="31">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="keywordHistory">關鍵字 (選填)</label>
+        <input type="text" id="keywordHistory" placeholder="例如: 股利、併購、董事會">
+      </div>
+      <button class="btn btn-success" id="searchHistoryBtn">查詢歷史訊息</button>
     </div>
 
-    <button class="btn" id="searchBtn">🔍 查詢今日重大訊息</button>
-
+    <!-- 查詢結果 -->
     <div id="resultsContainer" style="display: none;">
       <div class="results-header">
         <div>
           <h2>查詢結果</h2>
+          <span id="methodBadge"></span>
           <span id="keywordDisplay"></span>
         </div>
         <span id="resultCount" class="result-count"></span>
@@ -332,10 +381,12 @@
     const N8N_WEBHOOK_URL = 'https://mjib007.zeabur.app/webhook/mops-search';
 
     const statusMsg = document.getElementById('statusMsg');
-    const searchBtn = document.getElementById('searchBtn');
+    const searchTodayBtn = document.getElementById('searchTodayBtn');
+    const searchHistoryBtn = document.getElementById('searchHistoryBtn');
     const resultsContainer = document.getElementById('resultsContainer');
     const resultsList = document.getElementById('resultsList');
     const keywordDisplay = document.getElementById('keywordDisplay');
+    const methodBadge = document.getElementById('methodBadge');
     const resultCount = document.getElementById('resultCount');
 
     function showStatus(message, type = 'info') {
@@ -345,11 +396,12 @@
       }, 5000);
     }
 
-    searchBtn.addEventListener('click', async () => {
+    // 今日查詢
+    searchTodayBtn.addEventListener('click', async () => {
       const keyword = document.getElementById('keyword').value.trim();
-
-      searchBtn.disabled = true;
-      searchBtn.textContent = '查詢中...';
+      
+      searchTodayBtn.disabled = true;
+      searchTodayBtn.textContent = '查詢中...';
       resultsContainer.style.display = 'none';
 
       try {
@@ -371,22 +423,68 @@
       } catch (error) {
         showStatus('查詢失敗：' + error.message, 'error');
       } finally {
-        searchBtn.disabled = false;
-        searchBtn.textContent = '🔍 查詢今日重大訊息';
+        searchTodayBtn.disabled = false;
+        searchTodayBtn.textContent = '查詢今日訊息';
+      }
+    });
+
+    // 歷史查詢
+    searchHistoryBtn.addEventListener('click', async () => {
+      const year = document.getElementById('rocYear').value;
+      const month = document.getElementById('month').value;
+      const day = document.getElementById('day').value;
+      const keyword = document.getElementById('keywordHistory').value.trim();
+
+      if (!year || !month || !day) {
+        showStatus('請輸入完整的日期 (民國年/月/日)', 'error');
+        return;
+      }
+
+      searchHistoryBtn.disabled = true;
+      searchHistoryBtn.textContent = '查詢中...';
+      resultsContainer.style.display = 'none';
+
+      try {
+        const response = await fetch(N8N_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ year, month, day, keyword })
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          displayResults(data);
+          showStatus('查詢成功！', 'success');
+        } else {
+          throw new Error(data.message || '查詢失敗');
+        }
+      } catch (error) {
+        showStatus('查詢失敗：' + error.message, 'error');
+      } finally {
+        searchHistoryBtn.disabled = false;
+        searchHistoryBtn.textContent = '查詢歷史訊息';
       }
     });
 
     function displayResults(data) {
+      // 顯示查詢方式
+      if (data.method === 'api') {
+        methodBadge.innerHTML = '<span class="badge badge-api">證交所API</span>';
+      } else {
+        methodBadge.innerHTML = '<span class="badge badge-firecrawl">Firecrawl爬蟲</span>';
+      }
+
       // 顯示關鍵字
       if (data.keyword) {
-        keywordDisplay.innerHTML = `<span class="keyword-display">🔍 關鍵字: ${data.keyword}</span>`;
+        keywordDisplay.innerHTML = `<span class="keyword-display">關鍵字: ${data.keyword}</span>`;
       } else {
         keywordDisplay.innerHTML = '';
       }
 
-      // 🔥 過濾掉空資料
+      // 過濾掉空資料
       const validMessages = (data.messages || []).filter(msg => {
-        // 過濾掉 type 為 'empty' 或公司代號為空的資料
         return msg.type !== 'empty' && msg.公司代號;
       });
       
@@ -399,7 +497,7 @@
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <p>${data.keyword ? '查無符合關鍵字的資料' : '今日暫無重大訊息'}</p>
+            <p>${data.keyword ? '查無符合關鍵字的資料' : '查無資料'}</p>
           </div>
         `;
         return;
@@ -430,9 +528,9 @@
       `).join('');
     }
 
-    // 頁面載入時自動查詢
+    // 頁面載入時自動查詢今日
     window.addEventListener('load', () => {
-      searchBtn.click();
+      searchTodayBtn.click();
     });
   </script>
 </body>
