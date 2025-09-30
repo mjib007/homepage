@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>公開資訊觀測站查詢</title>
+  <title>今日重大訊息查詢</title>
   <style>
     * {
       margin: 0;
@@ -58,8 +58,7 @@
       font-size: 14px;
     }
 
-    input[type="text"],
-    input[type="number"] {
+    input[type="text"] {
       width: 100%;
       padding: 12px 15px;
       border: 2px solid #e1e5e9;
@@ -68,17 +67,9 @@
       transition: border-color 0.3s ease;
     }
 
-    input[type="text"]:focus,
-    input[type="number"]:focus {
+    input[type="text"]:focus {
       outline: none;
       border-color: #667eea;
-    }
-
-    .date-row {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
-      gap: 15px;
-      margin-bottom: 25px;
     }
 
     .btn {
@@ -105,10 +96,6 @@
       opacity: 0.6;
       cursor: not-allowed;
       transform: none;
-    }
-
-    .btn-secondary {
-      background: linear-gradient(45deg, #28a745, #20c997);
     }
 
     .info-box {
@@ -165,24 +152,6 @@
       font-size: 1.5rem;
     }
 
-    .badge {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .badge-api {
-      background: #d4edda;
-      color: #155724;
-    }
-
-    .badge-web {
-      background: #d1ecf1;
-      color: #0c5460;
-    }
-
     .result-count {
       background: #f0f0f0;
       padding: 6px 12px;
@@ -190,6 +159,17 @@
       font-size: 13px;
       color: #666;
       font-weight: 600;
+    }
+
+    .keyword-display {
+      display: inline-block;
+      background: #fff3cd;
+      color: #856404;
+      padding: 4px 10px;
+      border-radius: 15px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-left: 10px;
     }
 
     .message-card {
@@ -273,12 +253,6 @@
       color: #666;
     }
 
-    .tag-highlight {
-      background: #fff3cd;
-      color: #856404;
-      font-weight: 600;
-    }
-
     .empty-state {
       text-align: center;
       padding: 60px 20px;
@@ -305,10 +279,6 @@
         padding: 25px;
       }
 
-      .date-row {
-        grid-template-columns: 1fr;
-      }
-
       .results-header {
         flex-direction: column;
         align-items: flex-start;
@@ -328,45 +298,29 @@
 </head>
 <body>
   <header class="page-header">
-    <h1>📊 公開資訊觀測站查詢</h1>
-    <p>智慧整合證交所API與網頁資料，快速查詢重大訊息</p>
+    <h1>📊 今日重大訊息查詢</h1>
+    <p>即時查詢證交所今日重大訊息 (含前日下午5:30後發布)</p>
   </header>
 
   <div class="container">
     <div id="statusMsg"></div>
 
     <div class="info-box">
-      <strong>智慧查詢：</strong>查詢今天自動使用證交所API（快速且有詳細說明），查詢歷史則使用網頁抓取（包含上市/上櫃/興櫃）
-    </div>
-
-    <div class="date-row">
-      <div class="form-group">
-        <label for="rocYear">民國年</label>
-        <input type="number" id="rocYear" placeholder="114">
-      </div>
-      <div class="form-group">
-        <label for="month">月</label>
-        <input type="number" id="month" min="1" max="12" placeholder="9">
-      </div>
-      <div class="form-group">
-        <label for="day">日</label>
-        <input type="number" id="day" min="1" max="31" placeholder="30">
-      </div>
+      <strong>即時資料：</strong>本系統使用證交所API，自動查詢今日重大訊息。可輸入關鍵字快速篩選，如：股利、併購、董事會等。
     </div>
 
     <div class="form-group">
-      <label for="keyword">關鍵字（選填）</label>
-      <input type="text" id="keyword" placeholder="股利、併購、董事會...">
+      <label for="keyword">關鍵字（選填，不填則顯示全部）</label>
+      <input type="text" id="keyword" placeholder="例如：股利、併購、董事會...">
     </div>
 
-    <button class="btn" id="searchBtn">🔍 查詢重大訊息</button>
-    <button class="btn btn-secondary" id="openMopsBtn">🌐 開啟觀測站網頁</button>
+    <button class="btn" id="searchBtn">🔍 查詢今日重大訊息</button>
 
     <div id="resultsContainer" style="display: none;">
       <div class="results-header">
         <div>
           <h2>查詢結果</h2>
-          <span id="methodBadge"></span>
+          <span id="keywordDisplay"></span>
         </div>
         <span id="resultCount" class="result-count"></span>
       </div>
@@ -379,18 +333,10 @@
 
     const statusMsg = document.getElementById('statusMsg');
     const searchBtn = document.getElementById('searchBtn');
-    const openMopsBtn = document.getElementById('openMopsBtn');
     const resultsContainer = document.getElementById('resultsContainer');
     const resultsList = document.getElementById('resultsList');
-    const methodBadge = document.getElementById('methodBadge');
+    const keywordDisplay = document.getElementById('keywordDisplay');
     const resultCount = document.getElementById('resultCount');
-
-    window.onload = function() {
-      const today = new Date();
-      document.getElementById('rocYear').value = today.getFullYear() - 1911;
-      document.getElementById('month').value = today.getMonth() + 1;
-      document.getElementById('day').value = today.getDate();
-    };
 
     function showStatus(message, type = 'info') {
       statusMsg.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
@@ -399,26 +345,8 @@
       }, 5000);
     }
 
-    openMopsBtn.addEventListener('click', () => {
-      const rocYear = document.getElementById('rocYear').value;
-      const month = document.getElementById('month').value;
-      const day = document.getElementById('day').value;
-      if (rocYear && month && day) {
-        // 使用新版觀測站網址格式
-        window.open(`https://mops.twse.com.tw/mops/#/web/t05st02?year=${rocYear}&month=${month}&day=${day}`, '_blank');
-      }
-    });
-
     searchBtn.addEventListener('click', async () => {
-      const rocYear = document.getElementById('rocYear').value;
-      const month = document.getElementById('month').value;
-      const day = document.getElementById('day').value;
       const keyword = document.getElementById('keyword').value.trim();
-
-      if (!rocYear || !month || !day) {
-        showStatus('請輸入完整的日期', 'error');
-        return;
-      }
 
       searchBtn.disabled = true;
       searchBtn.textContent = '查詢中...';
@@ -428,7 +356,7 @@
         const response = await fetch(N8N_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rocYear, month, day, keyword })
+          body: JSON.stringify({ keyword })
         });
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -436,6 +364,7 @@
         
         if (data.success) {
           displayResults(data);
+          showStatus('查詢成功！', 'success');
         } else {
           throw new Error(data.message || '查詢失敗');
         }
@@ -443,15 +372,16 @@
         showStatus('查詢失敗：' + error.message, 'error');
       } finally {
         searchBtn.disabled = false;
-        searchBtn.textContent = '🔍 查詢重大訊息';
+        searchBtn.textContent = '🔍 查詢今日重大訊息';
       }
     });
 
     function displayResults(data) {
-      if (data.method === 'TWSE_API') {
-        methodBadge.innerHTML = '<span class="badge badge-api">證交所API</span>';
+      // 顯示關鍵字
+      if (data.keyword) {
+        keywordDisplay.innerHTML = `<span class="keyword-display">🔍 關鍵字: ${data.keyword}</span>`;
       } else {
-        methodBadge.innerHTML = '<span class="badge badge-web">網頁抓取</span>';
+        keywordDisplay.innerHTML = '';
       }
 
       resultCount.textContent = `共 ${data.totalResults} 筆`;
@@ -463,7 +393,7 @@
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <p>查無資料</p>
+            <p>${data.keyword ? '查無符合關鍵字的資料' : '今日暫無重大訊息'}</p>
           </div>
         `;
         return;
@@ -482,19 +412,22 @@
             </div>
           </div>
           
-          <div class="message-subject">${msg.主旨 || msg['主旨 '] || ''}</div>
+          <div class="message-subject">${msg.主旨 || ''}</div>
           
           ${msg.說明 ? `<div class="message-content">${msg.說明}</div>` : ''}
           
           <div class="message-tags">
-            ${msg.source ? `<span class="tag">${msg.source === 'TWSE_API' ? 'API' : 'WEB'}</span>` : ''}
             ${msg.符合條款 ? `<span class="tag">📋 ${msg.符合條款}</span>` : ''}
             ${msg.事實發生日 ? `<span class="tag">📅 ${msg.事實發生日}</span>` : ''}
-            ${msg.匹配關鍵字 ? `<span class="tag tag-highlight">🔍 ${msg.匹配關鍵字}</span>` : ''}
           </div>
         </div>
       `).join('');
     }
+
+    // 頁面載入時自動查詢
+    window.addEventListener('load', () => {
+      searchBtn.click();
+    });
   </script>
 </body>
 </html>
