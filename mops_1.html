@@ -376,53 +376,59 @@
       }
     });
 
-    function displayResults(data) {
-      // 顯示關鍵字
-      if (data.keyword) {
-        keywordDisplay.innerHTML = `<span class="keyword-display">🔍 關鍵字: ${data.keyword}</span>`;
-      } else {
-        keywordDisplay.innerHTML = '';
-      }
+function displayResults(data) {
+  // 顯示關鍵字
+  if (data.keyword) {
+    keywordDisplay.innerHTML = `<span class="keyword-display">🔍 關鍵字: ${data.keyword}</span>`;
+  } else {
+    keywordDisplay.innerHTML = '';
+  }
 
-      resultCount.textContent = `共 ${data.totalResults} 筆`;
-      resultsContainer.style.display = 'block';
+  // 🔥 新增:過濾掉空資料
+  const validMessages = (data.messages || []).filter(msg => msg.type !== 'empty');
+  
+  // 🔥 修改:改用 validMessages.length
+  resultCount.textContent = `共 ${validMessages.length} 筆`;
+  resultsContainer.style.display = 'block';
 
-      if (!data.messages || data.messages.length === 0) {
-        resultsList.innerHTML = `
-          <div class="empty-state">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <p>${data.keyword ? '查無符合關鍵字的資料' : '今日暫無重大訊息'}</p>
-          </div>
-        `;
-        return;
-      }
+  // 🔥 修改:改用 validMessages
+  if (validMessages.length === 0) {
+    resultsList.innerHTML = `
+      <div class="empty-state">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p>${data.keyword ? '查無符合關鍵字的資料' : '今日暫無重大訊息'}</p>
+      </div>
+    `;
+    return;
+  }
 
-      resultsList.innerHTML = data.messages.map(msg => `
-        <div class="message-card">
-          <div class="message-header">
-            <div class="company-info">
-              <div class="company-code">${msg.公司代號}</div>
-              <div class="company-name">${msg.公司名稱}</div>
-            </div>
-            <div class="message-time">
-              ${msg.發言日期 || msg.出表日期 || ''}<br>
-              ${msg.發言時間 || ''}
-            </div>
-          </div>
-          
-          <div class="message-subject">${msg.主旨 || ''}</div>
-          
-          ${msg.說明 ? `<div class="message-content">${msg.說明}</div>` : ''}
-          
-          <div class="message-tags">
-            ${msg.符合條款 ? `<span class="tag">📋 ${msg.符合條款}</span>` : ''}
-            ${msg.事實發生日 ? `<span class="tag">📅 ${msg.事實發生日}</span>` : ''}
-          </div>
+  // 🔥 修改:改用 validMessages
+  resultsList.innerHTML = validMessages.map(msg => `
+    <div class="message-card">
+      <div class="message-header">
+        <div class="company-info">
+          <div class="company-code">${msg.公司代號}</div>
+          <div class="company-name">${msg.公司名稱}</div>
         </div>
-      `).join('');
-    }
+        <div class="message-time">
+          ${msg.發言日期 || msg.出表日期 || ''}<br>
+          ${msg.發言時間 || ''}
+        </div>
+      </div>
+      
+      <div class="message-subject">${msg.主旨 || ''}</div>
+      
+      ${msg.說明 ? `<div class="message-content">${msg.說明}</div>` : ''}
+      
+      <div class="message-tags">
+        ${msg.符合條款 ? `<span class="tag">📋 ${msg.符合條款}</span>` : ''}
+        ${msg.事實發生日 ? `<span class="tag">📅 ${msg.事實發生日}</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
 
     // 頁面載入時自動查詢
     window.addEventListener('load', () => {
