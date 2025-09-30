@@ -404,7 +404,8 @@
       const month = document.getElementById('month').value;
       const day = document.getElementById('day').value;
       if (rocYear && month && day) {
-        window.open(`https://mops.twse.com.tw/mops/web/t05st02?year=${rocYear}&month=${month}&day=${day}`, '_blank');
+        // 使用新版觀測站網址格式
+        window.open(`https://mops.twse.com.tw/mops/#/web/t05st02?year=${rocYear}&month=${month}&day=${day}`, '_blank');
       }
     });
 
