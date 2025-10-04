@@ -373,9 +373,21 @@
                     } 
                 });
                 
+                // 檢查瀏覽器支援的格式
+                let mimeType = 'audio/webm';
+                if (MediaRecorder.isTypeSupported('audio/wav')) {
+                    mimeType = 'audio/wav';
+                } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                    mimeType = 'audio/mp4';
+                } else if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+                    mimeType = 'audio/webm;codecs=opus';
+                }
+                
                 mediaRecorder = new MediaRecorder(stream, {
-                    mimeType: 'audio/webm'
+                    mimeType: mimeType
                 });
+                
+                console.log('使用錄音格式:', mimeType);
                 
                 audioChunks = [];
                 
@@ -386,8 +398,8 @@
                 });
                 
                 mediaRecorder.addEventListener('stop', async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    await uploadAudio(audioBlob);
+                    const audioBlob = new Blob(audioChunks, { type: mimeType });
+                    await uploadAudio(audioBlob, mimeType);
                 });
                 
                 mediaRecorder.start();
@@ -432,7 +444,7 @@
             timer.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${milliseconds}`;
         }
         
-        async function uploadAudio(audioBlob) {
+        async function uploadAudio(audioBlob, mimeType) {
             loading.classList.add('show');
             status.textContent = '📤 正在上傳並轉換...';
             
@@ -441,9 +453,19 @@
                 const finalUserId = userId.value.trim() || generateUserId();
                 const finalFileName = fileName.value.trim() || generateFileName();
                 
+                // 根據 MIME type 決定副檔名
+                let fileExtension = 'webm';
+                if (mimeType.includes('wav')) {
+                    fileExtension = 'wav';
+                } else if (mimeType.includes('mp4')) {
+                    fileExtension = 'mp4';
+                } else if (mimeType.includes('ogg')) {
+                    fileExtension = 'ogg';
+                }
+                
                 // 建立 FormData
                 const formData = new FormData();
-                formData.append('audio_file', audioBlob, 'recording.webm');
+                formData.append('audio_file', audioBlob, `recording.${fileExtension}`);
                 formData.append('userId', finalUserId);
                 formData.append('fileName', finalFileName);
                 formData.append('isVoice', 'true');
@@ -451,7 +473,9 @@
                 console.log('上傳資料:', {
                     userId: finalUserId,
                     fileName: finalFileName,
-                    audioSize: audioBlob.size
+                    audioSize: audioBlob.size,
+                    mimeType: mimeType,
+                    extension: fileExtension
                 });
                 
                 const response = await fetch(WEBHOOK_URL, {
