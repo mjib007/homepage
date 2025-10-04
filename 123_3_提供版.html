@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>語音筆記</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .setup-section {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .setup-title {
+            color: #856404;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .setup-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .setup-input:focus {
+            outline: none;
+            border-color: #ff9800;
+        }
+        
+        .setup-note {
+            font-size: 13px;
+            color: #856404;
+            line-height: 1.5;
+        }
+        
+        .recorder-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .record-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 140px;
+            height: 140px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            font-weight: 600;
+        }
+        
+        .record-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+        
+        .record-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .record-btn.recording {
+            background: #e74c3c;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        
+        .status {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .timer {
+            font-size: 32px;
+            color: #667eea;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        
+        .timer.recording {
+            color: #e74c3c;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .result-section.show {
+            display: block;
+        }
+        
+        .result-title {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .result-text {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            min-height: 80px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .audio-player {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .audio-player audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .audio-label {
+            font-size: 14px;
+            color: #0c5ba0;
+            font-weight: 500;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .error.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>語音轉文字</h1>
+        
+        <div class="setup-section">
+            <div class="setup-title">⚙️ 設定您的 n8n Webhook URL</div>
+            <input 
+                type="text" 
+                id="webhookUrl" 
+                class="setup-input"
+                placeholder="請輸入您的 n8n Webhook URL (例如: https://your-n8n.com/webhook/upload-notes)"
+            />
+            <div class="setup-note">
+                💡 提示: 請先在 n8n 中建立工作流程,然後將 Webhook URL 貼到上方欄位中。URL 會自動儲存在瀏覽器中。
+            </div>
+        </div>
+        
+        <div class="recorder-section">
+            <button class="record-btn" id="recordBtn">開始錄音</button>
+            <div class="status" id="status">請先設定 Webhook URL</div>
+            <div class="timer" id="timer"></div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>轉換中...</p>
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div class="result-section" id="resultSection">
+            <div class="result-title">轉錄結果:</div>
+            <div class="result-text" id="resultText"></div>
+            <div class="audio-player" id="audioPlayer">
+                <div class="audio-label">🔊 錄音播放:</div>
+                <audio id="audioElement" controls></audio>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let startTime;
+        let timerInterval;
+        let recordedAudioBlob = null;
+        
+        const webhookUrlInput = document.getElementById('webhookUrl');
+        const recordBtn = document.getElementById('recordBtn');
+        const status = document.getElementById('status');
+        const timer = document.getElementById('timer');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const resultSection = document.getElementById('resultSection');
+        const resultText = document.getElementById('resultText');
+        const audioElement = document.getElementById('audioElement');
+        
+        // 從 localStorage 讀取儲存的 URL
+        const savedUrl = localStorage.getItem('webhookUrl');
+        if (savedUrl) {
+            webhookUrlInput.value = savedUrl;
+            updateStatus();
+        }
+        
+        // 儲存 URL 到 localStorage
+        webhookUrlInput.addEventListener('input', () => {
+            const url = webhookUrlInput.value.trim();
+            if (url) {
+                localStorage.setItem('webhookUrl', url);
+            }
+            updateStatus();
+        });
+        
+        function updateStatus() {
+            const url = webhookUrlInput.value.trim();
+            if (url) {
+                status.textContent = '點擊按鈕開始';
+                recordBtn.disabled = false;
+            } else {
+                status.textContent = '請先設定 Webhook URL';
+                recordBtn.disabled = true;
+            }
+        }
+        
+        recordBtn.addEventListener('click', toggleRecording);
+        
+        async function toggleRecording() {
+            if (!isRecording) {
+                await startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+        
+        async function startRecording() {
+            const webhookUrl = webhookUrlInput.value.trim();
+            
+            if (!webhookUrl) {
+                showError('請先輸入 Webhook URL');
+                return;
+            }
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: true
+                });
+                
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) audioChunks.push(e.data);
+                };
+                
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    recordedAudioBlob = audioBlob;
+                    await uploadAudio(audioBlob, webhookUrl);
+                };
+                
+                mediaRecorder.start();
+                isRecording = true;
+                recordBtn.classList.add('recording');
+                recordBtn.textContent = '停止錄音';
+                status.textContent = '錄音中...';
+                timer.classList.add('recording');
+                error.classList.remove('show');
+                resultSection.classList.remove('show');
+                
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 100);
+                
+            } catch (err) {
+                showError('無法存取麥克風');
+            }
+        }
+        
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(t => t.stop());
+            }
+            
+            isRecording = false;
+            recordBtn.classList.remove('recording');
+            recordBtn.textContent = '處理中...';
+            recordBtn.disabled = true;
+            status.textContent = '上傳中...';
+            timer.classList.remove('recording');
+            clearInterval(timerInterval);
+        }
+        
+        function updateTimer() {
+            const elapsed = Date.now() - startTime;
+            const sec = Math.floor(elapsed / 1000);
+            const min = Math.floor(sec / 60);
+            const s = sec % 60;
+            timer.textContent = `${String(min).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        
+        async function uploadAudio(audioBlob, webhookUrl) {
+            loading.classList.add('show');
+            
+            try {
+                const formData = new FormData();
+                formData.append('audio_file', audioBlob, 'recording.webm');
+                
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                loading.classList.remove('show');
+                recordBtn.disabled = false;
+                recordBtn.textContent = '開始錄音';
+                timer.textContent = '';
+                
+                if (!response.ok) {
+                    throw new Error('上傳失敗 (HTTP ' + response.status + ')');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.transcription) {
+                    resultText.textContent = result.transcription;
+                    resultSection.classList.add('show');
+                    status.textContent = '完成!';
+                    
+                    // 設定音訊播放器
+                    if (recordedAudioBlob) {
+                        const audioUrl = URL.createObjectURL(recordedAudioBlob);
+                        audioElement.src = audioUrl;
+                    }
+                } else {
+                    showError('轉換失敗,請檢查您的 n8n 工作流程設定');
+                    status.textContent = '點擊按鈕開始';
+                }
+                
+            } catch (err) {
+                loading.classList.remove('show');
+                recordBtn.disabled = false;
+                recordBtn.textContent = '開始錄音';
+                showError('發生錯誤: ' + err.message + ' - 請確認 Webhook URL 是否正確');
+                status.textContent = '點擊按鈕開始';
+                timer.textContent = '';
+            }
+        }
+        
+        function showError(message) {
+            error.textContent = message;
+            error.classList.add('show');
+        }
+    </script>
+</body>
+</html>
