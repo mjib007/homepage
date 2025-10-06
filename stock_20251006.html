@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台股現金流量分析系統</title>
+    <title>台股現金流量/暗黑指標分析系統</title>
     <style>
         * {
             margin: 0;
@@ -90,7 +90,6 @@
             display: block;
         }
 
-        /* 新分析頁面樣式 */
         .analyze-section {
             text-align: center;
         }
@@ -177,7 +176,6 @@
             transform: translateY(-1px);
         }
 
-        /* 搜尋頁面樣式 */
         .search-form {
             display: flex;
             gap: 15px;
@@ -377,7 +375,6 @@
             font-weight: 600;
         }
 
-        /* Modal 樣式 */
         .modal {
             display: none;
             position: fixed;
@@ -511,7 +508,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>台股現金流量分析系統</h1>
+            <h1>台股現金流量/暗黑指標分析系統</h1>
             <p>專業現金流量健康度分析與歷史記錄查詢v1001</p>
             <div class="version-info">系統版本: v1.0 | 支援季度資料分析 | 自動儲存至 Google Drive</div>
         </div>
@@ -521,7 +518,6 @@
             <button class="tab" onclick="switchTab('search')">搜尋記錄</button>
         </div>
 
-        <!-- 新增分析頁面 -->
         <div id="analyzeTab" class="tab-content active">
             <div class="analyze-section">
                 <div class="input-group">
@@ -533,13 +529,11 @@
                         maxlength="6"
                         pattern="[0-9]+"
                     >
-                    <button id="analyzeBtn" class="analyze-button">分析現金流量</button>
-		    <button id="analyzeDarkBtn" class="analyze-button" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">分析暗黑指標</button>
+                    <button id="analyzeBtn" class="analyze-button">現金流量表分析</button>
+                    <button id="analyzeDarkBtn" class="analyze-button" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">暗黑指標分析</button>
                 </div>
 
-                <div id="analyzeLoading" class="loading">
-                    正在分析現金流量數據，請稍候...
-                </div>
+                <div id="analyzeLoading" class="loading"></div>
                 <div id="analyzeError" class="error-message"></div>
                 <div id="analyzeSuccess" class="success-message"></div>
 
@@ -557,7 +551,6 @@
             </div>
         </div>
 
-        <!-- 搜尋記錄頁面 -->
         <div id="searchTab" class="tab-content">
             <form class="search-form" id="searchForm">
                 <div class="form-group">
@@ -578,7 +571,6 @@
         </div>
     </div>
 
-    <!-- 討論 Modal -->
     <div id="discussModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -604,26 +596,21 @@
     </div>
 
     <script>
-        // API URLs
         const ANALYZE_API_URL = 'https://kf0630.zeabur.app/webhook/cashflow-analysis';
-	const DARK_INDICATOR_API_URL = 'https://kf0630.zeabur.app/webhook/dark-indicator-analysis';
+        const DARK_INDICATOR_API_URL = 'https://kf0630.zeabur.app/webhook/dark-indicator-analysis';
         const SEARCH_API_URL = 'https://kf0630.zeabur.app/webhook/search-stock-reports';
         const DISCUSS_API_URL = 'https://kf0630.zeabur.app/webhook/discuss-report';
 
         let currentFileId = null;
 
-        // Tab 切換
         function switchTab(tabName) {
-            // 移除所有 active 類別
             document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
-            // 添加 active 類別
             event.target.classList.add('active');
             document.getElementById(tabName + 'Tab').classList.add('active');
         }
 
-        // 新增分析功能
         const stockCodeInput = document.getElementById('stockCode');
         const analyzeBtn = document.getElementById('analyzeBtn');
 
@@ -636,39 +623,40 @@
         });
 
         analyzeBtn.addEventListener('click', analyzeStock);
-document.getElementById('analyzeDarkBtn').addEventListener('click', analyzeDarkIndicator);
+        document.getElementById('analyzeDarkBtn').addEventListener('click', analyzeDarkIndicator);
 
-async function analyzeDarkIndicator() {
-    const stockCode = stockCodeInput.value.trim();
-    if (!stockCode || stockCode.length < 4) {
-        showMessage('analyzeError', '請輸入有效的股票代號');
-        return;
-    }
-    
-    hideMessage('analyzeError');
-    setAnalyzeLoading(true);
-    
-    try {
-        const response = await fetch(DARK_INDICATOR_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ stock_code: stockCode })
-        });
-        
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
-        const htmlResult = await response.text();
-        const newWindow = window.open('', '_blank');
-        newWindow.document.write(htmlResult);
-        newWindow.document.close();
-        
-        showMessage('analyzeSuccess', '暗黑指標分析完成！');
-    } catch (error) {
-        showMessage('analyzeError', '分析失敗: ' + error.message);
-    } finally {
-        setAnalyzeLoading(false);
-    }
-}
+        async function analyzeDarkIndicator() {
+            const stockCode = stockCodeInput.value.trim();
+            if (!stockCode || stockCode.length < 4) {
+                showMessage('analyzeError', '請輸入有效的股票代號');
+                return;
+            }
+            
+            hideMessage('analyzeError');
+            setAnalyzeLoading(true, 'analyzeDarkBtn', '暗黑指標分析', '正在分析暗黑指標數據，請稍候...');
+            
+            try {
+                const response = await fetch(DARK_INDICATOR_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stock_code: stockCode })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const htmlResult = await response.text();
+                const newWindow = window.open('', '_blank');
+                newWindow.document.write(htmlResult);
+                newWindow.document.close();
+                
+                showMessage('analyzeSuccess', '暗黑指標分析完成！');
+            } catch (error) {
+                showMessage('analyzeError', '分析失敗: ' + error.message);
+            } finally {
+                setAnalyzeLoading(false, 'analyzeDarkBtn', '暗黑指標分析');
+            }
+        }
+
         function fillStock(stockCode) {
             stockCodeInput.value = stockCode;
             stockCodeInput.focus();
@@ -688,7 +676,7 @@ async function analyzeDarkIndicator() {
             }
 
             hideMessage('analyzeError');
-            setAnalyzeLoading(true);
+            setAnalyzeLoading(true, 'analyzeBtn', '現金流量表分析', '正在分析現金流量數據，請稍候...');
 
             try {
                 const response = await fetch(ANALYZE_API_URL, {
@@ -712,11 +700,10 @@ async function analyzeDarkIndicator() {
                 console.error('分析錯誤:', error);
                 showMessage('analyzeError', '分析失敗，請稍後再試。錯誤: ' + error.message);
             } finally {
-                setAnalyzeLoading(false);
+                setAnalyzeLoading(false, 'analyzeBtn', '現金流量表分析');
             }
         }
 
-        // 搜尋功能
         const searchForm = document.getElementById('searchForm');
         searchForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -781,10 +768,10 @@ async function analyzeDarkIndicator() {
                                 <div class="stock-code">${file.stock_code}</div>
                             </div>
                             <div class="file-info">
-    				<p><strong>檔案名稱：</strong>${file.name || file.fileName || '未命名檔案'}</p>
-   				<p><strong>分析日期：</strong>${file.analysis_date || '未知'}</p>
-    				<p><strong>分析時間：</strong>${file.analysis_time || '未知'}</p>
-			    </div>
+                                <p><strong>檔案名稱：</strong>${file.name || file.fileName || '未命名檔案'}</p>
+                                <p><strong>分析日期：</strong>${file.analysis_date || '未知'}</p>
+                                <p><strong>分析時間：</strong>${file.analysis_time || '未知'}</p>
+                            </div>
                             <div class="card-actions">
                                 <a href="${file.view_url}" target="_blank" class="btn btn-view">查看檔案（原始碼）</a>
                                 <a href="${file.download_url}" class="btn btn-download">下載並查看報告</a>
@@ -798,12 +785,10 @@ async function analyzeDarkIndicator() {
             resultsDiv.innerHTML = html;
         }
 
-        // 討論功能
         async function startDiscussion(fileId, stockCode) {
             currentFileId = fileId;
             document.getElementById('modalTitle').textContent = `${stockCode} - 現金流量分析討論`;
             
-            // 重置對話記錄
             document.getElementById('chatMessages').innerHTML = `
                 <div class="message ai">
                     <div class="message-label">AI 助手</div>
@@ -825,7 +810,6 @@ async function analyzeDarkIndicator() {
             
             if (!question || !currentFileId) return;
 
-            // 顯示用戶訊息
             addMessage('user', question);
             input.value = '';
 
@@ -852,36 +836,32 @@ async function analyzeDarkIndicator() {
             }
         }
 
-function addMessage(type, content) {
-    const messagesDiv = document.getElementById('chatMessages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}`;
-    
-    const label = type === 'user' ? '您' : 'AI 助手';
-    
-    // 建立標籤元素
-    const labelDiv = document.createElement('div');
-    labelDiv.className = 'message-label';
-    labelDiv.textContent = label;
-    
-    // 建立內容元素並設定換行樣式
-    const contentDiv = document.createElement('div');
-    contentDiv.style.whiteSpace = 'pre-wrap'; // 保留換行符號
-    contentDiv.textContent = content; // 使用 textContent 避免 HTML 轉義問題
-    
-    messageDiv.appendChild(labelDiv);
-    messageDiv.appendChild(contentDiv);
-    
-    messagesDiv.appendChild(messageDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
+        function addMessage(type, content) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const label = type === 'user' ? '您' : 'AI 助手';
+            
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'message-label';
+            labelDiv.textContent = label;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.style.whiteSpace = 'pre-wrap';
+            contentDiv.textContent = content;
+            
+            messageDiv.appendChild(labelDiv);
+            messageDiv.appendChild(contentDiv);
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
 
-        // Enter 鍵發送訊息
         document.getElementById('chatInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') sendMessage();
         });
 
-        // 點擊 modal 外部關閉
         window.onclick = function(event) {
             const modal = document.getElementById('discussModal');
             if (event.target === modal) {
@@ -889,11 +869,14 @@ function addMessage(type, content) {
             }
         }
 
-        // 工具函數
-        function setAnalyzeLoading(loading) {
-            document.getElementById('analyzeLoading').style.display = loading ? 'block' : 'none';
-            analyzeBtn.disabled = loading;
-            analyzeBtn.textContent = loading ? '分析中...' : '開始分析';
+        function setAnalyzeLoading(loading, buttonId = 'analyzeBtn', buttonText = '開始分析', loadingMessage = '正在分析數據，請稍候...') {
+            const loadingDiv = document.getElementById('analyzeLoading');
+            loadingDiv.textContent = loadingMessage;
+            loadingDiv.style.display = loading ? 'block' : 'none';
+            
+            const button = document.getElementById(buttonId);
+            button.disabled = loading;
+            button.textContent = loading ? '分析中...' : buttonText;
         }
 
         function setSearchLoading(loading) {
@@ -910,7 +893,6 @@ function addMessage(type, content) {
             document.getElementById(elementId).style.display = 'none';
         }
 
-        // 頁面載入時聚焦
         window.addEventListener('load', function() {
             stockCodeInput.focus();
         });
