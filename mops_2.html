@@ -431,15 +431,12 @@
       }, 5000);
     }
 
-    // 手動查詢
-    searchBtn.addEventListener('click', async () => {
-      const keyword = document.getElementById('keyword').value.trim();
-      
-      if (!keyword) {
-        showStatus('請輸入關鍵字', 'error');
-        return;
-      }
+// 手動查詢
+searchBtn.addEventListener('click', async () => {
+  const keyword = document.getElementById('keyword').value.trim();
 
+  searchBtn.disabled = true;
+  searchBtn.textContent = '查詢中...';
       searchBtn.disabled = true;
       searchBtn.textContent = '查詢中...';
 
