@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>證交所重大訊息查詢</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .page-header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .page-header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .page-header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 1200px;
+      padding: 40px;
+    }
+
+    .query-section {
+      background: #f8f9fa;
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 25px;
+      border: 2px solid #e1e5e9;
+    }
+
+    .query-section h3 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e1e5e9;
+      border-radius: 10px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .date-inputs {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 14px 24px;
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-success {
+      background: linear-gradient(45deg, #28a745, #20c997);
+    }
+
+    .info-box {
+      background: #f0f4ff;
+      border-left: 4px solid #667eea;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .info-box strong {
+      color: #667eea;
+    }
+
+    .status-message {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .status-success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .keyword-section {
+      background: #fff;
+      border-radius: 15px;
+      padding: 30px;
+      margin-bottom: 30px;
+    }
+
+    .keyword-section h2 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+      border-bottom: 2px solid #e1e5e9;
+      padding-bottom: 10px;
+    }
+
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e1e5e9;
+    }
+
+    .results-header h3 {
+      color: #333;
+      font-size: 1.3rem;
+    }
+
+    .result-count {
+      background: #f0f0f0;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      color: #666;
+      font-weight: 600;
+    }
+
+    .keyword-display {
+      display: inline-block;
+      background: #fff3cd;
+      color: #856404;
+      padding: 4px 10px;
+      border-radius: 15px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .badge-api {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .message-card {
+      background: #fafafa;
+      border: 2px solid #e1e5e9;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .message-card:hover {
+      border-color: #667eea;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    }
+
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .company-info {
+      flex: 1;
+    }
+
+    .company-code {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 5px;
+    }
+
+    .company-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .message-time {
+      text-align: right;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .message-subject {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .message-content {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    .message-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .tag {
+      background: #e1e5e9;
+      padding: 4px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #667eea;
+    }
+
+    .loading::after {
+      content: '...';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60%, 100% { content: '...'; }
+    }
+
+    @media (max-width: 768px) {
+      .page-header h1 {
+        font-size: 1.8rem;
+      }
+
+      .container {
+        padding: 25px;
+      }
+
+      .date-inputs {
+        grid-template-columns: 1fr;
+      }
+
+      .results-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .message-header {
+        flex-direction: column;
+      }
+
+      .message-time {
+        margin-top: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>📊 證交所重大訊息查詢</h1>
+    <p>自動追蹤「澄清」與「私募」相關訊息</p>
+  </header>
+
+  <div class="container">
+    <div id="statusMsg"></div>
+
+    <!-- 手動查詢區 -->
+    <div class="query-section">
+      <h3>🔍 手動查詢</h3>
+      <div class="info-box">
+        <strong>說明:</strong>輸入自訂關鍵字查詢今日重大訊息
+      </div>
+      <div class="form-group">
+        <label for="keyword">關鍵字</label>
+        <input type="text" id="keyword" placeholder="例如: 股利、併購、董事會" value="">
+      </div>
+      <button class="btn" id="searchBtn">查詢</button>
+    </div>
+
+    <!-- 自動追蹤結果 -->
+    <div id="resultsContainer" style="display: none;">
+      <!-- 澄清結果 -->
+      <div class="keyword-section" id="section-澄清">
+        <h2>📢 澄清相關訊息</h2>
+        <div class="results-header">
+          <div>
+            <span class="keyword-display">🔍 關鍵字: 澄清</span>
+            <span class="badge badge-api">證交所API</span>
+          </div>
+          <span id="resultCount-澄清" class="result-count">載入中...</span>
+        </div>
+        <div id="resultsList-澄清">
+          <div class="loading">正在查詢澄清相關訊息</div>
+        </div>
+      </div>
+
+      <!-- 私募結果 -->
+      <div class="keyword-section" id="section-私募">
+        <h2>💰 私募相關訊息</h2>
+        <div class="results-header">
+          <div>
+            <span class="keyword-display">🔍 關鍵字: 私募</span>
+            <span class="badge badge-api">證交所API</span>
+          </div>
+          <span id="resultCount-私募" class="result-count">載入中...</span>
+        </div>
+        <div id="resultsList-私募">
+          <div class="loading">正在查詢私募相關訊息</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const N8N_WEBHOOK_URL = 'https://mjib007.zeabur.app/webhook/mops-search';
+
+    const statusMsg = document.getElementById('statusMsg');
+    const searchBtn = document.getElementById('searchBtn');
+    const resultsContainer = document.getElementById('resultsContainer');
+
+    function showStatus(message, type = 'info') {
+      statusMsg.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+      setTimeout(() => {
+        statusMsg.innerHTML = '';
+      }, 5000);
+    }
+
+    // 手動查詢
+    searchBtn.addEventListener('click', async () => {
+      const keyword = document.getElementById('keyword').value.trim();
+      
+      if (!keyword) {
+        showStatus('請輸入關鍵字', 'error');
+        return;
+      }
+
+      searchBtn.disabled = true;
+      searchBtn.textContent = '查詢中...';
+
+      try {
+        const response = await fetch(N8N_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ keyword })
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          displayManualResults(data, keyword);
+          showStatus('查詢成功！', 'success');
+        } else {
+          throw new Error(data.message || '查詢失敗');
+        }
+      } catch (error) {
+        showStatus('查詢失敗：' + error.message, 'error');
+      } finally {
+        searchBtn.disabled = false;
+        searchBtn.textContent = '查詢';
+      }
+    });
+
+    // 顯示手動查詢結果
+    function displayManualResults(data, keyword) {
+      const validMessages = (data.messages || []).filter(msg => {
+        return msg.type !== 'empty' && msg.公司代號;
+      });
+
+      // 創建手動查詢結果區塊
+      let manualSection = document.getElementById('section-manual');
+      if (!manualSection) {
+        manualSection = document.createElement('div');
+        manualSection.id = 'section-manual';
+        manualSection.className = 'keyword-section';
+        resultsContainer.insertBefore(manualSection, resultsContainer.firstChild);
+      }
+
+      manualSection.innerHTML = `
+        <h2>🔍 「${keyword}」查詢結果</h2>
+        <div class="results-header">
+          <div>
+            <span class="keyword-display">🔍 關鍵字: ${keyword}</span>
+            <span class="badge badge-api">證交所API</span>
+          </div>
+          <span class="result-count">共 ${validMessages.length} 筆</span>
+        </div>
+        <div id="resultsList-manual">${generateResultsHTML(validMessages, keyword)}</div>
+      `;
+
+      resultsContainer.style.display = 'block';
+      manualSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 自動查詢多個關鍵字
+    async function searchMultipleKeywords(keywords) {
+      resultsContainer.style.display = 'block';
+      
+      for (const keyword of keywords) {
+        try {
+          const response = await fetch(N8N_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ keyword })
+          });
+
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          
+          if (data.success) {
+            displayResultsForKeyword(data, keyword);
+          }
+        } catch (error) {
+          console.error(`查詢 ${keyword} 失敗:`, error);
+          document.getElementById(`resultsList-${keyword}`).innerHTML = `
+            <div class="empty-state">
+              <p style="color: #dc3545;">查詢失敗: ${error.message}</p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // 顯示特定關鍵字結果
+    function displayResultsForKeyword(data, keyword) {
+      const validMessages = (data.messages || []).filter(msg => {
+        return msg.type !== 'empty' && msg.公司代號;
+      });
+      
+      const countElement = document.getElementById(`resultCount-${keyword}`);
+      const listElement = document.getElementById(`resultsList-${keyword}`);
+      
+      countElement.textContent = `共 ${validMessages.length} 筆`;
+      listElement.innerHTML = generateResultsHTML(validMessages, keyword);
+    }
+
+    // 生成結果HTML
+    function generateResultsHTML(messages, keyword) {
+      if (messages.length === 0) {
+        return `
+          <div class="empty-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p>今日暫無「${keyword}」相關訊息</p>
+          </div>
+        `;
+      }
+
+      return messages.map(msg => `
+        <div class="message-card">
+          <div class="message-header">
+            <div class="company-info">
+              <div class="company-code">${msg.公司代號}</div>
+              <div class="company-name">${msg.公司名稱}</div>
+            </div>
+            <div class="message-time">
+              ${msg.發言日期 || msg.出表日期 || ''}<br>
+              ${msg.發言時間 || ''}
+            </div>
+          </div>
+          
+          <div class="message-subject">${msg.主旨 || ''}</div>
+          
+          ${msg.說明 ? `<div class="message-content">${msg.說明}</div>` : ''}
+          
+          <div class="message-tags">
+            ${msg.符合條款 ? `<span class="tag">📋 ${msg.符合條款}</span>` : ''}
+            ${msg.事實發生日 ? `<span class="tag">📅 ${msg.事實發生日}</span>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 頁面載入時自動查詢「澄清」和「私募」
+    window.addEventListener('load', () => {
+      searchMultipleKeywords(['澄清', '私募']);
+    });
+  </script>
+</body>
+</html>
