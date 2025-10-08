@@ -414,6 +414,20 @@
           <div class="loading">正在查詢私募相關訊息</div>
         </div>
       </div>
+      <!-- 處分有價證券結果 -->
+      <div class="keyword-section" id="section-處分有價證券">
+        <h2>💰 私募相關訊息</h2>
+        <div class="results-header">
+          <div>
+            <span class="keyword-display">🔍 關鍵字: 處分有價證券</span>
+            <span class="badge badge-api">證交所API</span>
+          </div>
+          <span id="resultCount-處分有價證券" class="result-count">載入中...</span>
+        </div>
+        <div id="resultsList-處分有價證券">
+          <div class="loading">正在查詢私募相關訊息</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -575,9 +589,9 @@ searchBtn.addEventListener('click', async () => {
       `).join('');
     }
 
-    // 頁面載入時自動查詢「澄清」和「私募」
+    // 頁面載入時自動查詢「澄清」和「私募」或「處分有價證券」
     window.addEventListener('load', () => {
-      searchMultipleKeywords(['澄清', '私募']);
+      searchMultipleKeywords(['澄清', '私募', '處分有價證券']);
     });
   </script>
 </body>
