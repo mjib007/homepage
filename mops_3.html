@@ -285,6 +285,7 @@
       color: #555;
       line-height: 1.6;
       margin-bottom: 10px;
+      white-space: pre-wrap;  /* ← 加這行！ */
     }
 
     .message-tags {
@@ -432,7 +433,7 @@
   </div>
 
   <script>
-    const N8N_WEBHOOK_URL = 'https://mjib007.zeabur.app/webhook/mops-search2';
+    const N8N_WEBHOOK_URL = 'https://mjib007.zeabur.app/webhook/mops-search';
 
     const statusMsg = document.getElementById('statusMsg');
     const searchBtn = document.getElementById('searchBtn');
