@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>犯罪關係圖譜分析系統</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Microsoft JhengHei', Arial, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 200px;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-analyze {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-analyze:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-demo {
+            background: #f5f5f5;
+            color: #333;
+        }
+        .btn-demo:hover {
+            background: #e0e0e0;
+        }
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+        }
+        .info-box h3 {
+            color: #1976D2;
+            margin-bottom: 8px;
+        }
+        .info-box code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 犯罪關係圖譜分析系統</h1>
+        <div class="subtitle">Crime Network Analysis System</div>
+        
+        <div class="info-box">
+            <h3>📋 使用說明</h3>
+            <p>在下方輸入 JSON 格式的案件資料，或點擊「使用範例資料」載入測試資料。</p>
+            <p>資料格式包含 <code>people</code>（人物）和 <code>relationships</code>（關係）兩個陣列。</p>
+        </div>
+        
+        <form id="analysisForm">
+            <div class="form-group">
+                <label for="dataInput">案件資料 (JSON 格式)：</label>
+                <textarea id="dataInput" placeholder='請輸入 JSON 資料或點擊「使用範例資料」'></textarea>
+            </div>
+            
+            <div class="btn-group">
+                <button type="button" class="btn-demo" onclick="loadDemoData()">
+                    📝 使用範例資料
+                </button>
+                <button type="submit" class="btn-analyze">
+                    🚀 開始分析
+                </button>
+            </div>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px; color: #666;">正在分析中...</p>
+        </div>
+    </div>
+    
+    <script>
+        // 替換成你的 N8N Webhook URL
+        const WEBHOOK_URL = 'YOUR_N8N_WEBHOOK_URL_HERE';
+        
+        // 範例資料
+        const demoData = {
+            people: [
+                { id: "A", name: "主嫌張三", role: "首腦", riskLevel: "high" },
+                { id: "B", name: "共犯李四", role: "機房負責人", riskLevel: "high" },
+                { id: "C", name: "車手王五", role: "取款", riskLevel: "medium" },
+                { id: "D", name: "人頭帳戶1", role: "洗錢", riskLevel: "low" },
+                { id: "E", name: "人頭帳戶2", role: "洗錢", riskLevel: "low" },
+                { id: "F", name: "話務員小明", role: "詐騙", riskLevel: "medium" },
+                { id: "G", name: "境外金主", role: "出資", riskLevel: "high" }
+            ],
+            relationships: [
+                { from: "G", to: "A", type: "資助", strength: 1000, unit: "萬元" },
+                { from: "A", to: "B", type: "指揮", strength: 100 },
+                { from: "A", to: "C", type: "指揮", strength: 80 },
+                { from: "B", to: "F", type: "管理", strength: 90 },
+                { from: "A", to: "D", type: "匯款", strength: 500, unit: "萬元" },
+                { from: "A", to: "E", type: "匯款", strength: 300, unit: "萬元" },
+                { from: "C", to: "D", type: "提款", strength: 50, unit: "次" },
+                { from: "C", to: "E", type: "提款", strength: 30, unit: "次" }
+            ]
+        };
+        
+        // 載入範例資料
+        function loadDemoData() {
+            document.getElementById('dataInput').value = JSON.stringify(demoData, null, 2);
+        }
+        
+        // 表單提交
+        document.getElementById('analysisForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const dataInput = document.getElementById('dataInput').value;
+            
+            // 驗證 JSON
+            let data;
+            try {
+                data = JSON.parse(dataInput);
+            } catch (error) {
+                alert('❌ JSON 格式錯誤，請檢查資料格式！');
+                return;
+            }
+            
+            // 顯示載入中
+            document.getElementById('loading').style.display = 'block';
+            
+            try {
+                // 發送請求到 N8N
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ data: data })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('分析失敗');
+                }
+                
+                // 取得 HTML 結果
+                const resultHtml = await response.text();
+                
+                // 在新視窗顯示結果
+                const resultWindow = window.open('', '_blank');
+                resultWindow.document.write(resultHtml);
+                resultWindow.document.close();
+                
+            } catch (error) {
+                alert('❌ 分析失敗：' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
