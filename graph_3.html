@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>犯罪關係圖譜分析系統</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 700px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .option-card {
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .option-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .option-card.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        .option-card h3 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        .option-card p {
+            color: #666;
+            font-size: 13px;
+        }
+        .input-section {
+            display: none;
+            margin-bottom: 25px;
+        }
+        .input-section.show {
+            display: block;
+        }
+        .input-label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: bold;
+            font-size: 15px;
+        }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .textarea-json {
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .textarea-case {
+            min-height: 250px;
+        }
+        .example-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .example-box h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .example-box p {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: #f1f3f5;
+            color: #495057;
+            flex: 0 0 auto;
+            padding: 15px 20px;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #e9ecef;
+            box-shadow: none;
+        }
+        .loading {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .loading.show {
+            display: block;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        .alert.show {
+            display: block;
+        }
+        .alert.error {
+            background: #ffe0e0;
+            color: #c92a2a;
+            border: 1px solid #ffc9c9;
+        }
+        .alert.success {
+            background: #d3f9d8;
+            color: #2b8a3e;
+            border: 1px solid #8ce99a;
+        }
+        .example-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .example-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 犯罪關係圖譜分析系統</h1>
+        <p class="subtitle">Crime Network Analysis System</p>
+        
+        <div class="options">
+            <div class="option-card active" onclick="selectOption('default')">
+                <h3>📊 預設資料</h3>
+                <p>快速範例</p>
+            </div>
+            <div class="option-card" onclick="selectOption('json')">
+                <h3>✏️ JSON 格式</h3>
+                <p>結構化資料</p>
+            </div>
+            <div class="option-card" onclick="selectOption('ai')">
+                <h3>🤖 AI 解析</h3>
+                <p>輸入案情</p>
+            </div>
+        </div>
+        
+        <!-- JSON 輸入區 -->
+        <div class="input-section" id="jsonSection">
+            <label class="input-label">📋 JSON 格式資料</label>
+            <textarea id="jsonInput" class="textarea-json" placeholder='請輸入 JSON 格式資料，例如:
+{
+  "people": [
+    {"id": "A", "name": "張三", "role": "主嫌", "riskLevel": "high"}
+  ],
+  "relationships": [
+    {"from": "A", "to": "B", "type": "指揮", "strength": 100}
+  ]
+}'></textarea>
+            <a href="#" class="example-link" onclick="fillJSONExample(); return false;">📝 填入範例資料</a>
+        </div>
+        
+        <!-- AI 案情輸入區 -->
+        <div class="input-section" id="aiSection">
+            <label class="input-label">📄 貼上案例事實</label>
+            <textarea id="caseText" class="textarea-case" placeholder="請貼上案件事實描述，例如：
+
+經查，主嫌張三於2024年1月成立詐騙機房，夥同共犯李四擔任機房負責人。張三透過李四管理話務員小明進行詐騙電話。
+
+張三並指使車手王五前往提領人頭帳戶內款項。經查，張三曾匯款500萬元至人頭帳戶1，300萬元至人頭帳戶2。車手王五共計提款50次及30次。
+
+李四與話務員小明之間有頻繁的聯繫，約90次通話記錄..."></textarea>
+            
+            <div class="example-box">
+                <h4>💡 撰寫建議</h4>
+                <p>• 清楚描述每個人物的姓名和角色</p>
+                <p>• 說明人物之間的關係（指揮、管理、匯款等）</p>
+                <p>• 提供具體數字（金額、次數）</p>
+                <p>• 標明風險等級（主嫌、共犯、車手等）</p>
+            </div>
+            <a href="#" class="example-link" onclick="fillCaseExample(); return false;">📝 填入範例案情</a>
+        </div>
+        
+        <div class="btn-group">
+            <button onclick="analyze()" id="analyzeBtn">
+                🚀 開始分析
+            </button>
+            <button class="btn-secondary" onclick="fillExample()" id="fillExampleBtn" style="display: none;">
+                📝 填入範例
+            </button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p id="loadingText">正在生成圖譜...</p>
+        </div>
+        
+        <div class="alert" id="alert"></div>
+    </div>
+    
+    <script>
+        let currentOption = 'default';
+        
+        function selectOption(option) {
+            currentOption = option;
+            
+            // 更新選項卡樣式
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // 隱藏所有輸入區
+            document.querySelectorAll('.input-section').forEach(section => {
+                section.classList.remove('show');
+            });
+            
+            // 顯示對應的輸入區
+            if (option === 'json') {
+                document.getElementById('jsonSection').classList.add('show');
+            } else if (option === 'ai') {
+                document.getElementById('aiSection').classList.add('show');
+            }
+            
+            // 更新按鈕文字
+            const btn = document.getElementById('analyzeBtn');
+            if (option === 'ai') {
+                btn.innerHTML = '🤖 AI 智能解析';
+            } else {
+                btn.innerHTML = '🚀 開始分析';
+            }
+        }
+        
+        function fillJSONExample() {
+            const example = {
+                "people": [
+                    {"id": "A", "name": "主嫌張三", "role": "首腦", "riskLevel": "high"},
+                    {"id": "B", "name": "共犯李四", "role": "機房負責人", "riskLevel": "high"},
+                    {"id": "C", "name": "車手王五", "role": "取款", "riskLevel": "medium"}
+                ],
+                "relationships": [
+                    {"from": "A", "to": "B", "type": "指揮", "strength": 100},
+                    {"from": "A", "to": "C", "type": "指揮", "strength": 80}
+                ]
+            };
+            document.getElementById('jsonInput').value = JSON.stringify(example, null, 2);
+        }
+        
+        function fillCaseExample() {
+            document.getElementById('caseText').value = `經查，主嫌張三於2024年1月成立詐騙機房，夥同共犯李四擔任機房負責人。張三透過李四管理話務員小明進行詐騙電話。
+
+張三並指使車手王五前往提領人頭帳戶內款項。經查，張三曾匯款500萬元至人頭帳戶1，300萬元至人頭帳戶2。車手王五共計提款50次及30次。
+
+李四對話務員小明有管理之實，兩人間有90次通話記錄。張三對李四有指揮關係強度100，對王五指揮關係強度80。`;
+        }
+        
+        function showLoading(text = '正在生成圖譜...') {
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('loadingText').textContent = text;
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type} show`;
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 5000);
+        }
+        
+        async function analyze() {
+            const btn = document.getElementById('analyzeBtn');
+            btn.disabled = true;
+            
+            try {
+                if (currentOption === 'default') {
+                    // 使用預設資料 - 走原本的 workflow
+                    await analyzeWithOriginalWorkflow({});
+                    
+                } else if (currentOption === 'json') {
+                    // JSON 格式 - 走原本的 workflow
+                    const jsonInput = document.getElementById('jsonInput').value.trim();
+                    if (!jsonInput) {
+                        showAlert('❌ 請輸入資料', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        const data = JSON.parse(jsonInput);
+                        await analyzeWithOriginalWorkflow({ data: data });
+                    } catch (error) {
+                        showAlert('❌ JSON 格式錯誤: ' + error.message, 'error');
+                        return;
+                    }
+                    
+                } else if (currentOption === 'ai') {
+                    // AI 解析案情 - 走新的 AI workflow
+                    const caseText = document.getElementById('caseText').value.trim();
+                    if (!caseText) {
+                        showAlert('❌ 請輸入案例事實', 'error');
+                        return;
+                    }
+                    
+                    await analyzeWithAI(caseText);
+                }
+                
+            } finally {
+                btn.disabled = false;
+            }
+        }
+        
+        // 原本的 workflow (crime-analysis)
+        async function analyzeWithOriginalWorkflow(requestData) {
+            const url = 'https://kf0630.zeabur.app/webhook/crime-analysis';
+            
+            showLoading('📊 正在生成關係圖譜...');
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const html = await response.text();
+                
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                    newWindow.document.write(html);
+                    newWindow.document.close();
+                    hideLoading();
+                    showAlert('✅ 圖譜已在新視窗開啟', 'success');
+                } else {
+                    hideLoading();
+                    showAlert('⚠️ 請允許彈出視窗', 'error');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                showAlert('❌ 分析失敗: ' + error.message, 'error');
+                console.error('Error:', error);
+            }
+        }
+        
+        // 新的 AI workflow (ai-parse)
+        async function analyzeWithAI(caseText) {
+            const url = 'https://kf0630.zeabur.app/webhook/ai-parse';
+            
+            showLoading('🤖 AI 正在分析案例並生成圖譜...');
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        caseText: caseText
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const html = await response.text();
+                
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                    newWindow.document.write(html);
+                    newWindow.document.close();
+                    hideLoading();
+                    showAlert('✅ AI 解析完成，圖譜已開啟', 'success');
+                } else {
+                    hideLoading();
+                    showAlert('⚠️ 請允許彈出視窗', 'error');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                showAlert('❌ AI 解析失敗: ' + error.message, 'error');
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
