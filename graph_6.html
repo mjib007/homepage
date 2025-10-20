@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>關係圖譜分析系統</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .option-card {
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .option-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .option-card.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        .option-card h3 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        .option-card p {
+            color: #666;
+            font-size: 12px;
+        }
+        .input-section {
+            display: none;
+            margin-bottom: 25px;
+        }
+        .input-section.show {
+            display: block;
+        }
+        .input-label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: bold;
+            font-size: 15px;
+        }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .textarea-json {
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .textarea-case {
+            min-height: 250px;
+        }
+        .textarea-geo {
+            min-height: 200px;
+        }
+        .example-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .example-box h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .example-box p {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+        .geo-features {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #28a745;
+        }
+        .geo-features h4 {
+            color: #155724;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .geo-features p {
+            color: #155724;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: #f1f3f5;
+            color: #495057;
+            flex: 0 0 auto;
+            padding: 15px 20px;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #e9ecef;
+            box-shadow: none;
+        }
+        .loading {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .loading.show {
+            display: block;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        .alert.show {
+            display: block;
+        }
+        .alert.error {
+            background: #ffe0e0;
+            color: #c92a2a;
+            border: 1px solid #ffc9c9;
+        }
+        .alert.success {
+            background: #d3f9d8;
+            color: #2b8a3e;
+            border: 1px solid #8ce99a;
+        }
+        .example-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .example-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 關係圖譜分析系統</h1>
+        <p class="subtitle">Relationship Network Analysis System</p>
+        
+        <div class="options">
+            <div class="option-card active" onclick="selectOption('default')">
+                <h3>📊 預設資料</h3>
+                <p>快速範例</p>
+            </div>
+            <div class="option-card" onclick="selectOption('json')">
+                <h3✏️ JSON 格式</h3>
+                <p>結構化資料</p>
+            </div>
+            <div class="option-card" onclick="selectOption('ai')">
+                <h3>🤖 gpt-4.1-mini模型</h3>
+                <p>智能分析</p>
+            </div>
+            <div class="option-card" onclick="selectOption('ai-simple')">
+                <h3>🤖 gpt-4-mini模型</h3>
+                <p>簡單關係圖</p>
+            </div>
+            <div class="option-card" onclick="selectOption('geo')">
+                <h3>🗺️ 地理助手</h3>
+                <p>時空分析</p>
+            </div>
+        </div>
+        
+        <!-- JSON 輸入區 -->
+        <div class="input-section" id="jsonSection">
+            <label class="input-label">📋 JSON 格式資料</label>
+            <textarea id="jsonInput" class="textarea-json" placeholder='請輸入 JSON 格式資料,例如:
+{
+  "people": [
+    {"id": "A", "name": "張三", "role": "董事長", "riskLevel": "high"}
+  ],
+  "relationships": [
+    {"from": "A", "to": "B", "type": "持股", "strength": 60, "unit": "%"}
+  ]
+}'></textarea>
+            <a href="#" class="example-link" onclick="fillJSONExample(); return false;">🔗 填入範例資料</a>
+        </div>
+        
+        <!-- AI 文本輸入區 -->
+        <div class="input-section" id="aiSection">
+            <label class="input-label">📄 貼上文本內容</label>
+            <textarea id="caseText" class="textarea-case" placeholder="請貼上任何文本內容,可以是:
+
+• 新聞報導:「科技巨頭 A 公司宣布以 50 億美元收購新創公司 B...」
+• 法律案件:「原告張三對被告李四提起訴訟,主張...」
+• 商業關係:「甲公司持有乙公司 60% 股權,董事長王五同時擔任...」
+• 組織架構:「執行長陳六向董事會報告,下轄三個部門...」
+
+系統會自動分析文本中的人物/組織關係並生成圖譜。"></textarea>
+            
+            <div class="example-box">
+                <h4>💡 撰寫建議</h4>
+                <p>• 清楚描述每個人物/組織的名稱和角色</p>
+                <p>• 說明彼此之間的關係(持股、任職、訴訟、交易等)</p>
+                <p>• 提供具體數字(金額、比例、次數)</p>
+                <p>• 標明重要程度(核心人物、次要角色)</p>
+            </div>
+            <a href="#" class="example-link" onclick="fillCaseExample(); return false;">🔗 填入範例文本</a>
+        </div>
+        
+        <!-- 地理助手輸入區 -->
+        <div class="input-section" id="geoSection">
+            <label class="input-label">🗺️ 時空軌跡分析</label>
+            <textarea id="geoText" class="textarea-geo" placeholder="請描述移動軌跡,例如:
+
+👩 小花: 「我老公說昨晚7點下班後直接去健身房，又說為了買一隻滑鼠，跑去三創，12點才回家，總覺得時間對不上...」
+
+或任何包含時間、地點、移動的文字描述。"></textarea>
+            
+            <div class="geo-features">
+                <h4>🔍 福爾摩斯地理偵探助手</h4>
+                <p>1️⃣ <strong>智能案件分析</strong> - 自動解析移動軌跡和時間線</p>
+                <p>2️⃣ <strong>時間線驗證</strong> - 計算實際距離時間vs聲稱時間</p>
+                <p>3️⃣ <strong>異常標記</strong> - 可疑路線用紅色警示標示</p>
+                <p>4️⃣ <strong>專業報告</strong> - 生成包含統計圖表的分析報告</p>
+                <p style="margin-top: 10px; font-weight: bold;">💡 讓每一句「我大概花了XX分鐘」都無所遁形！</p>
+            </div>
+            <a href="#" class="example-link" onclick="fillGeoExample(); return false;">🔗 填入範例軌跡</a>
+        </div>
+        
+        <div class="btn-group">
+            <button onclick="analyze()" id="analyzeBtn">
+                🚀 開始分析
+            </button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p id="loadingText">正在生成圖譜...</p>
+        </div>
+        
+        <div class="alert" id="alert"></div>
+    </div>
+    
+    <script>
+        let currentOption = 'default';
+        
+        function selectOption(option) {
+            currentOption = option;
+            
+            // 更新選項卡樣式
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // 隱藏所有輸入區
+            document.querySelectorAll('.input-section').forEach(section => {
+                section.classList.remove('show');
+            });
+            
+            // 顯示對應的輸入區
+            if (option === 'json') {
+                document.getElementById('jsonSection').classList.add('show');
+            } else if (option === 'ai' || option === 'ai-simple') {
+                document.getElementById('aiSection').classList.add('show');
+            } else if (option === 'geo') {
+                document.getElementById('geoSection').classList.add('show');
+            }
+            
+            // 更新按鈕文字
+            const btn = document.getElementById('analyzeBtn');
+            if (option === 'ai') {
+                btn.innerHTML = '🤖 gpt-4.1-mini 智能解析';
+            } else if (option === 'ai-simple') {
+                btn.innerHTML = '🤖 gpt-4-mini 簡單分析';
+            } else if (option === 'geo') {
+                btn.innerHTML = '🗺️ 福爾摩斯地理分析';
+            } else {
+                btn.innerHTML = '🚀 開始分析';
+            }
+        }
+        
+        function fillJSONExample() {
+            const example = {
+                "people": [
+                    {"id": "A", "name": "科技公司 A", "role": "收購方", "riskLevel": "high"},
+                    {"id": "B", "name": "新創公司 B", "role": "被收購方", "riskLevel": "high"},
+                    {"id": "C", "name": "投資基金 C", "role": "股東", "riskLevel": "medium"}
+                ],
+                "relationships": [
+                    {"from": "A", "to": "B", "type": "收購", "strength": 50, "unit": "億美元"},
+                    {"from": "C", "to": "B", "type": "持股", "strength": 30, "unit": "%"}
+                ]
+            };
+            document.getElementById('jsonInput').value = JSON.stringify(example, null, 2);
+        }
+        
+        function fillCaseExample() {
+            document.getElementById('caseText').value = `科技巨頭 A 公司今日宣布以 50 億美元收購人工智慧新創公司 B。根據協議,A 公司執行長張三將親自監督整合流程。
+
+B 公司創辦人李四將加入 A 公司擔任技術長,並保留 B 公司 15% 股權。投資基金 C 原持有 B 公司 30% 股權,此次交易後將全數出售獲利了結。
+
+A 公司董事會主席王五表示,此次收購將強化公司在 AI 領域的競爭力。交易預計於 6 個月內完成,需通過監管機構審查。`;
+        }
+        
+        function fillGeoExample() {
+            document.getElementById('geoText').value = `張明於上午10點從新北市板橋區文化路一段188號的住所出發，搭捷運前往台北車站(台北市中正區忠孝西路一段1號)，預計11點到達。接著步行5分鐘到台北市中正區忠孝西路一段50號的公司上班。下午6點下班後，開車前往台北市信義區市府路45號的餐廳聚餐，預計40分鐘車程。最後於晚上10點搭計程車返回住所，估計需要50分鐘。`;
+        }
+        
+        function showLoading(text = '正在生成圖譜...') {
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('loadingText').textContent = text;
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type} show`;
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 5000);
+        }
+        
+        async function analyze() {
+            const btn = document.getElementById('analyzeBtn');
+            btn.disabled = true;
+            
+            try {
+                if (currentOption === 'default') {
+                    // 使用預設資料 - 走原本的 workflow
+                    await analyzeWithOriginalWorkflow({});
+                    
+                } else if (currentOption === 'json') {
+                    // JSON 格式 - 走原本的 workflow
+                    const jsonInput = document.getElementById('jsonInput').value.trim();
+                    if (!jsonInput) {
+                        showAlert('❌ 請輸入資料', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        const data = JSON.parse(jsonInput);
+                        await analyzeWithOriginalWorkflow({ data: data });
+                    } catch (error) {
+                        showAlert('❌ JSON 格式錯誤: ' + error.message, 'error');
+                        return;
+                    }
+                    
+                } else if (currentOption === 'ai') {
+                    // AI 解析文本 - 走 gpt-4.1-mini 的 AI workflow
+                    const caseText = document.getElementById('caseText').value.trim();
+                    if (!caseText) {
+                        showAlert('❌ 請輸入文本內容', 'error');
+                        return;
+                    }
+                    
+                    await analyzeWithAI(caseText, 'ai-parse');
+                    
+                } else if (currentOption === 'ai-simple') {
+                    // AI 簡單解析文本 - 走 gpt-4-mini 的 AI workflow
+                    const caseText = document.getElementById('caseText').value.trim();
+                    if (!caseText) {
+                        showAlert('❌ 請輸入文本內容', 'error');
+                        return;
+                    }
+                    
+                    await analyzeWithAI(caseText, 'ai-parse_2');
+                    
+                } else if (currentOption === 'geo') {
+                    // 地理助手 - 走地理分析 workflow
+                    const geoText = document.getElementById('geoText').value.trim();
+                    if (!geoText) {
+                        showAlert('❌ 請輸入移動軌跡描述', 'error');
+                        return;
+                    }
+                    
+                    await analyzeWithGeo(geoText);
+                }
+                
+            } finally {
+                btn.disabled = false;
+            }
+        }
+        
+        // 原本的 workflow (crime-analysis)
+        async function analyzeWithOriginalWorkflow(requestData) {
+            const url = 'https://kf0630.zeabur.app/webhook/crime-analysis';
+            
+            showLoading('📊 正在生成關係圖譜...');
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const html = await response.text();
+                
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                    newWindow.document.write(html);
+                    newWindow.document.close();
+                    hideLoading();
+                    showAlert('✅ 圖譜已在新視窗開啟', 'success');
+                } else {
+                    hideLoading();
+                    showAlert('⚠️ 請允許彈出視窗', 'error');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                showAlert('❌ 分析失敗: ' + error.message, 'error');
+                console.error('Error:', error);
+            }
+        }
+        
+        // AI workflow (ai-parse 或 ai-parse_2)
+        async function analyzeWithAI(caseText, endpoint) {
+            const url = `https://kf0630.zeabur.app/webhook/${endpoint}`;
+            
+            const loadingText = endpoint === 'ai-parse' ? 
+                '🤖 gpt-4.1-mini 正在分析文本並生成圖譜...' : 
+                '🤖 gpt-4-mini 正在分析文本並生成圖譜...';
+            
+            showLoading(loadingText);
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        caseText: caseText
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const html = await response.text();
+                
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                    newWindow.document.write(html);
+                    newWindow.document.close();
+                    hideLoading();
+                    const successMessage = endpoint === 'ai-parse' ? 
+                        '✅ gpt-4.1-mini 解析完成,圖譜已開啟' : 
+                        '✅ gpt-4-mini 解析完成,圖譜已開啟';
+                    showAlert(successMessage, 'success');
+                } else {
+                    hideLoading();
+                    showAlert('⚠️ 請允許彈出視窗', 'error');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                const errorMessage = endpoint === 'ai-parse' ? 
+                    '❌ gpt-4.1-mini 解析失敗: ' + error.message : 
+                    '❌ gpt-4-mini 解析失敗: ' + error.message;
+                showAlert(errorMessage, 'error');
+                console.error('Error:', error);
+            }
+        }
+        
+        // 地理助手 workflow (geo-analysis)
+        async function analyzeWithGeo(geoText) {
+            const url = 'https://kf0630.zeabur.app/webhook/geo-analysis';
+            
+            showLoading('🗺️ 福爾摩斯正在分析時空軌跡...');
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        caseText: geoText
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const html = await response.text();
+                
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                    newWindow.document.write(html);
+                    newWindow.document.close();
+                    hideLoading();
+                    showAlert('✅ 地理分析完成,報告已開啟', 'success');
+                } else {
+                    hideLoading();
+                    showAlert('⚠️ 請允許彈出視窗', 'error');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                showAlert('❌ 地理分析失敗: ' + error.message, 'error');
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
