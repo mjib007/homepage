@@ -35,7 +35,7 @@
         }
         .options {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
             margin-bottom: 25px;
         }
@@ -119,11 +119,6 @@
         textarea:focus {
             outline: none;
             border-color: #667eea;
-        }
-        .textarea-json {
-            min-height: 200px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
         }
         .textarea-case {
             min-height: 250px;
@@ -231,25 +226,15 @@
         .alert.show {
             display: block;
         }
-        .alert.error {
-            background: #ffe0e0;
-            color: #c92a2a;
-            border: 1px solid #ffc9c9;
-        }
         .alert.success {
-            background: #d3f9d8;
-            color: #2b8a3e;
-            border: 1px solid #8ce99a;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
-        .example-link {
-            color: #667eea;
-            text-decoration: none;
-            font-size: 14px;
-            display: inline-block;
-            margin-top: 10px;
-        }
-        .example-link:hover {
-            text-decoration: underline;
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
     </style>
 </head>
@@ -259,160 +244,108 @@
         <p class="subtitle">Relationship Network Analysis System</p>
         
         <div class="options">
-            <div class="option-card active" onclick="selectOption('default')">
-                <h3>📊 預設資料</h3>
-                <p>快速範例</p>
+            <!-- 第一排：簡單關係圖、複雜關係圖、地理助手 -->
+            <div class="option-card" onclick="selectOption('ai-simple')">
+                <h3>📊 簡單關係圖</h3>
+                <p>快速分析</p>
             </div>
-            <div class="option-card" onclick="selectOption('json')">
-                <h3>✏️ JSON 格式</h3>
-                <p>結構化資料</p>
-            </div>
+            
             <div class="option-card" onclick="selectOption('ai')">
-                <h3>🤖 gpt-4.1-mini模型</h3>
+                <h3>🤖 複雜關係圖</h3>
                 <p>智能分析</p>
             </div>
-            <div class="option-card" onclick="selectOption('ai-simple')">
-                <h3>🤖 gpt-4-mini模型</h3>
-                <p>簡單關係圖</p>
-            </div>
+            
             <div class="option-card" onclick="selectOption('geo')">
                 <h3>🗺️ 地理助手</h3>
                 <p>時空分析</p>
             </div>
-            <div class="option-card crime-scene-card" onclick="window.open('https://line.me/R/ti/p/@510vkpop', '_blank')">
-                <h3>🔍 現場犯罪圖分析</h3>
+            
+            <!-- 第二排：現場犯罪圖分析、空位、空位 -->
+            <div class="option-card crime-scene-card" onclick="openCrimeSceneBot()">
+                <h3>🚨 現場犯罪圖分析</h3>
                 <p>LINE Bot 助手</p>
             </div>
+            
+            <!-- 空位 -->
+            <div></div>
+            <div></div>
         </div>
         
-        <!-- JSON 輸入區 -->
-        <div class="input-section" id="jsonSection">
-            <label class="input-label">📋 JSON 格式資料</label>
-            <textarea id="jsonInput" class="textarea-json" placeholder='請輸入 JSON 格式資料,例如:
-{
-  "people": [
-    {"id": "A", "name": "張三", "role": "董事長", "riskLevel": "high"}
-  ],
-  "relationships": [
-    {"from": "A", "to": "B", "type": "持股", "strength": 60, "unit": "%"}
-  ]
-}'></textarea>
-            <a href="#" class="example-link" onclick="fillJSONExample(); return false;">🔗 填入範例資料</a>
-        </div>
-        
-        <!-- AI 文本輸入區 -->
-        <div class="input-section" id="aiSection">
-            <label class="input-label">📄 貼上文本內容</label>
-            <textarea id="caseText" class="textarea-case" placeholder="請貼上任何文本內容,可以是:
-
-• 新聞報導:「科技巨頭 A 公司宣布以 50 億美元收購新創公司 B...」
-• 法律案件:「原告張三對被告李四提起訴訟,主張...」
-• 商業關係:「甲公司持有乙公司 60% 股權,董事長王五同時擔任...」
-• 組織架構:「執行長陳六向董事會報告,下轄三個部門...」
-
-系統會自動分析文本中的人物/組織關係並生成圖譜。"></textarea>
+        <!-- 案件文本輸入 (用於簡單關係圖和複雜關係圖) -->
+        <div id="caseTextSection" class="input-section">
+            <label for="caseText" class="input-label">📋 請輸入案件或事件描述：</label>
+            <textarea id="caseText" class="textarea-case" 
+                placeholder="例如：科技公司A收購新創公司B，執行長張三負責整合，創辦人李四將擔任技術長..."></textarea>
             
             <div class="example-box">
-                <h4>💡 撰寫建議</h4>
-                <p>• 清楚描述每個人物/組織的名稱和角色</p>
-                <p>• 說明彼此之間的關係(持股、任職、訴訟、交易等)</p>
-                <p>• 提供具體數字(金額、比例、次數)</p>
-                <p>• 標明重要程度(核心人物、次要角色)</p>
+                <h4>💡 範例格式：</h4>
+                <p>• 描述人物、組織和關係</p>
+                <p>• 包含具體的數據和細節</p>
+                <p>• 使用清晰的事件脈絡</p>
+                <button type="button" class="btn-secondary" onclick="fillCaseExample()">載入範例</button>
             </div>
-            <a href="#" class="example-link" onclick="fillCaseExample(); return false;">🔗 填入範例文本</a>
         </div>
         
-        <!-- 地理助手輸入區 -->
-        <div class="input-section" id="geoSection">
-            <label class="input-label">🗺️ 移動軌跡描述</label>
-            <textarea id="geoText" class="textarea-geo" placeholder="請描述人員的移動軌跡,包含:
-
-• 時間: 具體時間點或時間區間
-• 地點: 詳細地址(包含門牌號碼)
-• 交通方式: 開車、步行、搭捷運等
-• 停留活動: 在各地點進行的活動
-
-範例: 
-張明上午10點從板橋區文化路188號住所出發,搭捷運11點到達台北車站,步行5分鐘到忠孝西路50號公司上班。下午6點下班開車到信義區市府路45號餐廳,8點40分抵達用餐。晚上10點搭計程車返回住所。"></textarea>
+        <!-- 地理文本輸入 -->
+        <div id="geoTextSection" class="input-section">
+            <label for="geoText" class="input-label">📍 請輸入移動軌跡描述：</label>
+            <textarea id="geoText" class="textarea-geo" 
+                placeholder="例如：張明上午10點從板橋住所搭捷運到台北車站，11點到達後步行5分鐘到公司上班..."></textarea>
             
             <div class="geo-features">
-                <h4>🎯 地理分析功能</h4>
-                <p>• 自動定位地址座標並顯示在地圖上</p>
-                <p>• 計算實際移動距離與時間</p>
-                <p>• 比對預估時間,偵測異常軌跡</p>
-                <p>• 提供專業的案件地理分析報告</p>
+                <h4>🎯 福爾摩斯功能：</h4>
+                <p>• 自動解析地點和時間</p>
+                <p>• Google Maps 精確定位</p>
+                <p>• 智能偵測異常時間</p>
+                <p>• 生成互動式地圖報告</p>
+                <button type="button" class="btn-secondary" onclick="fillGeoExample()">載入範例</button>
             </div>
-            <a href="#" class="example-link" onclick="fillGeoExample(); return false;">🔗 填入範例軌跡</a>
         </div>
         
         <div class="btn-group">
-            <button onclick="analyze()" id="analyzeBtn">
-                🚀 開始分析
-            </button>
+            <button id="analyzeBtn" onclick="analyze()">🚀 開始分析</button>
         </div>
         
-        <div class="loading" id="loading">
+        <div id="loading" class="loading">
             <div class="spinner"></div>
             <p id="loadingText">正在生成圖譜...</p>
         </div>
         
-        <div class="alert" id="alert"></div>
+        <div id="alert" class="alert"></div>
     </div>
     
     <script>
-        let currentOption = 'default';
+        let currentOption = '';
         
         function selectOption(option) {
             currentOption = option;
             
-            // 更新選項卡樣式
-            document.querySelectorAll('.option-card:not(.crime-scene-card)').forEach(card => {
+            // 移除所有 active 狀態
+            document.querySelectorAll('.option-card').forEach(card => {
                 card.classList.remove('active');
             });
-            if (option !== 'crime-scene') {
-                event.currentTarget.classList.add('active');
-            }
             
-            // 隱藏所有輸入區
+            // 隱藏所有輸入區域
             document.querySelectorAll('.input-section').forEach(section => {
                 section.classList.remove('show');
             });
             
-            // 顯示對應的輸入區
-            if (option === 'json') {
-                document.getElementById('jsonSection').classList.add('show');
-            } else if (option === 'ai' || option === 'ai-simple') {
-                document.getElementById('aiSection').classList.add('show');
+            // 根據選項顯示相應內容
+            if (option === 'ai-simple' || option === 'ai') {
+                // 簡單關係圖和複雜關係圖都使用案件文本輸入
+                document.getElementById('caseTextSection').classList.add('show');
+                event.target.classList.add('active');
             } else if (option === 'geo') {
-                document.getElementById('geoSection').classList.add('show');
-            }
-            
-            // 更新按鈕文字
-            const btn = document.getElementById('analyzeBtn');
-            if (option === 'ai') {
-                btn.innerHTML = '🤖 gpt-4.1-mini 智能解析';
-            } else if (option === 'ai-simple') {
-                btn.innerHTML = '🤖 gpt-4-mini 簡單解析';
-            } else if (option === 'geo') {
-                btn.innerHTML = '🗺️ 福爾摩斯地理分析';
-            } else {
-                btn.innerHTML = '🚀 開始分析';
+                // 地理助手使用地理文本輸入
+                document.getElementById('geoTextSection').classList.add('show');
+                event.target.classList.add('active');
             }
         }
         
-        function fillJSONExample() {
-            const example = {
-                "people": [
-                    {"id": "A", "name": "科技公司 A", "role": "收購方", "riskLevel": "high"},
-                    {"id": "B", "name": "新創公司 B", "role": "被收購方", "riskLevel": "high"},
-                    {"id": "C", "name": "投資基金 C", "role": "股東", "riskLevel": "medium"}
-                ],
-                "relationships": [
-                    {"from": "A", "to": "B", "type": "收購", "strength": 50, "unit": "億美元"},
-                    {"from": "C", "to": "B", "type": "持股", "strength": 30, "unit": "%"}
-                ]
-            };
-            document.getElementById('jsonInput').value = JSON.stringify(example, null, 2);
+        function openCrimeSceneBot() {
+            const url = 'https://line.me/R/ti/p/@022lwdgb';
+            window.open(url, '_blank');
+            showAlert('✅ 已開啟 LINE Bot，請掃描 QR Code 或搜尋 @022lwdgb', 'success');
         }
         
         function fillCaseExample() {
@@ -450,28 +383,8 @@ A 公司董事會主席王五表示,此次收購將強化公司在 AI 領域的�
             btn.disabled = true;
             
             try {
-                if (currentOption === 'default') {
-                    // 使用預設資料 - 走原本的 workflow
-                    await analyzeWithOriginalWorkflow({});
-                    
-                } else if (currentOption === 'json') {
-                    // JSON 格式 - 走原本的 workflow
-                    const jsonInput = document.getElementById('jsonInput').value.trim();
-                    if (!jsonInput) {
-                        showAlert('❌ 請輸入資料', 'error');
-                        return;
-                    }
-                    
-                    try {
-                        const data = JSON.parse(jsonInput);
-                        await analyzeWithOriginalWorkflow({ data: data });
-                    } catch (error) {
-                        showAlert('❌ JSON 格式錯誤: ' + error.message, 'error');
-                        return;
-                    }
-                    
-                } else if (currentOption === 'ai') {
-                    // AI 解析文本 - 走 gpt-4.1-mini 的 AI workflow
+                if (currentOption === 'ai') {
+                    // 複雜關係圖 - 走 gpt-4.1-mini 的 AI workflow
                     const caseText = document.getElementById('caseText').value.trim();
                     if (!caseText) {
                         showAlert('❌ 請輸入文本內容', 'error');
@@ -481,7 +394,7 @@ A 公司董事會主席王五表示,此次收購將強化公司在 AI 領域的�
                     await analyzeWithAI(caseText, 'ai-parse');
                     
                 } else if (currentOption === 'ai-simple') {
-                    // AI 簡單解析文本 - 走 gpt-4-mini 的 AI workflow
+                    // 簡單關係圖 - 走 gpt-4-mini 的 AI workflow
                     const caseText = document.getElementById('caseText').value.trim();
                     if (!caseText) {
                         showAlert('❌ 請輸入文本內容', 'error');
@@ -499,49 +412,13 @@ A 公司董事會主席王五表示,此次收購將強化公司在 AI 領域的�
                     }
                     
                     await analyzeWithGeo(geoText);
+                } else {
+                    showAlert('❌ 請選擇分析方式', 'error');
+                    return;
                 }
                 
             } finally {
                 btn.disabled = false;
-            }
-        }
-        
-        // 原本的 workflow (crime-analysis)
-        async function analyzeWithOriginalWorkflow(requestData) {
-            const url = 'https://kf0630.zeabur.app/webhook/crime-analysis';
-            
-            showLoading('📊 正在生成關係圖譜...');
-            
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestData)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const html = await response.text();
-                
-                const newWindow = window.open('', '_blank');
-                if (newWindow) {
-                    newWindow.document.write(html);
-                    newWindow.document.close();
-                    hideLoading();
-                    showAlert('✅ 圖譜已在新視窗開啟', 'success');
-                } else {
-                    hideLoading();
-                    showAlert('⚠️ 請允許彈出視窗', 'error');
-                }
-                
-            } catch (error) {
-                hideLoading();
-                showAlert('❌ 分析失敗: ' + error.message, 'error');
-                console.error('Error:', error);
             }
         }
         
@@ -550,8 +427,8 @@ A 公司董事會主席王五表示,此次收購將強化公司在 AI 領域的�
             const url = `https://kf0630.zeabur.app/webhook/${endpoint}`;
             
             const loadingText = endpoint === 'ai-parse' ? 
-                '🤖 gpt-4.1-mini 正在分析文本並生成圖譜...' : 
-                '🤖 gpt-4-mini 正在分析文本並生成圖譜...';
+                '🤖 複雜關係圖正在分析文本並生成圖譜...' : 
+                '🤖 簡單關係圖正在分析文本並生成圖譜...';
             
             showLoading(loadingText);
             
@@ -578,8 +455,8 @@ A 公司董事會主席王五表示,此次收購將強化公司在 AI 領域的�
                     newWindow.document.close();
                     hideLoading();
                     const successMessage = endpoint === 'ai-parse' ? 
-                        '✅ gpt-4.1-mini 解析完成,圖譜已開啟' : 
-                        '✅ gpt-4-mini 解析完成,圖譜已開啟';
+                        '✅ 複雜關係圖解析完成,圖譜已開啟' : 
+                        '✅ 簡單關係圖解析完成,圖譜已開啟';
                     showAlert(successMessage, 'success');
                 } else {
                     hideLoading();
@@ -589,8 +466,8 @@ A 公司董事會主席王五表示,此次收購將強化公司在 AI 領域的�
             } catch (error) {
                 hideLoading();
                 const errorMessage = endpoint === 'ai-parse' ? 
-                    '❌ gpt-4.1-mini 解析失敗: ' + error.message : 
-                    '❌ gpt-4-mini 解析失敗: ' + error.message;
+                    '❌ 複雜關係圖解析失敗: ' + error.message : 
+                    '❌ 簡單關係圖解析失敗: ' + error.message;
                 showAlert(errorMessage, 'error');
                 console.error('Error:', error);
             }
