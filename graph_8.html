@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>福爾摩斯/華生辦案輔助系統</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 900px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .option-card {
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            position: relative;
+        }
+        .option-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .option-card.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        .option-card h3 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        .option-card p {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        /* 特殊樣式：現場犯罪圖分析卡片 */
+        .crime-scene-card {
+            border: 2px solid #D0021B !important;
+            background: linear-gradient(135deg, #D0021B 0%, #FF4757 100%) !important;
+            color: white !important;
+            position: relative;
+        }
+        .crime-scene-card:hover {
+            border-color: #B91C1C !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(208, 2, 27, 0.4) !important;
+        }
+        .crime-scene-card h3 {
+            color: white !important;
+            margin-bottom: 8px !important;
+        }
+        .crime-scene-card p {
+            color: #ffe6e6 !important;
+            margin: 0 !important;
+        }
+        .crime-scene-card::after {
+            content: '🔗';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        /* 新增：陳年舊案卡片樣式 */
+        .cold-case-card {
+            border: 2px solid #8B4513 !important;
+            background: linear-gradient(135deg, #8B4513 0%, #CD853F 100%) !important;
+            color: white !important;
+        }
+        .cold-case-card:hover {
+            border-color: #5D2F08 !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(139, 69, 19, 0.4) !important;
+        }
+        .cold-case-card h3, .cold-case-card p {
+            color: white !important;
+        }
+        
+        /* 新增：陰謀分析卡片樣式 */
+        .conspiracy-card {
+            border: 2px solid #2C1810 !important;
+            background: linear-gradient(135deg, #2C1810 0%, #8B0000 100%) !important;
+            color: white !important;
+        }
+        .conspiracy-card:hover {
+            border-color: #1A0F08 !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(44, 24, 16, 0.4) !important;
+        }
+        .conspiracy-card h3, .conspiracy-card p {
+            color: white !important;
+        }
+        
+        /* 新增：公司調查卡片樣式 */
+        .corporate-card {
+            border: 2px solid #1e3a8a !important;
+            background: linear-gradient(135deg, #1e3a8a 0%, #059669 100%) !important;
+            color: white !important;
+        }
+        .corporate-card:hover {
+            border-color: #1e40af !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(30, 58, 138, 0.4) !important;
+        }
+        .corporate-card h3, .corporate-card p {
+            color: white !important;
+        }
+        
+        .input-section {
+            display: none;
+            margin-bottom: 25px;
+        }
+        .input-section.show {
+            display: block;
+        }
+        .input-label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: bold;
+            font-size: 15px;
+        }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .textarea-case {
+            min-height: 250px;
+        }
+        .textarea-geo {
+            min-height: 200px;
+        }
+        .example-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .example-box h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .example-box p {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+        .geo-features {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #28a745;
+        }
+        .geo-features h4 {
+            color: #155724;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .geo-features p {
+            color: #155724;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+        
+        /* 新增：專業模組功能說明樣式 */
+        .module-features {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid;
+        }
+        .module-features h4 {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .module-features p {
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+        
+        .cold-case-features {
+            background: #f5f1eb;
+            border-left-color: #8B4513;
+        }
+        .cold-case-features h4, .cold-case-features p {
+            color: #5D2F08;
+        }
+        
+        .conspiracy-features {
+            background: #f0f0f0;
+            border-left-color: #2C1810;
+        }
+        .conspiracy-features h4, .conspiracy-features p {
+            color: #2C1810;
+        }
+        
+        .corporate-features {
+            background: #eff6ff;
+            border-left-color: #1e3a8a;
+        }
+        .corporate-features h4, .corporate-features p {
+            color: #1e3a8a;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: #f1f3f5;
+            color: #495057;
+            flex: 0 0 auto;
+            padding: 15px 20px;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #e9ecef;
+            box-shadow: none;
+        }
+        .loading {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .loading.show {
+            display: block;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        .alert.show {
+            display: block;
+        }
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        /* 響應式設計調整 */
+        @media (max-width: 768px) {
+            .options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .option-card h3 {
+                font-size: 14px;
+            }
+            .option-card p {
+                font-size: 11px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 福爾摩斯/華生辦案輔助系統</h1>
+        <p class="subtitle">Relationship Network Analysis System</p>
+        
+        <div class="options">
+            <!-- 第一排：簡單關係圖、複雜關係圖、地理助手 -->
+            <div class="option-card" onclick="selectOption('ai-simple')">
+                <h3>📊 簡單關係圖</h3>
+                <p>快速分析</p>
+            </div>
+            
+            <div class="option-card" onclick="selectOption('ai')">
+                <h3>🤖 複雜關係圖</h3>
+                <p>智能分析</p>
+            </div>
+            
+            <div class="option-card" onclick="selectOption('geo')">
+                <h3>🗺️ 地理助手</h3>
+                <p>時空分析</p>
+            </div>
+            
+            <!-- 第二排：現場犯罪圖分析、陳年舊案重啟、疑似陰謀分析 -->
+            <div class="option-card crime-scene-card" onclick="openCrimeSceneBot()">
+                <h3>🚨 現場犯罪圖分析</h3>
+                <p>LINE Bot 助手</p>
+            </div>
+            
+            <div class="option-card cold-case-card" onclick="selectOption('cold-case')">
+                <h3>🕵️ 陳年懸案重啟</h3>
+                <p>善用新科技成為破案關鍵</p>
+            </div>
+            
+            <div class="option-card conspiracy-card" onclick="selectOption('conspiracy')">
+                <h3>🎭 暗黑陰謀分析</h3>
+                <p>破解刻意掩蓋的陰謀</p>
+            </div>
+            
+            <!-- 第三排：公司面紗揭露、空位、空位 -->
+            <div class="option-card corporate-card" onclick="selectOption('corporate')">
+                <h3>🏢 企業真實動機</h3>
+                <p>透視企業行為真相</p>
+            </div>
+            
+            <!-- 空位 -->
+            <div></div>
+            <div></div>
+        </div>
+        
+        <!-- 案件文本輸入 (用於簡單關係圖和複雜關係圖) -->
+        <div id="caseTextSection" class="input-section">
+            <label for="caseText" class="input-label">📋 請輸入案件或事件描述：</label>
+            <textarea id="caseText" class="textarea-case" 
+                placeholder="例如：科技公司A收購新創公司B，執行長張三負責整合，創辦人李四將擔任技術長..."></textarea>
+            
+            <div class="example-box">
+                <h4>💡 範例格式：</h4>
+                <p>• 描述人物、組織和關係</p>
+                <p>• 包含具體的數據和細節</p>
+                <p>• 使用清晰的事件脈絡</p>
+                <button type="button" class="btn-secondary" onclick="fillCaseExample()">載入範例</button>
+            </div>
+        </div>
+        
+        <!-- 地理文本輸入 -->
+        <div id="geoTextSection" class="input-section">
+            <label for="geoText" class="input-label">🔍 請輸入移動軌跡描述：</label>
+            <textarea id="geoText" class="textarea-geo" 
+                placeholder="例如：張明上午10點從板橋住所搭捷運到台北車站，11點到達後步行5分鐘到公司上班..."></textarea>
+            
+            <div class="geo-features">
+                <h4>🎯 福爾摩斯功能：</h4>
+                <p>• 自動解析地點和時間</p>
+                <p>• Google Maps 精確定位</p>
+                <p>• 智能偵測異常時間</p>
+                <p>• 生成互動式地圖報告</p>
+                <button type="button" class="btn-secondary" onclick="fillGeoExample()">載入範例</button>
+            </div>
+        </div>
+        
+        <!-- 陳年懸案分析輸入 -->
+        <div id="coldCaseSection" class="input-section">
+            <label for="coldCaseText" class="input-label">🕵️ 請輸入陳年懸案描述：</label>
+            <textarea id="coldCaseText" class="textarea-case" 
+                placeholder="例如：10年前某記者在調查環保議題時失蹤，當時定調為自行離家出走，家屬質疑調查不力..."></textarea>
+            
+            <div class="cold-case-features module-features">
+                <h4>🎯 陳年懸案重啟專精：</h4>
+                <p>• 分析當時技術限制和調查空白</p>
+                <p>• 評估現代科技應用機會</p>
+                <p>• 世代交替帶來的突破點</p>
+                <p>• 制定階段性重啟策略</p>
+                <button type="button" class="btn-secondary" onclick="fillColdCaseExample()">載入範例</button>
+            </div>
+        </div>
+        
+        <!-- 暗黑陰謀分析輸入 -->
+        <div id="conspiracySection" class="input-section">
+            <label for="conspiracyText" class="input-label">🎭 請輸入暗黑陰謀案件描述：</label>
+            <textarea id="conspiracyText" class="textarea-case" 
+                placeholder="例如：知名導演在拍攝敏感環保紀錄片期間，直升機意外墜毀，事發前曾收到威脅..."></textarea>
+            
+            <div class="conspiracy-features module-features">
+                <h4>🎯 暗黑陰謀分析專精：</h4>
+                <p>• 識破精緻偽裝和掩飾手法</p>
+                <p>• 權力結構和利益分析</p>
+                <p>• 陰謀可能性量化評估</p>
+                <p>• 系統性揭露作戰策略</p>
+                <button type="button" class="btn-secondary" onclick="fillConspiracyExample()">載入範例</button>
+            </div>
+        </div>
+        
+        <!-- 企業真實動機調查輸入 -->
+        <div id="corporateSection" class="input-section">
+            <label for="corporateText" class="input-label">🏢 請輸入企業行為案件描述：</label>
+            <textarea id="corporateText" class="textarea-case" 
+                placeholder="例如：上市公司突然宣布以高溢價收購海外競爭對手，交易結構複雜，涉及多層境外實體..."></textarea>
+            
+            <div class="corporate-features module-features">
+                <h4>🎯 企業真實動機專精：</h4>
+                <p>• 複雜公司結構合理性分析</p>
+                <p>• 財務舞弊和異常模式偵測</p>
+                <p>• 治理缺失和內控漏洞評估</p>
+                <p>• 多維度風險評分和預警</p>
+                <button type="button" class="btn-secondary" onclick="fillCorporateExample()">載入範例</button>
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <button id="analyzeBtn" onclick="analyze()">🚀 開始分析</button>
+        </div>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p id="loadingText">正在生成圖譜...</p>
+        </div>
+        
+        <div id="alert" class="alert"></div>
+    </div>
+    
+    <script>
+        let currentOption = '';
+        
+        function selectOption(option) {
+            currentOption = option;
+            
+            // 重置所有選項卡
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // 隱藏所有輸入區域
+            document.querySelectorAll('.input-section').forEach(section => {
+                section.classList.remove('show');
+            });
+            
+            // 激活選中的選項卡
+            event.target.closest('.option-card').classList.add('active');
+            
+            // 顯示對應的輸入區域
+            switch(option) {
+                case 'ai-simple':
+                case 'ai':
+                    document.getElementById('caseTextSection').classList.add('show');
+                    break;
+                case 'geo':
+                    document.getElementById('geoTextSection').classList.add('show');
+                    break;
+                case 'cold-case':
+                    document.getElementById('coldCaseSection').classList.add('show');
+                    break;
+                case 'conspiracy':
+                    document.getElementById('conspiracySection').classList.add('show');
+                    break;
+                case 'corporate':
+                    document.getElementById('corporateSection').classList.add('show');
+                    break;
+            }
+        }
+        
+        function openCrimeSceneBot() {
+            // 這裡可以開啟 LINE Bot 或其他犯罪現場分析工具
+            window.open('https://line.me/ti/p/your-bot-id', '_blank');
+        }
+        
+        async function analyze() {
+            if (!currentOption) {
+                showAlert('請先選擇分析模式', 'error');
+                return;
+            }
+            
+            let inputText = '';
+            let endpoint = '';
+            let loadingText = '正在分析...';
+            
+            // 根據選擇的模式取得輸入文字和端點
+            switch(currentOption) {
+                case 'ai-simple':
+                    inputText = document.getElementById('caseText').value;
+                    endpoint = '/api/simple-graph'; // 你現有的端點
+                    loadingText = '正在生成簡單關係圖...';
+                    break;
+                case 'ai':
+                    inputText = document.getElementById('caseText').value;
+                    endpoint = '/api/complex-graph'; // 你現有的端點
+                    loadingText = '正在生成複雜關係圖...';
+                    break;
+                case 'geo':
+                    inputText = document.getElementById('geoText').value;
+                    endpoint = '/webhook/geo-analysis'; // 你現有的地理分析端點
+                    loadingText = '正在分析地理資訊...';
+                    break;
+                case 'cold-case':
+                    inputText = document.getElementById('coldCaseText').value;
+                    endpoint = '/webhook/cold-case-reboot'; // 新的陳年懸案端點
+                    loadingText = '正在分析陳年懸案...';
+                    break;
+                case 'conspiracy':
+                    inputText = document.getElementById('conspiracyText').value;
+                    endpoint = '/webhook/conspiracy-analysis'; // 新的暗黑陰謀端點
+                    loadingText = '正在分析暗黑陰謀...';
+                    break;
+                case 'corporate':
+                    inputText = document.getElementById('corporateText').value;
+                    endpoint = '/webhook/corporate-investigation'; // 新的企業動機端點
+                    loadingText = '正在調查企業真實動機...';
+                    break;
+            }
+            
+            if (!inputText.trim()) {
+                showAlert('請輸入分析內容', 'error');
+                return;
+            }
+            
+            // 顯示載入狀態
+            showLoading(loadingText);
+            
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        caseText: inputText,
+                        analysisType: currentOption 
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`分析失敗: ${response.status}`);
+                }
+                
+                // 根據不同模式處理回應
+                if (currentOption === 'geo' || 
+                    currentOption === 'cold-case' || 
+                    currentOption === 'conspiracy' || 
+                    currentOption === 'corporate') {
+                    // 這些模式回傳 HTML，直接在新視窗顯示
+                    const htmlContent = await response.text();
+                    const newWindow = window.open('', '_blank');
+                    newWindow.document.write(htmlContent);
+                    newWindow.document.close();
+                } else {
+                    // 其他模式可能回傳 JSON 或其他格式
+                    const result = await response.json();
+                    // 在這裡處理關係圖的顯示
+                    displayResult(result);
+                }
+                
+                hideLoading();
+                showAlert('分析完成！', 'success');
+                
+            } catch (error) {
+                hideLoading();
+                showAlert(`分析失敗：${error.message}`, 'error');
+                console.error('Analysis error:', error);
+            }
+        }
+        
+        function displayResult(result) {
+            // 這裡根據你現有的邏輯顯示關係圖結果
+            console.log('Analysis result:', result);
+        }
+        
+        function showLoading(text) {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('analyzeBtn').disabled = true;
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+            document.getElementById('analyzeBtn').disabled = false;
+        }
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type} show`;
+            
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 5000);
+        }
+        
+        // 現有的範例載入函數
+        function fillCaseExample() {
+            document.getElementById('caseText').value = "科技公司TechCorp收購新創公司InnoLab，執行長張明華負責整合作業。InnoLab創辦人李佳慧將擔任技術長，投資銀行Morgan協助交易，律師事務所Allen&Partners處理法律事務。交易金額5億美元，預計6個月完成整合。";
+        }
+        
+        function fillGeoExample() {
+            document.getElementById('geoText').value = "張三於晚上9點30分離開位於台北市信義區忠孝東路五段8號的家中，開車前往台北市大同區長安西路82號的影印店，大約9點55分到達。之後步行3分鐘到達案發現場附近的公園。";
+        }
+        
+        // 新增的範例載入函數
+        function fillColdCaseExample() {
+            document.getElementById('coldCaseText').value = "15年前某環保記者王小明在調查非法廢棄物處理廠時失蹤，當時警方認定為自行離家出走結案。失蹤前一週王小明曾向同事透露收到威脅電話，但當時未予重視。最近有民眾在山區發現疑似遺骨，家屬要求重新調查。";
+        }
+        
+        function fillConspiracyExample() {
+            document.getElementById('conspiracyText').value = "知名導演李大同在拍攝揭露大企業污染的紀錄片期間，搭乘的直升機在天氣良好的情況下突然墜毀。事發前一個月，李導演曾收到匿名威脅信件。墜機後24小時內，相關環保資料神秘失蹤，攝影團隊成員也接連遭到各種意外。";
+        }
+        
+        function fillCorporateExample() {
+            document.getElementById('corporateText').value = "上市公司GreenTech宣布以30億元收購海外競爭對手EcoSolutions，交易溢價達200%。收購結構涉及開曼群島的多層控股公司，資金來源包括境外借貸。GreenTech執行長的妻子恰好是EcoSolutions的獨立董事，交易前股價異常波動。";
+        }
+    </script>
+</body>
+</html>
