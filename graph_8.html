@@ -20,7 +20,7 @@
             padding: 40px;
             border-radius: 16px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            max-width: 900px;
+            max-width: 800px;
             width: 100%;
         }
         h1 {
@@ -46,7 +46,6 @@
             cursor: pointer;
             transition: all 0.3s;
             text-align: center;
-            position: relative;
         }
         .option-card:hover {
             border-color: #667eea;
@@ -65,7 +64,6 @@
             color: #666;
             font-size: 12px;
         }
-        
         /* 特殊樣式：現場犯罪圖分析卡片 */
         .crime-scene-card {
             border: 2px solid #D0021B !important;
@@ -94,8 +92,7 @@
             font-size: 12px;
             opacity: 0.8;
         }
-        
-        /* 新增：陳年舊案卡片樣式 */
+        /* 新增：陳年懸案卡片樣式 */
         .cold-case-card {
             border: 2px solid #8B4513 !important;
             background: linear-gradient(135deg, #8B4513 0%, #CD853F 100%) !important;
@@ -109,7 +106,6 @@
         .cold-case-card h3, .cold-case-card p {
             color: white !important;
         }
-        
         /* 新增：陰謀分析卡片樣式 */
         .conspiracy-card {
             border: 2px solid #2C1810 !important;
@@ -124,8 +120,7 @@
         .conspiracy-card h3, .conspiracy-card p {
             color: white !important;
         }
-        
-        /* 新增：公司調查卡片樣式 */
+        /* 新增：企業調查卡片樣式 */
         .corporate-card {
             border: 2px solid #1e3a8a !important;
             background: linear-gradient(135deg, #1e3a8a 0%, #059669 100%) !important;
@@ -139,7 +134,6 @@
         .corporate-card h3, .corporate-card p {
             color: white !important;
         }
-        
         .input-section {
             display: none;
             margin-bottom: 25px;
@@ -210,48 +204,63 @@
             line-height: 1.6;
             margin-bottom: 5px;
         }
-        
-        /* 新增：專業模組功能說明樣式 */
-        .module-features {
+        /* 新增：陳年懸案功能說明樣式 */
+        .cold-case-features {
+            background: #f4e6d2;
             padding: 15px;
             border-radius: 8px;
             margin-top: 15px;
-            border-left: 4px solid;
+            border-left: 4px solid #8B4513;
         }
-        .module-features h4 {
+        .cold-case-features h4 {
+            color: #8B4513;
             margin-bottom: 10px;
             font-size: 14px;
         }
-        .module-features p {
+        .cold-case-features p {
+            color: #8B4513;
             font-size: 13px;
             line-height: 1.6;
             margin-bottom: 5px;
         }
-        
-        .cold-case-features {
-            background: #f5f1eb;
-            border-left-color: #8B4513;
-        }
-        .cold-case-features h4, .cold-case-features p {
-            color: #5D2F08;
-        }
-        
+        /* 新增：陰謀分析功能說明樣式 */
         .conspiracy-features {
-            background: #f0f0f0;
-            border-left-color: #2C1810;
+            background: #2a1a10;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #8B0000;
         }
-        .conspiracy-features h4, .conspiracy-features p {
-            color: #2C1810;
+        .conspiracy-features h4 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            font-size: 14px;
         }
-        
+        .conspiracy-features p {
+            color: #ffa8a8;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+        /* 新增：企業調查功能說明樣式 */
         .corporate-features {
-            background: #eff6ff;
-            border-left-color: #1e3a8a;
+            background: #e6f2ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #1e3a8a;
         }
-        .corporate-features h4, .corporate-features p {
+        .corporate-features h4 {
             color: #1e3a8a;
+            margin-bottom: 10px;
+            font-size: 14px;
         }
-        
+        .corporate-features p {
+            color: #1e3a8a;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
         .btn-group {
             display: flex;
             gap: 15px;
@@ -326,84 +335,58 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-        
-        /* 響應式設計調整 */
-        @media (max-width: 768px) {
-            .options {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .option-card h3 {
-                font-size: 14px;
-            }
-            .option-card p {
-                font-size: 11px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .options {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔍 福爾摩斯/華生辦案輔助系統</h1>
-        <p class="subtitle">Relationship Network Analysis System</p>
+        <h1>🔍 福爾摩斯數位辦案系統</h1>
+        <div class="subtitle">Sherlock Holmes Digital Investigation Platform</div>
         
         <div class="options">
-            <!-- 第一排：簡單關係圖、複雜關係圖、地理助手 -->
             <div class="option-card" onclick="selectOption('ai-simple')">
-                <h3>📊 簡單關係圖</h3>
-                <p>快速分析</p>
+                <h3>🎯 簡單關係圖</h3>
+                <p>快速生成人物關係網絡，適合簡單案件分析</p>
             </div>
             
             <div class="option-card" onclick="selectOption('ai')">
-                <h3>🤖 複雜關係圖</h3>
-                <p>智能分析</p>
+                <h3>🕸️ 複雜關係圖</h3>
+                <p>深度分析複雜關係網絡，適合重大案件調查</p>
             </div>
             
             <div class="option-card" onclick="selectOption('geo')">
                 <h3>🗺️ 地理助手</h3>
-                <p>時空分析</p>
+                <p>分析地點移動軌跡，檢測時間異常</p>
             </div>
             
-            <!-- 第二排：現場犯罪圖分析、陳年舊案重啟、疑似陰謀分析 -->
             <div class="option-card crime-scene-card" onclick="openCrimeSceneBot()">
-                <h3>🚨 現場犯罪圖分析</h3>
-                <p>LINE Bot 助手</p>
+                <h3>💀 現場分析 Bot</h3>
+                <p>整合 LINE Bot 進行即時現場證物分析</p>
             </div>
             
             <div class="option-card cold-case-card" onclick="selectOption('cold-case')">
-                <h3>🕵️ 陳年懸案重啟</h3>
-                <p>善用新科技成為破案關鍵</p>
+                <h3>🕰️ 陳年懸案重啟</h3>
+                <p>運用新技術重新分析未破解的舊案</p>
             </div>
             
             <div class="option-card conspiracy-card" onclick="selectOption('conspiracy')">
-                <h3>🎭 暗黑陰謀分析</h3>
-                <p>破解刻意掩蓋的陰謀</p>
+                <h3>🌒 暗黑陰謀分析</h3>
+                <p>深入挖掘隱藏的陰謀網絡和幕後真相</p>
             </div>
             
-            <!-- 第三排：公司面紗揭露、空位、空位 -->
             <div class="option-card corporate-card" onclick="selectOption('corporate')">
                 <h3>🏢 企業真實動機</h3>
-                <p>透視企業行為真相</p>
+                <p>透視企業行為背後的真實意圖和利益</p>
             </div>
-            
-            <!-- 空位 -->
-            <div></div>
-            <div></div>
         </div>
         
-        <!-- 案件文本輸入 (用於簡單關係圖和複雜關係圖) -->
+        <!-- 案件文本輸入 -->
         <div id="caseTextSection" class="input-section">
-            <label for="caseText" class="input-label">📋 請輸入案件或事件描述：</label>
+            <label for="caseText" class="input-label">📝 請輸入案件描述：</label>
             <textarea id="caseText" class="textarea-case" 
-                placeholder="例如：科技公司A收購新創公司B，執行長張三負責整合，創辦人李四將擔任技術長..."></textarea>
+                placeholder="輸入案件相關資訊、人物關係、事件經過..."></textarea>
             
             <div class="example-box">
-                <h4>💡 範例格式：</h4>
+                <h4>💡 輸入範例：</h4>
                 <p>• 描述人物、組織和關係</p>
                 <p>• 包含具體的數據和細節</p>
                 <p>• 使用清晰的事件脈絡</p>
@@ -413,7 +396,7 @@
         
         <!-- 地理文本輸入 -->
         <div id="geoTextSection" class="input-section">
-            <label for="geoText" class="input-label">🔍 請輸入移動軌跡描述：</label>
+            <label for="geoText" class="input-label">📍 請輸入移動軌跡描述：</label>
             <textarea id="geoText" class="textarea-geo" 
                 placeholder="例如：張明上午10點從板橋住所搭捷運到台北車站，11點到達後步行5分鐘到公司上班..."></textarea>
             
@@ -427,50 +410,50 @@
             </div>
         </div>
         
-        <!-- 陳年懸案分析輸入 -->
+        <!-- 新增：陳年懸案輸入區域 -->
         <div id="coldCaseSection" class="input-section">
-            <label for="coldCaseText" class="input-label">🕵️ 請輸入陳年懸案描述：</label>
+            <label for="coldCaseText" class="input-label">🕰️ 請輸入陳年懸案描述：</label>
             <textarea id="coldCaseText" class="textarea-case" 
-                placeholder="例如：10年前某記者在調查環保議題時失蹤，當時定調為自行離家出走，家屬質疑調查不力..."></textarea>
+                placeholder="輸入舊案的基本資訊、當年調查情況、新發現的線索等..."></textarea>
             
-            <div class="cold-case-features module-features">
-                <h4>🎯 陳年懸案重啟專精：</h4>
-                <p>• 分析當時技術限制和調查空白</p>
-                <p>• 評估現代科技應用機會</p>
-                <p>• 世代交替帶來的突破點</p>
-                <p>• 制定階段性重啟策略</p>
+            <div class="cold-case-features">
+                <h4>🕰️ 陳年懸案重啟功能：</h4>
+                <p>• 時間線重建與現代技術交叉驗證</p>
+                <p>• 遺失證據的數位化重構</p>
+                <p>• 新舊線索的關聯性分析</p>
+                <p>• 證人證詞的一致性檢驗</p>
                 <button type="button" class="btn-secondary" onclick="fillColdCaseExample()">載入範例</button>
             </div>
         </div>
         
-        <!-- 暗黑陰謀分析輸入 -->
+        <!-- 新增：暗黑陰謀輸入區域 -->
         <div id="conspiracySection" class="input-section">
-            <label for="conspiracyText" class="input-label">🎭 請輸入暗黑陰謀案件描述：</label>
+            <label for="conspiracyText" class="input-label">🌒 請輸入陰謀事件描述：</label>
             <textarea id="conspiracyText" class="textarea-case" 
-                placeholder="例如：知名導演在拍攝敏感環保紀錄片期間，直升機意外墜毀，事發前曾收到威脅..."></textarea>
+                placeholder="輸入疑似陰謀的事件、異常巧合、幕後操作等..."></textarea>
             
-            <div class="conspiracy-features module-features">
-                <h4>🎯 暗黑陰謀分析專精：</h4>
-                <p>• 識破精緻偽裝和掩飾手法</p>
-                <p>• 權力結構和利益分析</p>
-                <p>• 陰謀可能性量化評估</p>
-                <p>• 系統性揭露作戰策略</p>
+            <div class="conspiracy-features">
+                <h4>🌒 暗黑陰謀分析功能：</h4>
+                <p>• 事件時間軸的異常模式識別</p>
+                <p>• 受益者與決策者的隱藏關聯</p>
+                <p>• 資訊傳播路徑的反向追蹤</p>
+                <p>• 「巧合」事件的統計分析</p>
                 <button type="button" class="btn-secondary" onclick="fillConspiracyExample()">載入範例</button>
             </div>
         </div>
         
-        <!-- 企業真實動機調查輸入 -->
+        <!-- 新增：企業調查輸入區域 -->
         <div id="corporateSection" class="input-section">
-            <label for="corporateText" class="input-label">🏢 請輸入企業行為案件描述：</label>
+            <label for="corporateText" class="input-label">🏢 請輸入企業事件描述：</label>
             <textarea id="corporateText" class="textarea-case" 
-                placeholder="例如：上市公司突然宣布以高溢價收購海外競爭對手，交易結構複雜，涉及多層境外實體..."></textarea>
+                placeholder="輸入企業相關事件、財務異常、人事變動等..."></textarea>
             
-            <div class="corporate-features module-features">
-                <h4>🎯 企業真實動機專精：</h4>
-                <p>• 複雜公司結構合理性分析</p>
+            <div class="corporate-features">
+                <h4>🏢 企業真實動機分析功能：</h4>
                 <p>• 財務舞弊和異常模式偵測</p>
                 <p>• 治理缺失和內控漏洞評估</p>
                 <p>• 多維度風險評分和預警</p>
+                <p>• 利益衝突和關聯交易識別</p>
                 <button type="button" class="btn-secondary" onclick="fillCorporateExample()">載入範例</button>
             </div>
         </div>
@@ -493,7 +476,7 @@
         function selectOption(option) {
             currentOption = option;
             
-            // 重置所有選項卡
+            // 移除所有 active 狀態
             document.querySelectorAll('.option-card').forEach(card => {
                 card.classList.remove('active');
             });
@@ -503,176 +486,286 @@
                 section.classList.remove('show');
             });
             
-            // 激活選中的選項卡
-            event.target.closest('.option-card').classList.add('active');
-            
-            // 顯示對應的輸入區域
-            switch(option) {
-                case 'ai-simple':
-                case 'ai':
-                    document.getElementById('caseTextSection').classList.add('show');
-                    break;
-                case 'geo':
-                    document.getElementById('geoTextSection').classList.add('show');
-                    break;
-                case 'cold-case':
-                    document.getElementById('coldCaseSection').classList.add('show');
-                    break;
-                case 'conspiracy':
-                    document.getElementById('conspiracySection').classList.add('show');
-                    break;
-                case 'corporate':
-                    document.getElementById('corporateSection').classList.add('show');
-                    break;
+            // 根據選項顯示相應內容
+            if (option === 'ai-simple' || option === 'ai') {
+                // 簡單關係圖和複雜關係圖都使用案件文本輸入
+                document.getElementById('caseTextSection').classList.add('show');
+                event.target.classList.add('active');
+            } else if (option === 'geo') {
+                // 地理助手使用地理文本輸入
+                document.getElementById('geoTextSection').classList.add('show');
+                event.target.classList.add('active');
+            } else if (option === 'cold-case') {
+                // 陳年懸案輸入
+                document.getElementById('coldCaseSection').classList.add('show');
+                event.target.classList.add('active');
+            } else if (option === 'conspiracy') {
+                // 暗黑陰謀輸入
+                document.getElementById('conspiracySection').classList.add('show');
+                event.target.classList.add('active');
+            } else if (option === 'corporate') {
+                // 企業調查輸入
+                document.getElementById('corporateSection').classList.add('show');
+                event.target.classList.add('active');
             }
         }
         
         function openCrimeSceneBot() {
-            // 這裡可以開啟 LINE Bot 或其他犯罪現場分析工具
-            window.open('https://line.me/R/ti/p/@510vkpop', '_blank');
+            const url = 'https://line.me/R/ti/p/@510vkpop';
+            window.open(url, '_blank');
+            showAlert('✅ 已開啟 LINE Bot，請掃描 QR Code 或搜尋 @510vkpop', 'success');
         }
         
-        async function analyze() {
-            if (!currentOption) {
-                showAlert('請先選擇分析模式', 'error');
-                return;
-            }
-            
-            let inputText = '';
-            let endpoint = '';
-            let loadingText = '正在分析...';
-            
-            // 根據選擇的模式取得輸入文字和端點
-            switch(currentOption) {
-                case 'ai-simple':
-                    inputText = document.getElementById('caseText').value;
-                    endpoint = 'https://kf0630.zeabur.app/webhook/ai-parse'; // 你現有的端點
-                    loadingText = '正在生成簡單關係圖...';
-                    break;
-                case 'ai':
-                    inputText = document.getElementById('caseText').value;
-                    endpoint = 'https://kf0630.zeabur.app/webhook/ai-parse_2'; // 你現有的端點
-                    loadingText = '正在生成複雜關係圖...';
-                    break;
-                case 'geo':
-                    inputText = document.getElementById('geoText').value;
-                    endpoint = 'https://kf0630.zeabur.app/webhook/geo-analysis'; // 你現有的地理分析端點
-                    loadingText = '正在分析地理資訊...';
-                    break;
-                case 'cold-case':
-                    inputText = document.getElementById('coldCaseText').value;
-                    endpoint = 'https://kf0630.zeabur.app/webhook/cold-case-reboot';
-                    loadingText = '正在分析陳年懸案...';
-                    break;
-                case 'conspiracy':
-                    inputText = document.getElementById('conspiracyText').value;
-                    endpoint = 'https://kf0630.zeabur.app/webhook/conspiracy-analysis';
-                    loadingText = '正在分析暗黑陰謀...';
-                    break;
-                case 'corporate':
-                    inputText = document.getElementById('corporateText').value;
-                    endpoint = 'https://kf0630.zeabur.app/webhook/corporate-investigation';
-                    loadingText = '正在調查企業真實動機...';
-                    break;
-            }
-            
-            if (!inputText.trim()) {
-                showAlert('請輸入分析內容', 'error');
-                return;
-            }
-            
-            // 顯示載入狀態
-            showLoading(loadingText);
-            
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        caseText: inputText,
-                        analysisType: currentOption 
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`分析失敗: ${response.status}`);
-                }
-                
-                // 根據不同模式處理回應
-                if (currentOption === 'geo' || 
-                    currentOption === 'cold-case' || 
-                    currentOption === 'conspiracy' || 
-                    currentOption === 'corporate') {
-                    // 這些模式回傳 HTML，直接在新視窗顯示
-                    const htmlContent = await response.text();
-                    const newWindow = window.open('', '_blank');
-                    newWindow.document.write(htmlContent);
-                    newWindow.document.close();
-                } else {
-                    // 其他模式可能回傳 JSON 或其他格式
-                    const result = await response.json();
-                    // 在這裡處理關係圖的顯示
-                    displayResult(result);
-                }
-                
-                hideLoading();
-                showAlert('分析完成！', 'success');
-                
-            } catch (error) {
-                hideLoading();
-                showAlert(`分析失敗：${error.message}`, 'error');
-                console.error('Analysis error:', error);
-            }
+        function fillCaseExample() {
+            document.getElementById('caseText').value = `科技巨頭 A 公司今日宣布以 50 億美元收購人工智慧新創公司 B。根據協議,A 公司執行長張三將親自監督整合流程。
+
+B 公司創辦人李四將加入 A 公司擔任技術長,並保留 B 公司 15% 股權。投資基金 C 原持有 B 公司 30% 股權,此次交易後將全數出售獲利了結。
+
+A 公司董事會主席王五表示,此次收購將強化公司在 AI 領域的競爭力。交易預計於 6 個月內完成,需通過監管機構審查。`;
         }
         
-        function displayResult(result) {
-            // 這裡根據你現有的邏輯顯示關係圖結果
-            console.log('Analysis result:', result);
+        function fillGeoExample() {
+            document.getElementById('geoText').value = `張明於上午10點從新北市板橋區文化路一段188號的住所出發，搭捷運前往台北車站(台北市中正區忠孝西路一段1號)，11點到達。接著步行5分鐘到台北市中正區忠孝西路一段50號的公司上班。下午6點下班後，開車前往台北市信義區市府路45號的餐廳聚餐，晚上8時40分鐘抵達。最後於晚上10點搭計程車返回住所，晚上10時50分鐘。`;
         }
         
-        function showLoading(text) {
-            document.getElementById('loadingText').textContent = text;
+        // 新增：陳年懸案範例
+        function fillColdCaseExample() {
+            document.getElementById('coldCaseText').value = `15年前某環保記者王小明在調查非法廢棄物處理廠時失蹤，當時警方認定為自行離家出走結案。失蹤前一週王小明曾向同事透露收到威脅電話，但當時未予重視。最近有民眾在山區發現疑似遺骨，家屬要求重新調查。失蹤當日王小明原定與線人會面，但線人從未現身。新發現：王小明手機最後訊號出現在廢棄物處理廠附近，與其宣稱的採訪路線不符。`;
+        }
+        
+        // 新增：暗黑陰謀範例
+        function fillConspiracyExample() {
+            document.getElementById('conspiracyText').value = `知名導演李大同在拍攝揭露大企業污染的紀錄片期間，搭乘的直升機在天氣良好的情況下突然墜毀。事發前一個月，李導演曾收到匿名威脅信件。墜機後24小時內，相關環保資料神秘失蹤，攝影團隊成員也接連遭到各種意外。調查發現：直升機維修紀錄被人為篡改，負責維修的技師在事發後突然辭職並搬離原居住地。企業高層在墜機前一週大量拋售股票。`;
+        }
+        
+        // 新增：企業調查範例
+        function fillCorporateExample() {
+            document.getElementById('corporateText').value = `上市公司GreenTech宣布以30億元收購海外競爭對手EcoSolutions，交易溢價達200%。收購結構涉及開曼群島的多層控股公司，資金來源包括境外借貸。GreenTech執行長的妻子恰好是EcoSolutions的獨立董事，交易前股價異常波動。內部消息指出，EcoSolutions的核心技術專利即將到期，且面臨多起法律訴訟。收購案宣布前，數名內部人士大量買進股票選擇權。`;
+        }
+        
+        function showLoading(text = '正在生成圖譜...') {
             document.getElementById('loading').classList.add('show');
-            document.getElementById('analyzeBtn').disabled = true;
+            document.getElementById('loadingText').textContent = text;
         }
         
         function hideLoading() {
             document.getElementById('loading').classList.remove('show');
-            document.getElementById('analyzeBtn').disabled = false;
         }
         
         function showAlert(message, type) {
             const alert = document.getElementById('alert');
             alert.textContent = message;
             alert.className = `alert ${type} show`;
-            
             setTimeout(() => {
                 alert.classList.remove('show');
             }, 5000);
         }
         
-        // 現有的範例載入函數
-        function fillCaseExample() {
-            document.getElementById('caseText').value = "科技公司TechCorp收購新創公司InnoLab，執行長張明華負責整合作業。InnoLab創辦人李佳慧將擔任技術長，投資銀行Morgan協助交易，律師事務所Allen&Partners處理法律事務。交易金額5億美元，預計6個月完成整合。";
+        async function analyze() {
+            const btn = document.getElementById('analyzeBtn');
+            btn.disabled = true;
+            
+            try {
+                if (currentOption === 'ai') {
+                    // 複雜關係圖 - 走 gpt-4.1-mini 的 AI workflow
+                    const caseText = document.getElementById('caseText').value.trim();
+                    if (!caseText) {
+                        showAlert('❌ 請輸入文本內容', 'error');
+                        return;
+                    }
+                    
+                    await analyzeWithAI(caseText, 'ai-parse');
+                    
+                } else if (currentOption === 'ai-simple') {
+                    // 簡單關係圖 - 走 gpt-4-mini 的 AI workflow
+                    const caseText = document.getElementById('caseText').value.trim();
+                    if (!caseText) {
+                        showAlert('❌ 請輸入文本內容', 'error');
+                        return;
+                    }
+                    
+                    await analyzeWithAI(caseText, 'ai-parse_2');
+                    
+                } else if (currentOption === 'geo') {
+                    // 地理助手 - 走地理分析 workflow
+                    const geoText = document.getElementById('geoText').value.trim();
+                    if (!geoText) {
+                        showAlert('❌ 請輸入移動軌跡描述', 'error');
+                        return;
+                    }
+                    
+                    await analyzeWithGeo(geoText);
+                } else if (currentOption === 'cold-case') {
+                    // 陳年懸案重啟
+                    const coldCaseText = document.getElementById('coldCaseText').value.trim();
+                    if (!coldCaseText) {
+                        showAlert('❌ 請輸入陳年懸案描述', 'error');
+                        return;
+                    }
+                    
+                    await analyzeWithSpecialCase(coldCaseText, 'cold-case-reboot', '🕰️ 正在重啟陳年懸案...', '✅ 陳年懸案分析完成,報告已開啟');
+                    
+                } else if (currentOption === 'conspiracy') {
+                    // 暗黑陰謀分析
+                    const conspiracyText = document.getElementById('conspiracyText').value.trim();
+                    if (!conspiracyText) {
+                        showAlert('❌ 請輸入陰謀事件描述', 'error');
+                        return;
+                    }
+                    
+                    await analyzeWithSpecialCase(conspiracyText, 'conspiracy-analysis', '🌒 正在分析暗黑陰謀...', '✅ 暗黑陰謀分析完成,報告已開啟');
+                    
+                } else if (currentOption === 'corporate') {
+                    // 企業真實動機
+                    const corporateText = document.getElementById('corporateText').value.trim();
+                    if (!corporateText) {
+                        showAlert('❌ 請輸入企業事件描述', 'error');
+                        return;
+                    }
+                    
+                    await analyzeWithSpecialCase(corporateText, 'corporate-investigation', '🏢 正在調查企業真實動機...', '✅ 企業調查完成,報告已開啟');
+                    
+                } else {
+                    showAlert('❌ 請選擇分析方式', 'error');
+                    return;
+                }
+                
+            } finally {
+                btn.disabled = false;
+            }
         }
         
-        function fillGeoExample() {
-            document.getElementById('geoText').value = "張三於晚上9點30分離開位於台北市信義區忠孝東路五段8號的家中，開車前往台北市大同區長安西路82號的影印店，大約9點55分到達。之後步行3分鐘到達案發現場附近的公園。";
+        // AI workflow (ai-parse 或 ai-parse_2)
+        async function analyzeWithAI(caseText, endpoint) {
+            const url = `https://kf0630.zeabur.app/webhook/${endpoint}`;
+            
+            const loadingText = endpoint === 'ai-parse' ? 
+                '🤖 複雜關係圖正在分析文本並生成圖譜...' : 
+                '🤖 簡單關係圖正在分析文本並生成圖譜...';
+            
+            showLoading(loadingText);
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        caseText: caseText
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const html = await response.text();
+                
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                    newWindow.document.write(html);
+                    newWindow.document.close();
+                    hideLoading();
+                    const successMessage = endpoint === 'ai-parse' ? 
+                        '✅ 複雜關係圖解析完成,圖譜已開啟' : 
+                        '✅ 簡單關係圖解析完成,圖譜已開啟';
+                    showAlert(successMessage, 'success');
+                } else {
+                    hideLoading();
+                    showAlert('⚠️ 請允許彈出視窗', 'error');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                const errorMessage = endpoint === 'ai-parse' ? 
+                    '❌ 複雜關係圖解析失敗: ' + error.message : 
+                    '❌ 簡單關係圖解析失敗: ' + error.message;
+                showAlert(errorMessage, 'error');
+                console.error('Error:', error);
+            }
         }
         
-        // 新增的範例載入函數
-        function fillColdCaseExample() {
-            document.getElementById('coldCaseText').value = "15年前某環保記者王小明在調查非法廢棄物處理廠時失蹤，當時警方認定為自行離家出走結案。失蹤前一週王小明曾向同事透露收到威脅電話，但當時未予重視。最近有民眾在山區發現疑似遺骨，家屬要求重新調查。";
+        // 地理助手 workflow (geo-analysis)
+        async function analyzeWithGeo(geoText) {
+            const url = 'https://kf0630.zeabur.app/webhook/geo-analysis';
+            
+            showLoading('🗺️ 福爾摩斯正在分析時空軌跡...');
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        caseText: geoText
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const html = await response.text();
+                
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                    newWindow.document.write(html);
+                    newWindow.document.close();
+                    hideLoading();
+                    showAlert('✅ 地理分析完成,報告已開啟', 'success');
+                } else {
+                    hideLoading();
+                    showAlert('⚠️ 請允許彈出視窗', 'error');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                showAlert('❌ 地理分析失敗: ' + error.message, 'error');
+                console.error('Error:', error);
+            }
         }
         
-        function fillConspiracyExample() {
-            document.getElementById('conspiracyText').value = "知名導演李大同在拍攝揭露大企業污染的紀錄片期間，搭乘的直升機在天氣良好的情況下突然墜毀。事發前一個月，李導演曾收到匿名威脅信件。墜機後24小時內，相關環保資料神秘失蹤，攝影團隊成員也接連遭到各種意外。";
-        }
-        
-        function fillCorporateExample() {
-            document.getElementById('corporateText').value = "上市公司GreenTech宣布以30億元收購海外競爭對手EcoSolutions，交易溢價達200%。收購結構涉及開曼群島的多層控股公司，資金來源包括境外借貸。GreenTech執行長的妻子恰好是EcoSolutions的獨立董事，交易前股價異常波動。";
+        // 新增：特殊案件分析 workflow (陳年懸案、暗黑陰謀、企業調查)
+        async function analyzeWithSpecialCase(inputText, endpoint, loadingMessage, successMessage) {
+            const url = `https://kf0630.zeabur.app/webhook/${endpoint}`;
+            
+            showLoading(loadingMessage);
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        caseText: inputText
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const html = await response.text();
+                
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                    newWindow.document.write(html);
+                    newWindow.document.close();
+                    hideLoading();
+                    showAlert(successMessage, 'success');
+                } else {
+                    hideLoading();
+                    showAlert('⚠️ 請允許彈出視窗', 'error');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                showAlert(`❌ 分析失敗: ${error.message}`, 'error');
+                console.error('Error:', error);
+            }
         }
     </script>
 </body>
