@@ -529,7 +529,7 @@
         
         function openCrimeSceneBot() {
             // 這裡可以開啟 LINE Bot 或其他犯罪現場分析工具
-            window.open('https://line.me/ti/p/your-bot-id', '_blank');
+            window.open('https://line.me/R/ti/p/@510vkpop', '_blank');
         }
         
         async function analyze() {
@@ -546,17 +546,17 @@
             switch(currentOption) {
                 case 'ai-simple':
                     inputText = document.getElementById('caseText').value;
-                    endpoint = '/api/simple-graph'; // 你現有的端點
+                    endpoint = 'https://kf0630.zeabur.app/webhook/ai-parse'; // 你現有的端點
                     loadingText = '正在生成簡單關係圖...';
                     break;
                 case 'ai':
                     inputText = document.getElementById('caseText').value;
-                    endpoint = '/api/complex-graph'; // 你現有的端點
+                    endpoint = 'https://kf0630.zeabur.app/webhook/ai-parse_2'; // 你現有的端點
                     loadingText = '正在生成複雜關係圖...';
                     break;
                 case 'geo':
                     inputText = document.getElementById('geoText').value;
-                    endpoint = '/webhook/geo-analysis'; // 你現有的地理分析端點
+                    endpoint = 'https://kf0630.zeabur.app/webhook/geo-analysis'; // 你現有的地理分析端點
                     loadingText = '正在分析地理資訊...';
                     break;
                 case 'cold-case':
