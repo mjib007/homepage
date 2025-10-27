@@ -561,17 +561,17 @@
                     break;
                 case 'cold-case':
                     inputText = document.getElementById('coldCaseText').value;
-                    endpoint = '/webhook/cold-case-reboot'; // 新的陳年懸案端點
+                    endpoint = 'https://kf0630.zeabur.app/webhook/cold-case-reboot';
                     loadingText = '正在分析陳年懸案...';
                     break;
                 case 'conspiracy':
                     inputText = document.getElementById('conspiracyText').value;
-                    endpoint = '/webhook/conspiracy-analysis'; // 新的暗黑陰謀端點
+                    endpoint = '/webhook-test/conspiracy-analysis'; // 改為相對路徑
                     loadingText = '正在分析暗黑陰謀...';
                     break;
                 case 'corporate':
                     inputText = document.getElementById('corporateText').value;
-                    endpoint = '/webhook/corporate-investigation'; // 新的企業動機端點
+                    endpoint = '/webhook-test/corporate-investigation'; // 改為相對路徑
                     loadingText = '正在調查企業真實動機...';
                     break;
             }
