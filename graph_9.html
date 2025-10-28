@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 福爾摩斯AI辦案生態系統</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 1000px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        /* 新增：工具分類標題 */
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin: 30px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .option-card {
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .option-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .option-card.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        .option-card h3 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        .option-card p {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        /* 現有的特殊樣式 */
+        .crime-scene-card {
+            border: 2px solid #D0021B !important;
+            background: linear-gradient(135deg, #D0021B 0%, #FF4757 100%) !important;
+            color: white !important;
+            position: relative;
+        }
+        .crime-scene-card:hover {
+            border-color: #B91C1C !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(208, 2, 27, 0.4) !important;
+        }
+        .crime-scene-card h3, .crime-scene-card p {
+            color: white !important;
+        }
+        
+        .cold-case-card {
+            border: 2px solid #8B4513 !important;
+            background: linear-gradient(135deg, #8B4513 0%, #CD853F 100%) !important;
+            color: white !important;
+        }
+        .cold-case-card:hover {
+            border-color: #5D2F08 !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(139, 69, 19, 0.4) !important;
+        }
+        .cold-case-card h3, .cold-case-card p {
+            color: white !important;
+        }
+        
+        .conspiracy-card {
+            border: 2px solid #2C1810 !important;
+            background: linear-gradient(135deg, #2C1810 0%, #8B0000 100%) !important;
+            color: white !important;
+        }
+        .conspiracy-card:hover {
+            border-color: #1A0F08 !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(44, 24, 16, 0.4) !important;
+        }
+        .conspiracy-card h3, .conspiracy-card p {
+            color: white !important;
+        }
+        
+        .corporate-card {
+            border: 2px solid #1e3a8a !important;
+            background: linear-gradient(135deg, #1e3a8a 0%, #059669 100%) !important;
+            color: white !important;
+        }
+        .corporate-card:hover {
+            border-color: #1e40af !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(30, 58, 138, 0.4) !important;
+        }
+        .corporate-card h3, .corporate-card p {
+            color: white !important;
+        }
+        
+        /* 新增：外部工具樣式 */
+        .external-tool-card {
+            border: 2px solid #6B46C1 !important;
+            background: linear-gradient(135deg, #6B46C1 0%, #9333EA 100%) !important;
+            color: white !important;
+            position: relative;
+        }
+        .external-tool-card:hover {
+            border-color: #553C9A !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(107, 70, 193, 0.4) !important;
+        }
+        .external-tool-card h3, .external-tool-card p {
+            color: white !important;
+        }
+        .external-tool-card::after {
+            content: '🔗';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 16px;
+            opacity: 0.8;
+        }
+        
+        /* 分析與模擬工具特殊樣式 */
+        .analysis-tool-card {
+            border: 2px solid #059669 !important;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+            color: white !important;
+            position: relative;
+        }
+        .analysis-tool-card:hover {
+            border-color: #047857 !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.4) !important;
+        }
+        .analysis-tool-card h3, .analysis-tool-card p {
+            color: white !important;
+        }
+        .analysis-tool-card::after {
+            content: '📊';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 16px;
+            opacity: 0.8;
+        }
+        
+        .simulation-tool-card {
+            border: 2px solid #DC2626 !important;
+            background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%) !important;
+            color: white !important;
+            position: relative;
+        }
+        .simulation-tool-card:hover {
+            border-color: #991B1B !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4) !important;
+        }
+        .simulation-tool-card h3, .simulation-tool-card p {
+            color: white !important;
+        }
+        .simulation-tool-card::after {
+            content: '🎭';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 16px;
+            opacity: 0.8;
+        }
+        
+        .input-section {
+            display: none;
+            margin-bottom: 25px;
+        }
+        .input-section.show {
+            display: block;
+        }
+        .input-label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: bold;
+            font-size: 15px;
+        }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .textarea-case {
+            min-height: 250px;
+        }
+        .textarea-geo {
+            min-height: 200px;
+        }
+        .example-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .example-box h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .example-box p {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+        .geo-features {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #28a745;
+        }
+        .geo-features h4 {
+            color: #155724;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .geo-features p {
+            color: #155724;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+        .cold-case-features {
+            background: #f4e6d2;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #8B4513;
+        }
+        .cold-case-features h4 {
+            color: #8B4513;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .cold-case-features p {
+            color: #8B4513;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+        .conspiracy-features {
+            background: #2a1a10;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #8B0000;
+        }
+        .conspiracy-features h4 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .conspiracy-features p {
+            color: #ffa8a8;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+        .corporate-features {
+            background: #e6f2ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #1e3a8a;
+        }
+        .corporate-features h4 {
+            color: #1e3a8a;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .corporate-features p {
+            color: #1e3a8a;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: #f1f3f5;
+            color: #495057;
+            flex: 0 0 auto;
+            padding: 15px 20px;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #e9ecef;
+            box-shadow: none;
+        }
+        .loading {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .loading.show {
+            display: block;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        .alert.show {
+            display: block;
+        }
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        /* 新增：說明區塊 */
+        .info-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+        .info-section h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .info-section p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 福爾摩斯AI辦案生態系統</h1>
+        <div class="subtitle">Sherlock Holmes Digital Investigation Ecosystem</div>
+        
+        <div class="info-section">
+            <h3>🎯 完整辦案流程</h3>
+            <p>從證物分析、地理軌跡、關係網絡，到最終的判決分析，一站式解決所有辦案需求。每個工具環環相扣，協助您建立完整的案件脈絡。</p>
+        </div>
+        
+        <!-- 核心分析工具 -->
+        <div class="section-title">
+            🔬 核心分析工具
+        </div>
+        
+        <div class="options">
+            <div class="option-card" onclick="selectOption('ai-simple')">
+                <h3>🎯 簡單關係圖</h3>
+                <p>快速生成人物關係網絡，適合簡單案件分析</p>
+            </div>
+            
+            <div class="option-card" onclick="selectOption('ai')">
+                <h3>🕸️ 複雜關係圖</h3>
+                <p>深度分析複雜關係網絡，適合重大案件調查</p>
+            </div>
+            
+            <div class="option-card" onclick="selectOption('geo')">
+                <h3>🗺️ 地理助手</h3>
+                <p>分析地點移動軌跡，檢測時間異常</p>
+            </div>
+            
+            <div class="option-card crime-scene-card" onclick="openCrimeSceneBot()">
+                <h3>💀 現場分析 Bot</h3>
+                <p>整合 LINE Bot 進行即時現場證物分析</p>
+            </div>
+        </div>
+        
+        <!-- 專業辦案工具 -->
+        <div class="section-title">
+            🎭 專業辦案工具
+        </div>
+        
+        <div class="options">
+            <div class="option-card cold-case-card" onclick="selectOption('cold-case')">
+                <h3>🕰️ 陳年懸案重啟</h3>
+                <p>運用新技術重新分析未破解的舊案</p>
+            </div>
+            
+            <div class="option-card conspiracy-card" onclick="selectOption('conspiracy')">
+                <h3>🌑 暗黑陰謀分析</h3>
+                <p>深入挖掘隱藏的陰謀網絡和幕後真相</p>
+            </div>
+            
+            <div class="option-card corporate-card" onclick="selectOption('corporate')">
+                <h3>🏢 企業真實動機</h3>
+                <p>透視企業行為背後的真實意圖和利益</p>
+            </div>
+            
+            <div class="option-card simulation-tool-card" onclick="openExternalTool('interrogation')">
+                <h3>🎯 偵訊模擬系統</h3>
+                <p>AI驅動的偵訊場景模擬，提升審訊技巧</p>
+            </div>
+        </div>
+        
+        <!-- 判決分析工具 -->
+        <div class="section-title">
+            ⚖️ 判決分析工具
+        </div>
+        
+        <div class="options">
+            <div class="option-card analysis-tool-card" onclick="openExternalTool('civil')">
+                <h3>📋 民事判決分析</h3>
+                <p>深度解析民事判決書，提取關鍵法律論點</p>
+            </div>
+            
+            <div class="option-card analysis-tool-card" onclick="openExternalTool('criminal')">
+                <h3>⚖️ 刑事判決分析</h3>
+                <p>剖析刑事判決邏輯，理解量刑依據</p>
+            </div>
+            
+            <div class="option-card external-tool-card" onclick="openExternalTool('comparison')">
+                <h3>🔍 判決比較分析</h3>
+                <p>比較類似案件判決，發現判決模式與差異</p>
+            </div>
+        </div>
+        
+        <!-- 案件文本輸入 -->
+        <div id="caseTextSection" class="input-section">
+            <label for="caseText" class="input-label">📝 請輸入案件描述：</label>
+            <textarea id="caseText" class="textarea-case" 
+                placeholder="輸入案件相關資訊、人物關係、事件經過..."></textarea>
+            
+            <div class="example-box">
+                <h4>💡 輸入範例：</h4>
+                <p>• 描述人物、組織和關係</p>
+                <p>• 包含具體的數據和細節</p>
+                <p>• 使用清晰的事件脈絡</p>
+                <button type="button" class="btn-secondary" onclick="fillCaseExample()">載入範例</button>
+            </div>
+        </div>
+        
+        <!-- 地理文本輸入 -->
+        <div id="geoTextSection" class="input-section">
+            <label for="geoText" class="input-label">📍 請輸入移動軌跡描述：</label>
+            <textarea id="geoText" class="textarea-geo" 
+                placeholder="例如：張明上午10點從板橋住所搭捷運到台北車站，11點到達後步行5分鐘到公司上班..."></textarea>
+            
+            <div class="geo-features">
+                <h4>🎯 福爾摩斯功能：</h4>
+                <p>• 自動解析地點和時間</p>
+                <p>• Google Maps 精確定位</p>
+                <p>• 智能偵測異常時間</p>
+                <p>• 生成互動式地圖報告</p>
+                <button type="button" class="btn-secondary" onclick="fillGeoExample()">載入範例</button>
+            </div>
+        </div>
+        
+        <!-- 陳年懸案輸入區域 -->
+        <div id="coldCaseSection" class="input-section">
+            <label for="coldCaseText" class="input-label">🕰️ 請輸入陳年懸案描述：</label>
+            <textarea id="coldCaseText" class="textarea-case" 
+                placeholder="輸入舊案的基本資訊、當年調查情況、新發現的線索等..."></textarea>
+            
+            <div class="cold-case-features">
+                <h4>🕰️ 陳年懸案重啟功能：</h4>
+                <p>• 時間線重建與現代技術交叉驗證</p>
+                <p>• 遺失證據的數位化重構</p>
+                <p>• 新舊線索的關聯性分析</p>
+                <p>• 證人證詞的一致性檢驗</p>
+                <button type="button" class="btn-secondary" onclick="fillColdCaseExample()">載入範例</button>
+            </div>
+        </div>
+        
+        <!-- 暗黑陰謀輸入區域 -->
+        <div id="conspiracySection" class="input-section">
+            <label for="conspiracyText" class="input-label">🌑 請輸入陰謀事件描述：</label>
+            <textarea id="conspiracyText" class="textarea-case" 
+                placeholder="輸入疑似陰謀的事件、異常巧合、幕後操作等..."></textarea>
+            
+            <div class="conspiracy-features">
+                <h4>🌑 暗黑陰謀分析功能：</h4>
+                <p>• 事件時間軸的異常模式識別</p>
+                <p>• 受益者與決策者的隱藏關聯</p>
+                <p>• 資訊傳播路徑的反向追蹤</p>
+                <p>• 「巧合」事件的統計分析</p>
+                <button type="button" class="btn-secondary" onclick="fillConspiracyExample()">載入範例</button>
+            </div>
+        </div>
+        
+        <!-- 企業調查輸入區域 -->
+        <div id="corporateSection" class="input-section">
+            <label for="corporateText" class="input-label">🏢 請輸入企業事件描述：</label>
+            <textarea id="corporateText" class="textarea-case" 
+                placeholder="輸入企業相關事件、財務異常、人事變動等..."></textarea>
+            
+            <div class="corporate-features">
+                <h4>🏢 企業真實動機分析功能：</h4>
+                <p>• 財務舞弊和異常模式偵測</p>
+                <p>• 治理缺失和內控漏洞評估</p>
+                <p>• 多維度風險評分和預警</p>
+                <p>• 利益衝突和關聯交易識別</p>
+                <button type="button" class="btn-secondary" onclick="fillCorporateExample()">載入範例</button>
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <button id="analyzeBtn" onclick="analyze()">🚀 開始分析</button>
+        </div>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p id="loadingText">正在生成圖譜...</p>
+        </div>
+        
+        <div id="alert" class="alert"></div>
+    </div>
+    
+    <script>
+        let currentOption = '';
+        
+        function selectOption(option) {
+            currentOption = option;
+            
+            // 移除所有 active 狀態
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // 隱藏所有輸入區域
+            document.querySelectorAll('.input-section').forEach(section => {
+                section.classList.remove('show');
+            });
+            
+            // 根據選項顯示相應內容
+            if (option === 'ai-simple' || option === 'ai') {
+                document.getElementById('caseTextSection').classList.add('show');
+                event.target.classList.add('active');
+            } else if (option === 'geo') {
+                document.getElementById('geoTextSection').classList.add('show');
+                event.target.classList.add('active');
+            } else if (option === 'cold-case') {
+                document.getElementById('coldCaseSection').classList.add('show');
+                event.target.classList.add('active');
+            } else if (option === 'conspiracy') {
+                document.getElementById('conspiracySection').classList.add('show');
+                event.target.classList.add('active');
+            } else if (option === 'corporate') {
+                document.getElementById('corporateSection').classList.add('show');
+                event.target.classList.add('active');
+            }
+        }
+        
+        function openCrimeSceneBot() {
+            const url = 'https://line.me/R/ti/p/@510vkpop';
+            window.open(url, '_blank');
+            showAlert('✅ 已開啟 LINE Bot，請掃描 QR Code 或搜尋 @510vkpop', 'success');
+        }
+        
+        function openExternalTool(toolType) {
+            const tools = {
+                'interrogation': {
+                    url: 'https://chatgpt.com/g/g-MTRy9wE5Q-zhen-xun-mo-ni-xi-tong-li-zu-chang-zai-ci',
+                    name: '偵訊模擬系統'
+                },
+                'civil': {
+                    url: 'https://chatgpt.com/g/g-bOKmye6H3-taiwanmin-shi-pan-jue-fen-xi-xi-tong',
+                    name: '民事判決分析系統'
+                },
+                'criminal': {
+                    url: 'https://chatgpt.com/g/g-VHXRqI1cF-taiwanxing-shi-pan-jue-fen-xi-xi-tong',
+                    name: '刑事判決分析系統'
+                },
+                'comparison': {
+                    url: 'https://chatgpt.com/g/g-W7bjodm4d-taiwanpan-jue-bi-jiao-fen-xi-xi-tong',
+                    name: 'Taiwan判決比較分析系統'
+                }
+            };
+            
+            const tool = tools[toolType];
+            if (tool) {
+                window.open(tool.url, '_blank');
+                showAlert(`✅ 已開啟 ${tool.name}，新分頁載入中...`, 'success');
+            }
+        }
+        
+        function fillCaseExample() {
+            document.getElementById('caseText').value = `科技巨頭 A 公司今日宣布以 50 億美元收購人工智慧新創公司 B。根據協議,A 公司執行長張三將親自監督整合流程。
+
+B 公司創辦人李四將加入 A 公司擔任技術長,並保留 B 公司 15% 股權。投資基金 C 原持有 B 公司 30% 股權,此次交易後將全數出售獲利了結。
+
+A 公司董事會主席王五表示,此次收購將強化公司在 AI 領域的競爭力。交易預計於 6 個月內完成,需通過監管機構審查。`;
+        }
+        
+        function fillGeoExample() {
+            document.getElementById('geoText').value = `張明於上午10點從新北市板橋區文化路一段188號的住所出發，搭捷運前往台北車站(台北市中正區忠孝西路一段1號)，11點到達。接著步行5分鐘到台北市中正區忠孝西路一段50號的公司上班。下午6點下班後，開車前往台北市信義區市府路45號的餐廳聚餐，晚上8時40分鐘抵達。最後於晚上10點搭計程車返回住所，晚上10時50分鐘。`;
+        }
+        
+        function fillColdCaseExample() {
+            document.getElementById('coldCaseText').value = `一名高中女學生神秘失蹤21年，警方調查一無所獲。網紅博主僅用兩天便解開了塵封多年的案件謎團，真相背後竟隱藏著令人震驚的人為疏漏。 2000年4月3日，18歲的Erin Foster和Jeremy Bechtel參加同學聚會後失蹤。當晚10點多，兩人一起離開聚會，Erin駕駛一輛1988年款龐蒂亞克黑色汽車。這是最後有人見到他們的時刻。 Erin性格穩重，理想是成為飛機機械師。她從未夜不歸宿而不報備，這次失蹤讓父母極為擔心。隨著失蹤持續到第二天晚上，兩家人決定報警。 警方起初不太重視，認為可能是年輕人感情問題離家出走。直到兩人始終未現身，才開始大規模搜查。警方假設車輛失控掉進水裡，派潛水員搜索周邊水域，甚至搜遍下水道和水井，都無結果。 各種謠言四起：私奔、販毒、涉嫌、綁架等，但都被逐一排除。兩家父母在痛苦中堅持，Erin母親辭職，父親借酒消愁，Jeremy母親因傷心住院。案件陷入停滯狀態。 2018年，當年參與調查的警官Steve Page升任警長，重啟調查。他們重新整理案件資料，發現一個被忽視的關鍵文件：Erin家人填寫的失蹤報告。 報告顯示，Erin離開聚會後並非直接失蹤，而是先接了弟弟Will回家，向母親申請再外出一會後，才載著Jeremy再次離開。也就是說，Erin家才是最後見到兩人的地方，而非聚會現場。 這一重大遺漏徹底改變了調查方向。20年來，警方一直在錯誤的區域搜索。Page警長相信兩人遭遇不測，堅持從尋找汽車入手，因為如此龐大的物體不可能毫無痕跡地消失。`;
+        }
+        
+        function fillConspiracyExample() {
+            document.getElementById('conspiracyText').value = `2024年12月3日晚上10點，陳梅慧因與刑事局謝委男友涉嫌洩密案，被臺中地方檢察署傳喚。兩人經偵訊三小時後獲檢方無保請回，於凌晨1點37分離開檢察署，共乘計程車北返。
+12月4日凌晨3點4分，中山高速公路北上77.7公里湖口路段發生連環車禍。陳梅慧搭乘的計程車因前車回堵煞停後，遭後方徐委駕駛的租賃小客車追撞，並向前推撞四輛車輛。陳梅慧頭部、胸部與大腿多處骨折，緊急送往中國醫藥大學附設醫院新竹分院搶救，仍於清晨5點15分因失血性休克及多重創傷宣告不治。
+由於陳梅慧為唯一死者，且正參與八八會館地下匯兌金流調查，傷者名單中卻有四海幫成員，引起網友、市議員與政治評論員猜測此案可能非單純交通事故，而涉及警界內鬨或組織犯罪集團尋仇，成為社會議論焦點。家屬透過律師聲明，懇請各界避免陰謀猜測，並以此推動制度完善，保障高風險犯罪調查人員安全。
+專案小組調查
+12月6日，最高檢察署檢察總長指示新竹地檢署成立專案小組調查車禍原因。檢察長張雲綺責成重大案件專責組主任檢察官洪澤標進行調查。
+12月16日，新竹地檢署宣布調查終結，對肇事駕駛徐委被告依過失致死罪及過失傷害罪提起公訴。調查顯示，徐委駕駛因車上乘客趕往桃園機場搭機，雖高速公路已回堵且跑馬燈提示前有事故，仍以106至108公里速度駛入彎道；由於視線受彎道遮擋，未能及時發現內側車道回堵車輛，引發連環碰撞。
+檢方調閱通聯紀錄、數位鑑識與監視器畫面後認為，當時塞車且車流變換頻繁，此情況下無法設計犯罪計畫，故排除故意製造車禍的可能性。`;
+        }
+        
+        function fillCorporateExample() {
+            document.getElementById('corporateText').value = `三商美邦人壽(2867)出售案在玉山金控(2884)及中信金控(2891)競購下，市場傳出最終由玉山金以每股8.2元超過中信金約每股7.7-7.8元，成功拿下三商壽，補足玉山金在壽險市場的版圖，加上先前玉山金購併保德信投信(現已改名玉山投信)，讓玉山金也開啟「銀保證」三主軸的經營模式。至於此次傳出收購價格8.2元較三商壽23日收盤價6.72元溢價22%，展現玉山金對於併購三商美邦人壽勢在必得的決心。市場傳出，此次將以全數換股方式進行，以三商壽資本額569.9億元計算，合計出售價值將達467億元，而傳出每股收購價格8.2元也較23日收盤價6.72元，溢價22%，更比當初三商壽透露出售底價7.5元以上，高出5%，若以玉山金23日收盤價32.65元計算，等於以1股三商壽換0.251股玉山金，若以玉山金股本1,617.4億元來看，股權稀釋8%。`;
+        }
+        
+        function showLoading(text = '正在生成圖譜...') {
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('loadingText').textContent = text;
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type} show`;
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 5000);
+        }
+        
+        async function analyze() {
+            const btn = document.getElementById('analyzeBtn');
+            btn.disabled = true;
+            
+            try {
+                if (currentOption === 'ai') {
+                    const caseText = document.getElementById('caseText').value.trim();
+                    if (!caseText) {
+                        showAlert('❌ 請輸入文本內容', 'error');
+                        return;
+                    }
+                    await analyzeWithAI(caseText, 'ai-parse');
+                    
+                } else if (currentOption === 'ai-simple') {
+                    const caseText = document.getElementById('caseText').value.trim();
+                    if (!caseText) {
+                        showAlert('❌ 請輸入文本內容', 'error');
+                        return;
+                    }
+                    await analyzeWithAI(caseText, 'ai-parse_2');
+                    
+                } else if (currentOption === 'geo') {
+                    const geoText = document.getElementById('geoText').value.trim();
+                    if (!geoText) {
+                        showAlert('❌ 請輸入移動軌跡描述', 'error');
+                        return;
+                    }
+                    await analyzeWithGeo(geoText);
+                    
+                } else if (currentOption === 'cold-case') {
+                    const coldCaseText = document.getElementById('coldCaseText').value.trim();
+                    if (!coldCaseText) {
+                        showAlert('❌ 請輸入陳年懸案描述', 'error');
+                        return;
+                    }
+                    await analyzeWithSpecialCase(coldCaseText, 'cold-case-reboot', '🕰️ 正在重啟陳年懸案...', '✅ 陳年懸案分析完成,報告已開啟');
+                    
+                } else if (currentOption === 'conspiracy') {
+                    const conspiracyText = document.getElementById('conspiracyText').value.trim();
+                    if (!conspiracyText) {
+                        showAlert('❌ 請輸入陰謀事件描述', 'error');
+                        return;
+                    }
+                    await analyzeWithSpecialCase(conspiracyText, 'conspiracy-analysis', '🌑 正在分析暗黑陰謀...', '✅ 暗黑陰謀分析完成,報告已開啟');
+                    
+                } else if (currentOption === 'corporate') {
+                    const corporateText = document.getElementById('corporateText').value.trim();
+                    if (!corporateText) {
+                        showAlert('❌ 請輸入企業事件描述', 'error');
+                        return;
+                    }
+                    await analyzeWithSpecialCase(corporateText, 'corporate-investigation', '🏢 正在調查企業真實動機...', '✅ 企業調查完成,報告已開啟');
+                    
+                } else {
+                    showAlert('❌ 請選擇分析方式', 'error');
+                    return;
+                }
+                
+            } finally {
+                btn.disabled = false;
+            }
+        }
+        
+        async function analyzeWithAI(caseText, endpoint) {
+            const url = `https://kf0630.zeabur.app/webhook/${endpoint}`;
+            
+            const loadingText = endpoint === 'ai-parse' ? 
+                '🤖 複雜關係圖正在分析文本並生成圖譜...' : 
+                '🤖 簡單關係圖正在分析文本並生成圖譜...';
+            
+            showLoading(loadingText);
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        caseText: caseText
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const html = await response.text();
+                
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                    newWindow.document.write(html);
+                    newWindow.document.close();
+                    hideLoading();
+                    const successMessage = endpoint === 'ai-parse' ? 
+                        '✅ 複雜關係圖解析完成,圖譜已開啟' : 
+                        '✅ 簡單關係圖解析完成,圖譜已開啟';
+                    showAlert(successMessage, 'success');
+                } else {
+                    hideLoading();
+                    showAlert('⚠️ 請允許彈出視窗', 'error');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                const errorMessage = endpoint === 'ai-parse' ? 
+                    '❌ 複雜關係圖解析失敗: ' + error.message : 
+                    '❌ 簡單關係圖解析失敗: ' + error.message;
+                showAlert(errorMessage, 'error');
+                console.error('Error:', error);
+            }
+        }
+        
+        async function analyzeWithGeo(geoText) {
+            const url = 'https://kf0630.zeabur.app/webhook/geo-analysis';
+            
+            showLoading('🗺️ 福爾摩斯正在分析時空軌跡...');
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        caseText: geoText
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const html = await response.text();
+                
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                    newWindow.document.write(html);
+                    newWindow.document.close();
+                    hideLoading();
+                    showAlert('✅ 地理分析完成,報告已開啟', 'success');
+                } else {
+                    hideLoading();
+                    showAlert('⚠️ 請允許彈出視窗', 'error');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                showAlert('❌ 地理分析失敗: ' + error.message, 'error');
+                console.error('Error:', error);
+            }
+        }
+        
+        async function analyzeWithSpecialCase(inputText, endpoint, loadingMessage, successMessage) {
+            const url = `https://kf0630.zeabur.app/webhook/${endpoint}`;
+            
+            showLoading(loadingMessage);
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        caseText: inputText
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const html = await response.text();
+                
+                const newWindow = window.open('', '_blank');
+                if (newWindow) {
+                    newWindow.document.write(html);
+                    newWindow.document.close();
+                    hideLoading();
+                    showAlert(successMessage, 'success');
+                } else {
+                    hideLoading();
+                    showAlert('⚠️ 請允許彈出視窗', 'error');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                showAlert(`❌ 分析失敗: ${error.message}`, 'error');
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
