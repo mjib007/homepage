@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔍 福爾摩斯AI辦案生態系統</title>
+    <title>🔍 福爾摩斯&華生AI辦案平台</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -53,14 +53,14 @@
         
         .options {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
             margin-bottom: 25px;
         }
         .option-card {
-            padding: 15px;
+            padding: 12px;
             border: 2px solid #e0e0e0;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
             text-align: center;
@@ -77,90 +77,49 @@
         }
         .option-card h3 {
             color: #333;
-            margin-bottom: 6px;
-            font-size: 14px;
+            margin-bottom: 8px;
+            font-size: 18px;
+            font-weight: bold;
         }
         .option-card p {
             color: #666;
-            font-size: 11px;
-            line-height: 1.4;
+            font-size: 13px;
+            line-height: 1.2;
         }
         
-        /* 現有的特殊樣式 */
-        .crime-scene-card {
-            border: 2px solid #D0021B !important;
-            background: linear-gradient(135deg, #D0021B 0%, #FF4757 100%) !important;
+        /* 核心分析工具色系 - 優雅藍色 */
+        .core-tool-card {
+            border: 2px solid #4F46E5 !important;
+            background: #4F46E5 !important;
+            color: white !important;
+        }
+        .core-tool-card:hover {
+            border-color: #4338CA !important;
+            background: #4338CA !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3) !important;
+        }
+        .core-tool-card h3, .core-tool-card p {
+            color: white !important;
+        }
+        
+        /* 專業辦案工具色系 - 優雅紫色 */
+        .professional-tool-card {
+            border: 2px solid #7C3AED !important;
+            background: #7C3AED !important;
             color: white !important;
             position: relative;
         }
-        .crime-scene-card:hover {
-            border-color: #B91C1C !important;
+        .professional-tool-card:hover {
+            border-color: #6D28D9 !important;
+            background: #6D28D9 !important;
             transform: translateY(-3px) !important;
-            box-shadow: 0 8px 25px rgba(208, 2, 27, 0.4) !important;
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.3) !important;
         }
-        .crime-scene-card h3, .crime-scene-card p {
+        .professional-tool-card h3, .professional-tool-card p {
             color: white !important;
         }
-        
-        .cold-case-card {
-            border: 2px solid #8B4513 !important;
-            background: linear-gradient(135deg, #8B4513 0%, #CD853F 100%) !important;
-            color: white !important;
-        }
-        .cold-case-card:hover {
-            border-color: #5D2F08 !important;
-            transform: translateY(-3px) !important;
-            box-shadow: 0 8px 25px rgba(139, 69, 19, 0.4) !important;
-        }
-        .cold-case-card h3, .cold-case-card p {
-            color: white !important;
-        }
-        
-        .conspiracy-card {
-            border: 2px solid #2C1810 !important;
-            background: linear-gradient(135deg, #2C1810 0%, #8B0000 100%) !important;
-            color: white !important;
-        }
-        .conspiracy-card:hover {
-            border-color: #1A0F08 !important;
-            transform: translateY(-3px) !important;
-            box-shadow: 0 8px 25px rgba(44, 24, 16, 0.4) !important;
-        }
-        .conspiracy-card h3, .conspiracy-card p {
-            color: white !important;
-        }
-        
-        .corporate-card {
-            border: 2px solid #1e3a8a !important;
-            background: linear-gradient(135deg, #1e3a8a 0%, #059669 100%) !important;
-            color: white !important;
-        }
-        .corporate-card:hover {
-            border-color: #1e40af !important;
-            transform: translateY(-3px) !important;
-            box-shadow: 0 8px 25px rgba(30, 58, 138, 0.4) !important;
-        }
-        .corporate-card h3, .corporate-card p {
-            color: white !important;
-        }
-        
-        /* 新增：外部工具樣式 */
-        .external-tool-card {
-            border: 2px solid #6B46C1 !important;
-            background: linear-gradient(135deg, #6B46C1 0%, #9333EA 100%) !important;
-            color: white !important;
-            position: relative;
-        }
-        .external-tool-card:hover {
-            border-color: #553C9A !important;
-            transform: translateY(-3px) !important;
-            box-shadow: 0 8px 25px rgba(107, 70, 193, 0.4) !important;
-        }
-        .external-tool-card h3, .external-tool-card p {
-            color: white !important;
-        }
-        .external-tool-card::after {
-            content: '🔗';
+        .professional-tool-card::after {
             position: absolute;
             top: 8px;
             right: 8px;
@@ -168,46 +127,24 @@
             opacity: 0.8;
         }
         
-        /* 分析與模擬工具特殊樣式 */
-        .analysis-tool-card {
-            border: 2px solid #059669 !important;
-            background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        /* 判決分析工具色系 - 優雅深藍 */
+        .legal-tool-card {
+            border: 2px solid #1E40AF !important;
+            background: #1E40AF !important;
             color: white !important;
             position: relative;
         }
-        .analysis-tool-card:hover {
-            border-color: #047857 !important;
+        .legal-tool-card:hover {
+            border-color: #1D4ED8 !important;
+            background: #1D4ED8 !important;
             transform: translateY(-3px) !important;
-            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.4) !important;
+            box-shadow: 0 8px 25px rgba(30, 64, 175, 0.3) !important;
         }
-        .analysis-tool-card h3, .analysis-tool-card p {
+        .legal-tool-card h3, .legal-tool-card p {
             color: white !important;
         }
-        .analysis-tool-card::after {
-            content: '📊';
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            font-size: 16px;
-            opacity: 0.8;
-        }
-        
-        .simulation-tool-card {
-            border: 2px solid #DC2626 !important;
-            background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%) !important;
-            color: white !important;
-            position: relative;
-        }
-        .simulation-tool-card:hover {
-            border-color: #991B1B !important;
-            transform: translateY(-3px) !important;
-            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4) !important;
-        }
-        .simulation-tool-card h3, .simulation-tool-card p {
-            color: white !important;
-        }
-        .simulation-tool-card::after {
-            content: '🎭';
+        .legal-tool-card::after {
+            content: '⚖️';
             position: absolute;
             top: 8px;
             right: 8px;
@@ -345,9 +282,9 @@
         }
         button {
             flex: 1;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
+            background: white;
+            color: #333;
+            border: 2px solid #333;
             padding: 15px 30px;
             font-size: 16px;
             border-radius: 8px;
@@ -357,7 +294,9 @@
         }
         button:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            background: #f8f9fa;
+            border-color: #000;
         }
         button:disabled {
             opacity: 0.5;
@@ -436,12 +375,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔍 福爾摩斯AI辦案生態系統</h1>
-        <div class="subtitle">Sherlock Holmes Digital Investigation Ecosystem</div>
+        <h1>🔍 福爾摩斯&華生AI辦案平台</h1>
+        <div class="subtitle">Sherlock Holmes & Watson AI Investigation Platform</div>
         
         <div class="info-section">
             <h3>🎯 完整辦案流程</h3>
-            <p>從證物分析、地理軌跡、關係網絡，到最終的判決分析，一站式解決所有辦案需求。每個工具環環相扣，協助您建立完整的案件脈絡。</p>
+            <p>從證物分析、地理軌跡、關係網絡，到最終的判決分析，一站式解決所有辦案需求。</p>
         </div>
         
         <!-- 核心分析工具 -->
@@ -450,22 +389,22 @@
         </div>
         
         <div class="options">
-            <div class="option-card" onclick="selectOption('ai-simple')">
+            <div class="option-card core-tool-card" onclick="selectOption('ai-simple')">
                 <h3>🎯 簡單關係圖</h3>
                 <p>快速生成人物關係網絡，適合簡單案件分析</p>
             </div>
             
-            <div class="option-card" onclick="selectOption('ai')">
+            <div class="option-card core-tool-card" onclick="selectOption('ai')">
                 <h3>🕸️ 複雜關係圖</h3>
                 <p>深度分析複雜關係網絡，適合重大案件調查</p>
             </div>
             
-            <div class="option-card" onclick="selectOption('geo')">
+            <div class="option-card core-tool-card" onclick="selectOption('geo')">
                 <h3>🗺️ 地理助手</h3>
                 <p>分析地點移動軌跡，檢測時間異常</p>
             </div>
             
-            <div class="option-card crime-scene-card" onclick="openCrimeSceneBot()">
+            <div class="option-card core-tool-card" onclick="openCrimeSceneBot()">
                 <h3>💀 現場分析 Bot</h3>
                 <p>整合 LINE Bot 進行即時現場證物分析</p>
             </div>
@@ -560,22 +499,22 @@
         </div>
         
         <div class="options">
-            <div class="option-card cold-case-card" onclick="selectOption('cold-case')">
+            <div class="option-card professional-tool-card" onclick="selectOption('cold-case')">
                 <h3>🕰️ 陳年懸案重啟</h3>
                 <p>運用新技術重新分析未破解的舊案</p>
             </div>
             
-            <div class="option-card conspiracy-card" onclick="selectOption('conspiracy')">
+            <div class="option-card professional-tool-card" onclick="selectOption('conspiracy')">
                 <h3>🌑 暗黑陰謀分析</h3>
                 <p>深入挖掘隱藏的陰謀網絡和幕後真相</p>
             </div>
             
-            <div class="option-card corporate-card" onclick="selectOption('corporate')">
+            <div class="option-card professional-tool-card" onclick="selectOption('corporate')">
                 <h3>🏢 企業真實動機</h3>
                 <p>透視企業行為背後的真實意圖和利益</p>
             </div>
             
-            <div class="option-card simulation-tool-card" onclick="openExternalTool('interrogation')">
+            <div class="option-card professional-tool-card" onclick="openExternalTool('interrogation')">
                 <h3>🎯 偵訊模擬系統</h3>
                 <p>AI驅動的偵訊場景模擬，提升審訊技巧</p>
             </div>
@@ -587,17 +526,17 @@
         </div>
         
         <div class="options">
-            <div class="option-card analysis-tool-card" onclick="openExternalTool('civil')">
+            <div class="option-card legal-tool-card" onclick="openExternalTool('civil')">
                 <h3>📋 民事判決分析</h3>
                 <p>深度解析民事判決書，提取關鍵法律論點</p>
             </div>
             
-            <div class="option-card analysis-tool-card" onclick="openExternalTool('criminal')">
+            <div class="option-card legal-tool-card" onclick="openExternalTool('criminal')">
                 <h3>⚖️ 刑事判決分析</h3>
                 <p>剖析刑事判決邏輯，理解量刑依據</p>
             </div>
             
-            <div class="option-card external-tool-card" onclick="openExternalTool('comparison')">
+            <div class="option-card legal-tool-card" onclick="openExternalTool('comparison')">
                 <h3>🔍 判決比較分析</h3>
                 <p>比較類似案件判決，發現判決模式與差異</p>
             </div>
