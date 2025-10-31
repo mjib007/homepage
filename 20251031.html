@@ -144,55 +144,18 @@
         .results-panel {
             background: #f8f9fa;
             border-radius: 15px;
-            padding: 30px;
+            padding: 20px;
             overflow-y: auto;
             max-height: 600px;
-        }
-
-        .result-item {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            border-left: 4px solid #4facfe;
-        }
-
-        .result-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .result-timestamp {
-            font-size: 0.9em;
-            color: #999;
-            margin-bottom: 10px;
-        }
-
-        .original-text {
-            background: #e3f2fd;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-style: italic;
-            color: #1565c0;
-            border-left: 3px solid #2196f3;
-        }
-
-        .translated-text {
-            background: #e8f5e8;
-            padding: 15px;
-            border-radius: 8px;
-            font-weight: 500;
-            color: #2e7d32;
-            border-left: 3px solid #4caf50;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
             line-height: 1.6;
+            white-space: pre-wrap;
+            color: #333;
+            border: 2px solid #e9ecef;
         }
 
-        .language-info {
-            font-size: 0.85em;
-            color: #666;
-            margin-top: 10px;
-        }
+        /* 移除複雜的結果項目樣式，因為現在使用純文字 */
 
         .controls {
             display: flex;
@@ -347,12 +310,7 @@
                 </div>
             </div>
             
-            <div class="results-panel" id="resultsPanel">
-                <div style="text-align: center; color: #999; padding: 50px;">
-                    <h3>📝 翻譯結果將顯示在這裡</h3>
-                    <p>點擊左側的錄音按鈕開始錄製講師的聲音</p>
-                </div>
-            </div>
+            <div class="results-panel" id="resultsPanel"></div>
         </div>
     </div>
 
@@ -365,7 +323,6 @@
                 this.isProcessing = false;
                 this.startTime = null;
                 this.timerInterval = null;
-                this.results = [];
                 
                 // Webhook URL
                 this.webhookUrl = 'https://kf0630.zeabur.app/webhook/audio-translate';
@@ -373,6 +330,9 @@
                 this.initializeElements();
                 this.bindEvents();
                 this.checkMicrophonePermission();
+                
+                // 將實例保存到全局變量以便調試
+                window.audioTranslator = this;
             }
             
             initializeElements() {
@@ -384,6 +344,9 @@
                 this.clearButton = document.getElementById('clearButton');
                 this.downloadButton = document.getElementById('downloadButton');
                 this.audioVisualizer = document.getElementById('audioVisualizer');
+                
+                // 設置初始文字
+                this.resultsPanel.textContent = '準備錄音，翻譯結果將顯示在這裡...\n\n';
             }
             
             bindEvents() {
@@ -513,13 +476,25 @@
                     this.updateStatus('🔄 正在轉錄和翻譯...', 'processing');
                     
                     const result = await response.json();
-                    console.log('伺服器回應:', result);
+                    console.log('伺服器完整回應:', result);
+                    console.log('回應數據類型:', typeof result, Array.isArray(result));
                     
-                    if (result.success) {
-                        this.addResult(result.data);
+                    // 處理可能的數組格式回應
+                    let responseData;
+                    if (Array.isArray(result) && result.length > 0) {
+                        responseData = result[0]; // 取第一個元素
+                        console.log('檢測到數組格式，使用第一個元素:', responseData);
+                    } else {
+                        responseData = result;
+                    }
+                    
+                    if (responseData.success && responseData.data) {
+                        console.log('翻譯成功，添加結果:', responseData.data);
+                        this.addResult(responseData.data);
                         this.updateStatus('✅ 翻譯完成', 'success');
                     } else {
-                        throw new Error(result.error?.message || '翻譯處理失敗');
+                        console.error('回應格式錯誤或處理失敗:', responseData);
+                        throw new Error(responseData.error?.message || '翻譯處理失敗');
                     }
                     
                 } catch (error) {
@@ -542,15 +517,33 @@
             }
             
             addResult(data) {
-                this.results.push({
-                    timestamp: new Date().toLocaleString('zh-TW'),
-                    ...data
-                });
+                // 直接處理文字內容
+                const originalText = data.original_text || '無法識別語音';
+                const translatedText = data.translated_text || '翻譯失敗';
+                const timestamp = new Date().toLocaleString('zh-TW');
                 
-                this.renderResults();
+                console.log('添加結果:', originalText, '->', translatedText);
+                
+                // 簡單的文字顯示
+                const resultText = `
+[${timestamp}]
+原文: ${originalText}
+中文: ${translatedText}
+
+`;
+                
+                // 直接添加到文字區域
+                const currentContent = this.resultsPanel.textContent || '';
+                this.resultsPanel.textContent = currentContent + resultText;
+                
+                // 滾動到底部
+                this.resultsPanel.scrollTop = this.resultsPanel.scrollHeight;
             }
             
             renderResults() {
+                console.log('開始渲染結果，總數:', this.results.length);
+                console.log('結果數據:', this.results);
+                
                 if (this.results.length === 0) {
                     this.resultsPanel.innerHTML = `
                         <div style="text-align: center; color: #999; padding: 50px;">
@@ -561,34 +554,12 @@
                     return;
                 }
                 
-                this.resultsPanel.innerHTML = this.results.map((result, index) => `
-                    <div class="result-item">
-                        <div class="result-timestamp">
-                            #${index + 1} - ${result.timestamp}
-                            ${result.language_detected ? `(偵測語言: ${this.getLanguageName(result.language_detected)})` : ''}
-                            ${result.audio_duration ? `・音檔長度: ${Math.round(result.audio_duration)}秒` : ''}
-                        </div>
-                        
-                        <div class="original-text">
-                            <strong>🎤 原文：</strong><br>
-                            ${this.escapeHtml(result.original_text || '無法識別語音')}
-                        </div>
-                        
-                        <div class="translated-text">
-                            <strong>🇹🇼 中文翻譯：</strong><br>
-                            ${this.escapeHtml(result.translated_text || '翻譯失敗')}
-                        </div>
-                        
-                        <div class="language-info">
-                            ${result.processing_time ? `處理時間: ${result.processing_time}` : ''}
-                            ${result.word_count ? `・原文字數: ${result.word_count}` : ''}
-                            ${result.char_count ? `・譯文字數: ${result.char_count}` : ''}
-                        </div>
-                    </div>
-                `).join('');
-                
-                // 自動滾動到最新結果
-                this.resultsPanel.scrollTop = this.resultsPanel.scrollHeight;
+            renderResults() {
+                // 純文字版本不需要複雜的渲染邏輯
+                if (!this.resultsPanel.textContent || this.resultsPanel.textContent.trim() === '') {
+                    this.resultsPanel.textContent = '準備錄音，翻譯結果將顯示在這裡...\n\n';
+                }
+            }
             }
             
             getLanguageName(code) {
@@ -667,48 +638,28 @@
             }
             
             clearResults() {
-                if (this.results.length === 0) return;
+                if (!this.resultsPanel.textContent || this.resultsPanel.textContent.trim() === '準備錄音，翻譯結果將顯示在這裡...\n\n') {
+                    return;
+                }
                 
                 if (confirm('確定要清除所有翻譯記錄嗎？')) {
-                    this.results = [];
-                    this.renderResults();
+                    this.resultsPanel.textContent = '準備錄音，翻譯結果將顯示在這裡...\n\n';
                     this.updateStatus('記錄已清除', 'success');
                 }
             }
             
             downloadResults() {
-                if (this.results.length === 0) {
+                const content = this.resultsPanel.textContent;
+                if (!content || content.trim() === '準備錄音，翻譯結果將顯示在這裡...\n\n') {
                     alert('沒有可下載的翻譯記錄');
                     return;
                 }
                 
-                const content = this.results.map((result, index) => {
-                    return `
-=== 研討會翻譯記錄 #${index + 1} ===
-錄製時間: ${result.timestamp}
-偵測語言: ${this.getLanguageName(result.language_detected || 'unknown')}
-音檔長度: ${result.audio_duration ? Math.round(result.audio_duration) + '秒' : '未知'}
-處理時間: ${result.processing_time || 'N/A'}
-原文字數: ${result.word_count || 'N/A'}
-譯文字數: ${result.char_count || 'N/A'}
-
-【原文內容】
-${result.original_text || '無法識別語音內容'}
-
-【中文翻譯】
-${result.translated_text || '翻譯失敗'}
-
-────────────────────────────────────
-
-`;
-                }).join('\n');
-                
                 const header = `研討會即時語音翻譯系統
 匯出時間: ${new Date().toLocaleString('zh-TW')}
-總記錄數: ${this.results.length}筆
-系統版本: v1.0
+系統版本: v1.0 (簡化版)
 
-════════════════════════════════════
+====================================
 
 `;
                 
