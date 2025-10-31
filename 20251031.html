@@ -483,25 +483,37 @@
                         throw new Error('錄音時間太短或沒有錄到聲音');
                     }
                     
-                    // 轉換為 WAV 格式（可選，Whisper 支援多種格式）
-                    const formData = new FormData();
-                    formData.append('file', audioBlob, 'recording.webm');
+                    console.log(`音檔資訊: 大小=${audioBlob.size}bytes, 類型=${audioBlob.type}`);
                     
-                    this.updateStatus('🚀 正在翻譯...', 'processing');
+                    // 建立 FormData 並正確設置檔案
+                    const formData = new FormData();
+                    const fileName = `recording_${Date.now()}.${this.getFileExtension(audioBlob.type)}`;
+                    formData.append('file', audioBlob, fileName);
+                    
+                    // 添加時間戳以便追蹤處理時間
+                    formData.append('timestamp', Date.now().toString());
+                    
+                    this.updateStatus('🚀 正在上傳音檔...', 'processing');
                     
                     const response = await fetch(this.webhookUrl, {
                         method: 'POST',
                         body: formData,
                         headers: {
                             'Accept': 'application/json'
+                            // 不要設置 Content-Type，讓瀏覽器自動處理 multipart/form-data
                         }
                     });
                     
                     if (!response.ok) {
-                        throw new Error(`伺服器錯誤: ${response.status} ${response.statusText}`);
+                        const errorText = await response.text();
+                        console.error('伺服器回應錯誤:', errorText);
+                        throw new Error(`伺服器錯誤 ${response.status}: ${response.statusText}`);
                     }
                     
+                    this.updateStatus('🔄 正在轉錄和翻譯...', 'processing');
+                    
                     const result = await response.json();
+                    console.log('伺服器回應:', result);
                     
                     if (result.success) {
                         this.addResult(result.data);
@@ -517,6 +529,16 @@
                 } finally {
                     this.resetButton();
                 }
+            }
+            
+            getFileExtension(mimeType) {
+                const extensions = {
+                    'audio/webm': 'webm',
+                    'audio/mp4': 'm4a',
+                    'audio/wav': 'wav',
+                    'audio/ogg': 'ogg'
+                };
+                return extensions[mimeType] || 'webm';
             }
             
             addResult(data) {
@@ -544,6 +566,7 @@
                         <div class="result-timestamp">
                             #${index + 1} - ${result.timestamp}
                             ${result.language_detected ? `(偵測語言: ${this.getLanguageName(result.language_detected)})` : ''}
+                            ${result.audio_duration ? `・音檔長度: ${Math.round(result.audio_duration)}秒` : ''}
                         </div>
                         
                         <div class="original-text">
@@ -556,11 +579,11 @@
                             ${this.escapeHtml(result.translated_text || '翻譯失敗')}
                         </div>
                         
-                        ${result.processing_time ? `
-                            <div class="language-info">
-                                處理時間: ${result.processing_time}
-                            </div>
-                        ` : ''}
+                        <div class="language-info">
+                            ${result.processing_time ? `處理時間: ${result.processing_time}` : ''}
+                            ${result.word_count ? `・原文字數: ${result.word_count}` : ''}
+                            ${result.char_count ? `・譯文字數: ${result.char_count}` : ''}
+                        </div>
                     </div>
                 `).join('');
                 
@@ -661,22 +684,35 @@
                 
                 const content = this.results.map((result, index) => {
                     return `
-=== 翻譯記錄 #${index + 1} ===
-時間: ${result.timestamp}
+=== 研討會翻譯記錄 #${index + 1} ===
+錄製時間: ${result.timestamp}
 偵測語言: ${this.getLanguageName(result.language_detected || 'unknown')}
+音檔長度: ${result.audio_duration ? Math.round(result.audio_duration) + '秒' : '未知'}
+處理時間: ${result.processing_time || 'N/A'}
+原文字數: ${result.word_count || 'N/A'}
+譯文字數: ${result.char_count || 'N/A'}
 
-原文:
-${result.original_text || '無法識別'}
+【原文內容】
+${result.original_text || '無法識別語音內容'}
 
-中文翻譯:
+【中文翻譯】
 ${result.translated_text || '翻譯失敗'}
 
-處理時間: ${result.processing_time || 'N/A'}
+────────────────────────────────────
 
 `;
                 }).join('\n');
                 
-                const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                const header = `研討會即時語音翻譯系統
+匯出時間: ${new Date().toLocaleString('zh-TW')}
+總記錄數: ${this.results.length}筆
+系統版本: v1.0
+
+════════════════════════════════════
+
+`;
+                
+                const blob = new Blob([header + content], { type: 'text/plain;charset=utf-8' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -686,7 +722,7 @@ ${result.translated_text || '翻譯失敗'}
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 
-                this.updateStatus('記錄已下載', 'success');
+                this.updateStatus('📥 記錄已下載', 'success');
             }
         }
         
