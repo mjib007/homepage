@@ -157,42 +157,7 @@
 
         /* 移除複雜的結果項目樣式，因為現在使用純文字 */
 
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-            justify-content: center;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .btn-clear {
-            background: #ff4757;
-            color: white;
-        }
-
-        .btn-clear:hover {
-            background: #ff3838;
-            transform: translateY(-2px);
-        }
-
-        .btn-download {
-            background: #2ed573;
-            color: white;
-        }
-
-        .btn-download:hover {
-            background: #1dd1a1;
-            transform: translateY(-2px);
-        }
+        /* 移除了按鈕相關的CSS樣式 */
 
         .error-message {
             background: #ffebee;
@@ -288,6 +253,9 @@
                     <span id="buttonText">開始錄音</span>
                 </button>
                 
+                <!-- 臨時測試按鈕 -->
+                <button onclick="console.log('測試按鈕可以點擊'); alert('測試按鈕正常');" style="margin-top: 10px; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px;">測試按鈕</button>
+                
                 <div class="audio-visualizer" id="audioVisualizer">
                     <div class="visualizer-bars">
                         <div class="bar"></div>
@@ -305,8 +273,7 @@
                 <div id="timer" class="timer">00:00</div>
                 
                 <div class="controls">
-                    <button id="clearButton" class="btn btn-clear">清除記錄</button>
-                    <button id="downloadButton" class="btn btn-download">下載結果</button>
+                    <!-- 移除清除和下載按鈕 -->
                 </div>
             </div>
             
@@ -336,23 +303,44 @@
             }
             
             initializeElements() {
+                console.log('初始化元素...');
+                
                 this.recordButton = document.getElementById('recordButton');
                 this.buttonText = document.getElementById('buttonText');
                 this.status = document.getElementById('status');
                 this.timer = document.getElementById('timer');
                 this.resultsPanel = document.getElementById('resultsPanel');
-                this.clearButton = document.getElementById('clearButton');
-                this.downloadButton = document.getElementById('downloadButton');
                 this.audioVisualizer = document.getElementById('audioVisualizer');
                 
+                console.log('元素獲取結果:', {
+                    recordButton: !!this.recordButton,
+                    buttonText: !!this.buttonText,
+                    status: !!this.status,
+                    timer: !!this.timer,
+                    resultsPanel: !!this.resultsPanel,
+                    audioVisualizer: !!this.audioVisualizer
+                });
+                
                 // 設置初始文字
-                this.resultsPanel.textContent = '準備錄音，翻譯結果將顯示在這裡...\n\n';
+                if (this.resultsPanel) {
+                    this.resultsPanel.textContent = '準備錄音，翻譯結果將顯示在這裡...\n\n';
+                    console.log('結果面板初始化完成');
+                }
             }
             
             bindEvents() {
-                this.recordButton.addEventListener('click', () => this.toggleRecording());
-                this.clearButton.addEventListener('click', () => this.clearResults());
-                this.downloadButton.addEventListener('click', () => this.downloadResults());
+                console.log('綁定錄音按鈕事件');
+                console.log('錄音按鈕元素:', this.recordButton);
+                
+                if (this.recordButton) {
+                    this.recordButton.addEventListener('click', () => {
+                        console.log('錄音按鈕點擊事件觸發');
+                        this.toggleRecording();
+                    });
+                    console.log('錄音按鈕事件綁定成功');
+                } else {
+                    console.error('找不到錄音按鈕元素！');
+                }
             }
             
             async checkMicrophonePermission() {
@@ -367,16 +355,25 @@
             }
             
             async toggleRecording() {
-                if (this.isProcessing) return;
+                console.log('錄音按鈕被點擊');
+                console.log('當前狀態:', { isRecording: this.isRecording, isProcessing: this.isProcessing });
+                
+                if (this.isProcessing) {
+                    console.log('正在處理中，忽略點擊');
+                    return;
+                }
                 
                 if (!this.isRecording) {
+                    console.log('開始錄音');
                     await this.startRecording();
                 } else {
+                    console.log('停止錄音');
                     await this.stopRecording();
                 }
             }
             
             async startRecording() {
+                console.log('執行 startRecording 函數');
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ 
                         audio: {
@@ -637,44 +634,7 @@
                 this.status.className = `status ${type}`;
             }
             
-            clearResults() {
-                if (!this.resultsPanel.textContent || this.resultsPanel.textContent.trim() === '準備錄音，翻譯結果將顯示在這裡...\n\n') {
-                    return;
-                }
-                
-                if (confirm('確定要清除所有翻譯記錄嗎？')) {
-                    this.resultsPanel.textContent = '準備錄音，翻譯結果將顯示在這裡...\n\n';
-                    this.updateStatus('記錄已清除', 'success');
-                }
-            }
-            
-            downloadResults() {
-                const content = this.resultsPanel.textContent;
-                if (!content || content.trim() === '準備錄音，翻譯結果將顯示在這裡...\n\n') {
-                    alert('沒有可下載的翻譯記錄');
-                    return;
-                }
-                
-                const header = `研討會即時語音翻譯系統
-匯出時間: ${new Date().toLocaleString('zh-TW')}
-系統版本: v1.0 (簡化版)
-
-====================================
-
-`;
-                
-                const blob = new Blob([header + content], { type: 'text/plain;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `研討會翻譯記錄_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                this.updateStatus('📥 記錄已下載', 'success');
-            }
+            // 移除了 clearResults 和 downloadResults 函數
         }
         
         // 初始化應用程式
