@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>研討會即時語音翻譯系統</title>
+    <title>研討會語音翻譯系統</title>
     <style>
         * {
             margin: 0;
@@ -12,15 +12,18 @@
         }
 
         body {
-            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            font-family: 'Microsoft JhengHei', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 1000px;
+            width: 100%;
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
@@ -35,53 +38,42 @@
         }
 
         .header h1 {
-            font-size: 2.5em;
+            font-size: 2.2em;
             margin-bottom: 10px;
-            font-weight: 300;
-        }
-
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
         }
 
         .main-content {
-            padding: 40px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
+            grid-template-columns: 1fr 2fr;
             min-height: 500px;
         }
 
         .control-panel {
+            padding: 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            background: #f8f9fa;
         }
 
         .record-button {
-            width: 200px;
-            height: 200px;
+            width: 180px;
+            height: 180px;
             border-radius: 50%;
             border: none;
-            font-size: 1.2em;
+            font-size: 1.1em;
             font-weight: bold;
             color: white;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .record-button:not(.recording):not(.processing) {
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            margin-bottom: 20px;
         }
 
-        .record-button:not(.recording):not(.processing):hover {
+        .record-button:hover {
             transform: scale(1.05);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
         }
 
         .record-button.recording {
@@ -101,141 +93,47 @@
         }
 
         .status {
-            margin-top: 20px;
-            text-align: center;
             font-size: 1.1em;
             font-weight: 500;
+            margin-bottom: 10px;
             min-height: 30px;
+            text-align: center;
         }
 
-        .status.recording {
-            color: #ff6b6b;
-            animation: blink 1s infinite;
-        }
-
-        .status.processing {
-            color: #feca57;
-        }
-
-        .status.success {
-            color: #2ed573;
-        }
-
-        .status.error {
-            color: #ff4757;
-        }
-
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0.5; }
-        }
+        .status.recording { color: #ff6b6b; }
+        .status.processing { color: #feca57; }
+        .status.success { color: #2ed573; }
+        .status.error { color: #ff4757; }
 
         .timer {
-            margin-top: 10px;
-            font-size: 1.5em;
+            font-size: 1.3em;
             font-weight: bold;
             color: #666;
+            text-align: center;
         }
 
-        .timer.recording {
-            color: #ff6b6b;
-        }
+        .timer.recording { color: #ff6b6b; }
 
         .results-panel {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
+            padding: 30px;
+            background: white;
             overflow-y: auto;
-            max-height: 600px;
             font-family: 'Courier New', monospace;
             font-size: 14px;
             line-height: 1.6;
             white-space: pre-wrap;
             color: #333;
-            border: 2px solid #e9ecef;
-        }
-
-        /* 移除複雜的結果項目樣式，因為現在使用純文字 */
-
-        /* 移除了按鈕相關的CSS樣式 */
-
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            border-left: 4px solid #f44336;
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .audio-visualizer {
-            margin-top: 20px;
-            display: none;
-        }
-
-        .audio-visualizer.active {
-            display: block;
-        }
-
-        .visualizer-bars {
-            display: flex;
-            justify-content: center;
-            align-items: end;
-            height: 60px;
-            gap: 3px;
-        }
-
-        .bar {
-            width: 4px;
-            background: linear-gradient(to top, #ff6b6b, #ff9999);
-            border-radius: 2px;
-            animation: wave 1s ease-in-out infinite;
-        }
-
-        .bar:nth-child(odd) {
-            animation-delay: 0.1s;
-        }
-
-        .bar:nth-child(even) {
-            animation-delay: 0.3s;
-        }
-
-        @keyframes wave {
-            0%, 100% { height: 10px; }
-            50% { height: 40px; }
+            border-left: 3px solid #e9ecef;
         }
 
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
-                gap: 20px;
-                padding: 20px;
             }
             
             .record-button {
                 width: 150px;
                 height: 150px;
-                font-size: 1em;
-            }
-            
-            .header h1 {
-                font-size: 2em;
             }
         }
     </style>
@@ -243,412 +141,293 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎤 研討會即時語音翻譯</h1>
-            <p>支援多國語言即時翻譯成繁體中文</p>
+            <h1>🎤 研討會語音翻譯系統</h1>
+            <p>即時語音轉文字並翻譯成繁體中文</p>
         </div>
         
         <div class="main-content">
             <div class="control-panel">
-                <button id="recordButton" class="record-button">
-                    <span id="buttonText">開始錄音</span>
+                <button id="recordBtn" class="record-button">
+                    開始錄音
                 </button>
-                
-                <!-- 臨時測試按鈕 -->
-                <button onclick="console.log('測試按鈕可以點擊'); alert('測試按鈕正常');" style="margin-top: 10px; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px;">測試按鈕</button>
-                
-                <div class="audio-visualizer" id="audioVisualizer">
-                    <div class="visualizer-bars">
-                        <div class="bar"></div>
-                        <div class="bar"></div>
-                        <div class="bar"></div>
-                        <div class="bar"></div>
-                        <div class="bar"></div>
-                        <div class="bar"></div>
-                        <div class="bar"></div>
-                        <div class="bar"></div>
-                    </div>
-                </div>
                 
                 <div id="status" class="status">準備就緒</div>
                 <div id="timer" class="timer">00:00</div>
-                
-                <div class="controls">
-                    <!-- 移除清除和下載按鈕 -->
-                </div>
             </div>
             
-            <div class="results-panel" id="resultsPanel"></div>
+            <div id="results" class="results-panel">準備錄音，翻譯結果將顯示在這裡...
+
+</div>
         </div>
     </div>
 
     <script>
-        class AudioTranslator {
-            constructor() {
-                this.mediaRecorder = null;
-                this.audioChunks = [];
-                this.isRecording = false;
-                this.isProcessing = false;
-                this.startTime = null;
-                this.timerInterval = null;
-                
-                // Webhook URL
-                this.webhookUrl = 'https://kf0630.zeabur.app/webhook/audio-translate';
-                
-                this.initializeElements();
-                this.bindEvents();
-                this.checkMicrophonePermission();
-                
-                // 將實例保存到全局變量以便調試
-                window.audioTranslator = this;
-            }
+        // 全局變數
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let isProcessing = false;
+        let startTime = null;
+        let timerInterval = null;
+
+        // DOM 元素
+        const recordBtn = document.getElementById('recordBtn');
+        const status = document.getElementById('status');
+        const timer = document.getElementById('timer');
+        const results = document.getElementById('results');
+
+        // Webhook URL
+        const WEBHOOK_URL = 'https://kf0630.zeabur.app/webhook/audio-translate';
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('頁面載入完成，開始初始化...');
             
-            initializeElements() {
-                console.log('初始化元素...');
-                
-                this.recordButton = document.getElementById('recordButton');
-                this.buttonText = document.getElementById('buttonText');
-                this.status = document.getElementById('status');
-                this.timer = document.getElementById('timer');
-                this.resultsPanel = document.getElementById('resultsPanel');
-                this.audioVisualizer = document.getElementById('audioVisualizer');
-                
-                console.log('元素獲取結果:', {
-                    recordButton: !!this.recordButton,
-                    buttonText: !!this.buttonText,
-                    status: !!this.status,
-                    timer: !!this.timer,
-                    resultsPanel: !!this.resultsPanel,
-                    audioVisualizer: !!this.audioVisualizer
-                });
-                
-                // 設置初始文字
-                if (this.resultsPanel) {
-                    this.resultsPanel.textContent = '準備錄音，翻譯結果將顯示在這裡...\n\n';
-                    console.log('結果面板初始化完成');
-                }
-            }
+            // 檢查麥克風權限
+            checkMicrophonePermission();
             
-            bindEvents() {
-                console.log('綁定錄音按鈕事件');
-                console.log('錄音按鈕元素:', this.recordButton);
-                
-                if (this.recordButton) {
-                    this.recordButton.addEventListener('click', () => {
-                        console.log('錄音按鈕點擊事件觸發');
-                        this.toggleRecording();
-                    });
-                    console.log('錄音按鈕事件綁定成功');
-                } else {
-                    console.error('找不到錄音按鈕元素！');
-                }
-            }
-            
-            async checkMicrophonePermission() {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    stream.getTracks().forEach(track => track.stop());
-                    this.updateStatus('準備就緒', 'ready');
-                } catch (error) {
-                    this.updateStatus('需要麥克風權限', 'error');
-                    console.error('麥克風權限錯誤:', error);
-                }
-            }
-            
-            async toggleRecording() {
+            // 綁定按鈕事件
+            recordBtn.addEventListener('click', function() {
                 console.log('錄音按鈕被點擊');
-                console.log('當前狀態:', { isRecording: this.isRecording, isProcessing: this.isProcessing });
+                toggleRecording();
+            });
+            
+            console.log('初始化完成');
+        });
+
+        // 檢查麥克風權限
+        async function checkMicrophonePermission() {
+            try {
+                console.log('檢查麥克風權限...');
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                stream.getTracks().forEach(track => track.stop());
+                updateStatus('準備就緒', 'ready');
+                console.log('麥克風權限正常');
+            } catch (error) {
+                console.error('麥克風權限錯誤:', error);
+                updateStatus('需要麥克風權限', 'error');
+            }
+        }
+
+        // 切換錄音狀態
+        async function toggleRecording() {
+            console.log('toggleRecording 被調用，當前狀態:', { isRecording, isProcessing });
+            
+            if (isProcessing) {
+                console.log('正在處理中，忽略點擊');
+                return;
+            }
+
+            if (!isRecording) {
+                await startRecording();
+            } else {
+                await stopRecording();
+            }
+        }
+
+        // 開始錄音
+        async function startRecording() {
+            try {
+                console.log('開始錄音...');
                 
-                if (this.isProcessing) {
-                    console.log('正在處理中，忽略點擊');
-                    return;
-                }
-                
-                if (!this.isRecording) {
-                    console.log('開始錄音');
-                    await this.startRecording();
-                } else {
-                    console.log('停止錄音');
-                    await this.stopRecording();
-                }
-            }
-            
-            async startRecording() {
-                console.log('執行 startRecording 函數');
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ 
-                        audio: {
-                            echoCancellation: true,
-                            noiseSuppression: true,
-                            sampleRate: 44100
-                        } 
-                    });
-                    
-                    this.mediaRecorder = new MediaRecorder(stream, {
-                        mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
-                    });
-                    
-                    this.audioChunks = [];
-                    this.isRecording = true;
-                    this.startTime = Date.now();
-                    
-                    this.mediaRecorder.ondataavailable = (event) => {
-                        if (event.data.size > 0) {
-                            this.audioChunks.push(event.data);
-                        }
-                    };
-                    
-                    this.mediaRecorder.onstop = () => {
-                        this.processAudio();
-                    };
-                    
-                    this.mediaRecorder.start();
-                    this.startTimer();
-                    
-                    this.recordButton.classList.add('recording');
-                    this.buttonText.textContent = '停止錄音';
-                    this.updateStatus('🔴 錄音中...', 'recording');
-                    this.audioVisualizer.classList.add('active');
-                    
-                } catch (error) {
-                    console.error('開始錄音錯誤:', error);
-                    this.updateStatus('錄音失敗：' + error.message, 'error');
-                }
-            }
-            
-            async stopRecording() {
-                if (this.mediaRecorder && this.isRecording) {
-                    this.mediaRecorder.stop();
-                    this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
-                    
-                    this.isRecording = false;
-                    this.stopTimer();
-                    
-                    this.recordButton.classList.remove('recording');
-                    this.recordButton.classList.add('processing');
-                    this.buttonText.innerHTML = '<span class="loading-spinner"></span>處理中...';
-                    this.updateStatus('🔄 處理音檔中...', 'processing');
-                    this.audioVisualizer.classList.remove('active');
-                    this.isProcessing = true;
-                }
-            }
-            
-            async processAudio() {
-                try {
-                    const audioBlob = new Blob(this.audioChunks, { 
-                        type: this.mediaRecorder.mimeType 
-                    });
-                    
-                    // 檢查音檔大小
-                    if (audioBlob.size < 1000) {
-                        throw new Error('錄音時間太短或沒有錄到聲音');
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        sampleRate: 44100
+                    } 
+                });
+
+                mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
+                });
+
+                audioChunks = [];
+                isRecording = true;
+                startTime = Date.now();
+
+                mediaRecorder.ondataavailable = function(event) {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
                     }
-                    
-                    console.log(`音檔資訊: 大小=${audioBlob.size}bytes, 類型=${audioBlob.type}`);
-                    
-                    // 建立 FormData 並正確設置檔案
-                    const formData = new FormData();
-                    const fileName = `recording_${Date.now()}.${this.getFileExtension(audioBlob.type)}`;
-                    formData.append('file', audioBlob, fileName);
-                    
-                    // 添加時間戳以便追蹤處理時間
-                    formData.append('timestamp', Date.now().toString());
-                    
-                    this.updateStatus('🚀 正在上傳音檔...', 'processing');
-                    
-                    const response = await fetch(this.webhookUrl, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'Accept': 'application/json'
-                            // 不要設置 Content-Type，讓瀏覽器自動處理 multipart/form-data
-                        }
-                    });
-                    
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        console.error('伺服器回應錯誤:', errorText);
-                        throw new Error(`伺服器錯誤 ${response.status}: ${response.statusText}`);
-                    }
-                    
-                    this.updateStatus('🔄 正在轉錄和翻譯...', 'processing');
-                    
-                    const result = await response.json();
-                    console.log('伺服器完整回應:', result);
-                    console.log('回應數據類型:', typeof result, Array.isArray(result));
-                    
-                    // 處理可能的數組格式回應
-                    let responseData;
-                    if (Array.isArray(result) && result.length > 0) {
-                        responseData = result[0]; // 取第一個元素
-                        console.log('檢測到數組格式，使用第一個元素:', responseData);
-                    } else {
-                        responseData = result;
-                    }
-                    
-                    if (responseData.success && responseData.data) {
-                        console.log('翻譯成功，添加結果:', responseData.data);
-                        this.addResult(responseData.data);
-                        this.updateStatus('✅ 翻譯完成', 'success');
-                    } else {
-                        console.error('回應格式錯誤或處理失敗:', responseData);
-                        throw new Error(responseData.error?.message || '翻譯處理失敗');
-                    }
-                    
-                } catch (error) {
-                    console.error('處理音檔錯誤:', error);
-                    this.updateStatus('❌ ' + error.message, 'error');
-                    this.showErrorMessage(error.message);
-                } finally {
-                    this.resetButton();
-                }
-            }
-            
-            getFileExtension(mimeType) {
-                const extensions = {
-                    'audio/webm': 'webm',
-                    'audio/mp4': 'm4a',
-                    'audio/wav': 'wav',
-                    'audio/ogg': 'ogg'
                 };
-                return extensions[mimeType] || 'webm';
+
+                mediaRecorder.onstop = function() {
+                    console.log('錄音停止，開始處理...');
+                    processAudio();
+                };
+
+                mediaRecorder.start();
+                startTimer();
+
+                // 更新UI
+                recordBtn.classList.add('recording');
+                recordBtn.textContent = '停止錄音';
+                updateStatus('🔴 錄音中...', 'recording');
+
+                console.log('錄音已開始');
+
+            } catch (error) {
+                console.error('開始錄音錯誤:', error);
+                updateStatus('錄音失敗：' + error.message, 'error');
             }
+        }
+
+        // 停止錄音
+        async function stopRecording() {
+            console.log('停止錄音...');
             
-            addResult(data) {
-                // 直接處理文字內容
-                const originalText = data.original_text || '無法識別語音';
-                const translatedText = data.translated_text || '翻譯失敗';
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+
+                isRecording = false;
+                isProcessing = true;
+                stopTimer();
+
+                // 更新UI
+                recordBtn.classList.remove('recording');
+                recordBtn.classList.add('processing');
+                recordBtn.textContent = '處理中...';
+                updateStatus('🔄 處理音檔中...', 'processing');
+            }
+        }
+
+        // 處理音檔
+        async function processAudio() {
+            try {
+                console.log('處理音檔，chunks數量:', audioChunks.length);
+                
+                const audioBlob = new Blob(audioChunks, { 
+                    type: mediaRecorder.mimeType 
+                });
+
+                console.log('音檔大小:', audioBlob.size, 'bytes');
+
+                if (audioBlob.size < 1000) {
+                    throw new Error('錄音時間太短或沒有錄到聲音');
+                }
+
+                // 準備上傳
+                const formData = new FormData();
+                const fileName = `recording_${Date.now()}.${getFileExtension(audioBlob.type)}`;
+                formData.append('file', audioBlob, fileName);
+
+                updateStatus('🚀 正在上傳和翻譯...', 'processing');
+
+                console.log('開始上傳到:', WEBHOOK_URL);
+
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                console.log('伺服器回應狀態:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('伺服器錯誤回應:', errorText);
+                    throw new Error(`伺服器錯誤 ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('伺服器回應:', result);
+
+                // 處理回應（可能是陣列格式）
+                let data;
+                if (Array.isArray(result) && result.length > 0) {
+                    data = result[0];
+                } else {
+                    data = result;
+                }
+
+                if (data && data.success && data.data) {
+                    displayResult(data.data);
+                    updateStatus('✅ 翻譯完成', 'success');
+                } else {
+                    throw new Error(data.error?.message || '翻譯處理失敗');
+                }
+
+            } catch (error) {
+                console.error('處理音檔錯誤:', error);
+                updateStatus('❌ ' + error.message, 'error');
+                
+                // 在結果區域顯示錯誤
                 const timestamp = new Date().toLocaleString('zh-TW');
-                
-                console.log('添加結果:', originalText, '->', translatedText);
-                
-                // 簡單的文字顯示
-                const resultText = `
-[${timestamp}]
+                results.textContent += `[${timestamp}] 錯誤: ${error.message}\n\n`;
+            } finally {
+                resetButton();
+            }
+        }
+
+        // 顯示翻譯結果
+        function displayResult(data) {
+            const timestamp = new Date().toLocaleString('zh-TW');
+            const originalText = data.original_text || '無法識別語音';
+            const translatedText = data.translated_text || '翻譯失敗';
+            
+            const resultText = `[${timestamp}]
 原文: ${originalText}
 中文: ${translatedText}
 
 `;
-                
-                // 直接添加到文字區域
-                const currentContent = this.resultsPanel.textContent || '';
-                this.resultsPanel.textContent = currentContent + resultText;
-                
-                // 滾動到底部
-                this.resultsPanel.scrollTop = this.resultsPanel.scrollHeight;
-            }
             
-            renderResults() {
-                console.log('開始渲染結果，總數:', this.results.length);
-                console.log('結果數據:', this.results);
-                
-                if (this.results.length === 0) {
-                    this.resultsPanel.innerHTML = `
-                        <div style="text-align: center; color: #999; padding: 50px;">
-                            <h3>📝 翻譯結果將顯示在這裡</h3>
-                            <p>點擊左側的錄音按鈕開始錄製講師的聲音</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-            renderResults() {
-                // 純文字版本不需要複雜的渲染邏輯
-                if (!this.resultsPanel.textContent || this.resultsPanel.textContent.trim() === '') {
-                    this.resultsPanel.textContent = '準備錄音，翻譯結果將顯示在這裡...\n\n';
-                }
-            }
-            }
-            
-            getLanguageName(code) {
-                const languages = {
-                    'en': '英文',
-                    'ja': '日文',
-                    'ko': '韓文',
-                    'fr': '法文',
-                    'de': '德文',
-                    'es': '西班牙文',
-                    'it': '義大利文',
-                    'pt': '葡萄牙文',
-                    'ru': '俄文',
-                    'ar': '阿拉伯文',
-                    'zh': '中文'
-                };
-                return languages[code] || code.toUpperCase();
-            }
-            
-            escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            }
-            
-            showErrorMessage(message) {
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                errorDiv.innerHTML = `
-                    <strong>⚠️ 處理失敗</strong><br>
-                    ${this.escapeHtml(message)}<br>
-                    <small>請檢查網路連線或重新嘗試</small>
-                `;
-                
-                this.resultsPanel.insertBefore(errorDiv, this.resultsPanel.firstChild);
-                
-                // 5秒後自動移除錯誤訊息
-                setTimeout(() => {
-                    if (errorDiv.parentNode) {
-                        errorDiv.parentNode.removeChild(errorDiv);
-                    }
-                }, 5000);
-            }
-            
-            resetButton() {
-                this.recordButton.classList.remove('recording', 'processing');
-                this.buttonText.textContent = '開始錄音';
-                this.isProcessing = false;
-                
-                setTimeout(() => {
-                    this.updateStatus('準備就緒', 'ready');
-                }, 2000);
-            }
-            
-            startTimer() {
-                this.timerInterval = setInterval(() => {
-                    const elapsed = Date.now() - this.startTime;
-                    const minutes = Math.floor(elapsed / 60000);
-                    const seconds = Math.floor((elapsed % 60000) / 1000);
-                    this.timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                    this.timer.classList.add('recording');
-                }, 1000);
-            }
-            
-            stopTimer() {
-                if (this.timerInterval) {
-                    clearInterval(this.timerInterval);
-                    this.timerInterval = null;
-                    this.timer.classList.remove('recording');
-                }
-            }
-            
-            updateStatus(message, type) {
-                this.status.textContent = message;
-                this.status.className = `status ${type}`;
-            }
-            
-            // 移除了 clearResults 和 downloadResults 函數
+            console.log('顯示結果:', resultText);
+            results.textContent += resultText;
+            results.scrollTop = results.scrollHeight;
         }
-        
-        // 初始化應用程式
-        document.addEventListener('DOMContentLoaded', () => {
-            new AudioTranslator();
-        });
-        
-        // 防止頁面意外關閉時丟失錄音
-        window.addEventListener('beforeunload', (e) => {
-            const audioTranslator = window.audioTranslator;
-            if (audioTranslator && audioTranslator.isRecording) {
-                e.preventDefault();
-                e.returnValue = '正在錄音中，確定要離開嗎？';
+
+        // 重置按鈕狀態
+        function resetButton() {
+            recordBtn.classList.remove('recording', 'processing');
+            recordBtn.textContent = '開始錄音';
+            isProcessing = false;
+
+            setTimeout(() => {
+                updateStatus('準備就緒', 'ready');
+            }, 2000);
+        }
+
+        // 更新狀態顯示
+        function updateStatus(message, type) {
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        // 開始計時器
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const minutes = Math.floor(elapsed / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                timer.classList.add('recording');
+            }, 1000);
+        }
+
+        // 停止計時器
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                timer.classList.remove('recording');
             }
+        }
+
+        // 取得檔案副檔名
+        function getFileExtension(mimeType) {
+            const extensions = {
+                'audio/webm': 'webm',
+                'audio/mp4': 'm4a',
+                'audio/wav': 'wav',
+                'audio/ogg': 'ogg'
+            };
+            return extensions[mimeType] || 'webm';
+        }
+
+        // 錯誤處理
+        window.addEventListener('error', function(e) {
+            console.error('全局錯誤:', e.error);
         });
     </script>
 </body>
