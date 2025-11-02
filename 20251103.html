@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎤 持續翻譯系統 - 夜間漸層版</title>
+  <style>
+    body {
+      font-family: 'Microsoft JhengHei', sans-serif;
+      background: linear-gradient(160deg, #0d1b2a 0%, #000000 100%);
+      color: #e0e0e0;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background: rgba(15, 20, 30, 0.95);
+      color: #90caf9;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border-bottom: 1px solid #222;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      overflow-y: auto;
+    }
+
+    .column {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      transition: all 0.3s ease;
+    }
+
+    .column h2 {
+      color: #90caf9;
+      border-bottom: 1px solid #333;
+      padding-bottom: 0.5rem;
+      margin-top: 0;
+    }
+
+    .entry {
+      background: rgba(30, 30, 30, 0.85);
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border: 1px solid #2b2b2b;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s;
+    }
+
+    .entry:hover {
+      background: rgba(45, 45, 45, 0.95);
+      transform: scale(1.02);
+      box-shadow: 0 0 15px rgba(64, 156, 255, 0.25);
+    }
+
+    .time {
+      font-size: 0.75rem;
+      color: #aaa;
+      text-align: right;
+      margin-top: 0.3rem;
+    }
+
+    .original {
+      font-size: 1rem;
+      color: #bbdefb;
+      margin-bottom: 0.3rem;
+    }
+
+    .translation {
+      font-size: 1rem;
+      color: #e0e0e0;
+      transition: opacity 0.6s ease;
+    }
+
+    .correction-old {
+      text-decoration: line-through;
+      color: #888;
+      opacity: 0.4;
+      display: block;
+      transition: opacity 0.5s ease-out;
+    }
+
+    .correction-new {
+      color: #80cbc4;
+      display: block;
+      animation: fadeIn 0.8s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      main { flex-direction: column; }
+      .column h2 { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>🎤 持續翻譯系統 - 夜間漸層版</header>
+  <main>
+    <div class="column" id="originalCol">
+      <h2>原文</h2>
+    </div>
+    <div class="column" id="translationCol">
+      <h2>翻譯</h2>
+    </div>
+  </main>
+
+  <script>
+    const webhookUrl = "https://kf0630.zeabur.app/webhook/audio-translate-context_1";
+    let translationHistory = [];
+
+    function handleResponse(res) {
+      const { data } = res;
+      if (!data) return;
+      const { original_text, translated_text, segment_order, corrections } = data;
+      const timestamp = new Date().toLocaleTimeString();
+      const segmentId = segment_order || translationHistory.length + 1;
+
+      // 新增或更新段落
+      const existing = translationHistory.find(i => i.id === segmentId);
+      if (existing) {
+        existing.original = original_text;
+        existing.translated = translated_text;
+        existing.version = (existing.version || 1) + 1;
+      } else {
+        translationHistory.push({
+          id: segmentId,
+          time: timestamp,
+          original: original_text,
+          translated: translated_text,
+          version: 1
+        });
+      }
+
+      // 處理修正
+      if (corrections && corrections.length > 0) {
+        corrections.forEach(c => {
+          const target = translationHistory.find(i => i.id === c.segment_index);
+          if (target) {
+            target.oldTranslation = target.translated;
+            target.translated = c.new_translation;
+            target.version = (target.version || 1) + 1;
+          }
+        });
+      }
+
+      renderEntries();
+    }
+
+    function renderEntries() {
+      const origCol = document.getElementById("originalCol");
+      const transCol = document.getElementById("translationCol");
+      origCol.innerHTML = "<h2>原文</h2>";
+      transCol.innerHTML = "<h2>翻譯</h2>";
+
+      translationHistory.sort((a, b) => a.id - b.id);
+
+      translationHistory.forEach(item => {
+        const o = document.createElement("div");
+        o.className = "entry";
+        o.innerHTML = `<div class="original">${item.original}</div><div class="time">${item.time}</div>`;
+
+        const t = document.createElement("div");
+        t.className = "entry";
+        if (item.oldTranslation) {
+          t.innerHTML = `
+            <div class="translation correction-old">${item.oldTranslation}</div>
+            <div class="translation correction-new">${item.translated} (v${item.version})</div>
+            <div class="time">${item.time}</div>`;
+        } else {
+          t.innerHTML = `<div class="translation">${item.translated} (v${item.version})</div><div class="time">${item.time}</div>`;
+        }
+
+        origCol.appendChild(o);
+        transCol.appendChild(t);
+      });
+
+      transCol.scrollTop = transCol.scrollHeight;
+      origCol.scrollTop = origCol.scrollHeight;
+    }
+
+    // 測試假資料
+    setTimeout(() => handleResponse({
+      data: {
+        original_text: "Dr. Smith is a professor at the University of California,",
+        translated_text: "史密斯博士是加州大學的教授，",
+        segment_order: 1
+      }
+    }), 1000);
+
+    setTimeout(() => handleResponse({
+      data: {
+        original_text: "and his research focuses on natural language processing.",
+        translated_text: "他的研究專注於自然語言處理。",
+        segment_order: 2,
+        corrections: [
+          { segment_index: 1, new_translation: "史密斯博士是加州大學的教授，他的研究專注於" }
+        ]
+      }
+    }), 2500);
+
+    setTimeout(() => handleResponse({
+      data: {
+        original_text: "at Stanford is specialized in artificial intelligence.",
+        translated_text: "在史丹佛專精於人工智慧。",
+        segment_order: 3
+      }
+    }), 4000);
+  </script>
+</body>
+</html>
