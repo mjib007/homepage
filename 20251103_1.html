@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>持續翻譯 - 先翻後修版（優化）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.4em;
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            min-height: 600px;
+        }
+
+        .control-panel {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            background: #f8f9fa;
+            border-right: 3px solid #e9ecef;
+        }
+
+        .control-section {
+            margin-bottom: 25px;
+        }
+
+        .control-section h3 {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .record-button {
+            width: 100%;
+            height: 120px;
+            border-radius: 15px;
+            border: none;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+            margin-bottom: 15px;
+        }
+
+        .record-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+        }
+
+        .record-button.active {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .settings {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .setting-item {
+            margin-bottom: 12px;
+        }
+
+        .setting-item label {
+            display: block;
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .setting-item select,
+        .setting-item input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .status-box {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .status-label {
+            color: #666;
+        }
+
+        .status-value {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .status-value.active {
+            color: #ff6b6b;
+        }
+
+        .results-panel {
+            padding: 30px;
+            background: white;
+            overflow-y: auto;
+            max-height: 600px;
+            display: flex;
+            flex-direction: column; /* 🔥 關鍵：最新的在最下面（像聊天室） */
+        }
+
+        @keyframes correction-highlight {
+            0% { background: #fff3cd; }
+            100% { background: #f0fff4; }
+        }
+
+        .translation-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ddd;
+            animation: slideIn 0.3s ease;
+            transition: all 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .translation-item.processing {
+            border-left-color: #feca57;
+            background: #fffbf0;
+        }
+
+        .translation-item.completed {
+            border-left-color: #2ed573;
+            background: #f0fff4;
+        }
+
+        .translation-item.corrected {
+            border-left-color: #3498db;
+            animation: correction-highlight 1s ease;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .item-badges {
+            display: flex;
+            gap: 5px;
+        }
+
+        .item-status {
+            font-size: 0.85em;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .item-status.processing {
+            background: #feca57;
+            color: white;
+        }
+
+        .item-status.completed {
+            background: #2ed573;
+            color: white;
+        }
+
+        .item-status.has-context {
+            background: #3498db;
+            color: white;
+        }
+
+        .item-status.corrected {
+            background: #e67e22;
+            color: white;
+            animation: badge-pulse 2s ease;
+        }
+
+        @keyframes badge-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .item-timestamp {
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        .text-box {
+            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+
+        .text-box.original {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .text-box.translated {
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-size: 1.1em;
+        }
+
+        .text-box.old-translation {
+            background: #f5f5f5;
+            color: #999;
+            text-decoration: line-through;
+            font-size: 0.95em;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        .text-label {
+            font-size: 0.75em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            opacity: 0.7;
+        }
+
+        .correction-reason {
+            background: #fff3cd;
+            color: #856404;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            margin-top: 10px;
+            border-left: 3px solid #ffc107;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .empty-state-text {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .empty-state-hint {
+            font-size: 0.9em;
+            color: #bbb;
+        }
+
+        .mode-indicator {
+            background: #e67e22;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .clear-button {
+            width: 100%;
+            padding: 10px;
+            background: #dee2e6;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .clear-button:hover {
+            background: #ced4da;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-panel {
+                border-right: none;
+                border-bottom: 3px solid #e9ecef;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎤 持續翻譯系統 - 先翻後修版（優化）</h1>
+            <p class="subtitle">自動切分 + 上下文連貫 + 智能修正</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="mode-indicator">
+                    ⚡ 先翻後修模式（已優化）
+                </div>
+
+                <div class="control-section">
+                    <button id="recordBtn" class="record-button">
+                        開始持續翻譯
+                    </button>
+                </div>
+
+                <div class="control-section">
+                    <h3>⚙️ 設定</h3>
+                    <div class="settings">
+                        <div class="setting-item">
+                            <label>切分間隔（秒）</label>
+                            <select id="intervalSelect">
+                                <option value="3">3 秒</option>
+                                <option value="5">5 秒</option>
+                                <option value="8" selected>8 秒（推薦）</option>
+                                <option value="10">10 秒</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>保留上下文數量</label>
+                            <select id="contextCountSelect">
+                                <option value="1">最近 1 段</option>
+                                <option value="2" selected>最近 2 段</option>
+                                <option value="3">最近 3 段</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>Webhook URL</label>
+                            <input type="text" id="webhookUrl" value="https://kf0630.zeabur.app/webhook/audio-translate-context" style="font-size: 0.75em;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>📊 狀態</h3>
+                    <div class="status-box">
+                        <div class="status-item">
+                            <span class="status-label">系統狀態</span>
+                            <span class="status-value" id="systemStatus">待機中</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">已處理片段</span>
+                            <span class="status-value" id="segmentCount">0</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">修正次數</span>
+                            <span class="status-value" id="correctionCount">0</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">運行時間</span>
+                            <span class="status-value" id="runningTime">00:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <button id="clearBtn" class="clear-button">
+                        🗑️ 清空結果
+                    </button>
+                </div>
+            </div>
+            
+            <div class="results-panel" id="resultsPanel">
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚡</div>
+                    <div class="empty-state-text">準備開始先翻後修</div>
+                    <div class="empty-state-hint">
+                        點擊「開始持續翻譯」按鈕<br>
+                        系統會先立即顯示翻譯<br>
+                        <strong>當下一段到達時，自動修正被切斷的句子</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 全域變數 ====================
+        let isRunning = false;
+        let segmentCounter = 0;
+        let correctionCounter = 0;
+        let rejectedCorrections = 0;  // 🔥 新增：被拒絕的修正次數
+        let processingCounter = 0;
+        let intervalTimer = null;
+        let runningTimer = null;
+        let startTime = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        
+        let translationHistory = [];
+        let segmentElements = new Map();
+
+        // ==================== DOM 元素 ====================
+        const recordBtn = document.getElementById('recordBtn');
+        const resultsPanel = document.getElementById('resultsPanel');
+        const systemStatus = document.getElementById('systemStatus');
+        const segmentCount = document.getElementById('segmentCount');
+        const correctionCount = document.getElementById('correctionCount');
+        const runningTime = document.getElementById('runningTime');
+        const intervalSelect = document.getElementById('intervalSelect');
+        const contextCountSelect = document.getElementById('contextCountSelect');
+        const webhookUrl = document.getElementById('webhookUrl');
+        const clearBtn = document.getElementById('clearBtn');
+
+        // ==================== 初始化 ====================
+        recordBtn.addEventListener('click', toggleRecording);
+        clearBtn.addEventListener('click', clearResults);
+
+        checkMicrophonePermission();
+
+        async function checkMicrophonePermission() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                stream.getTracks().forEach(track => track.stop());
+                console.log('✅ 麥克風權限正常');
+            } catch (error) {
+                console.error('❌ 麥克風權限錯誤:', error);
+                showError('需要麥克風權限才能使用');
+                recordBtn.disabled = true;
+            }
+        }
+
+        // ==================== 主要功能 ====================
+        async function toggleRecording() {
+            if (!isRunning) {
+                await startContinuousTranslation();
+            } else {
+                stopContinuousTranslation();
+            }
+        }
+
+        async function startContinuousTranslation() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        sampleRate: 44100
+                    } 
+                });
+
+                mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
+                });
+
+                isRunning = true;
+                startTime = Date.now();
+                translationHistory = [];
+                segmentElements.clear();
+                correctionCounter = 0;
+                rejectedCorrections = 0;
+                
+                recordBtn.textContent = '⏸️ 停止翻譯';
+                recordBtn.classList.add('active');
+                systemStatus.textContent = '運行中';
+                systemStatus.classList.add('active');
+                
+                if (resultsPanel.querySelector('.empty-state')) {
+                    resultsPanel.innerHTML = '';
+                }
+
+                runningTimer = setInterval(updateRunningTime, 1000);
+                
+                startNextRecording();
+                
+                console.log('✅ 先翻後修系統已啟動');
+            } catch (error) {
+                console.error('❌ 啟動失敗:', error);
+                showError('無法啟動錄音：' + error.message);
+            }
+        }
+
+        function stopContinuousTranslation() {
+            isRunning = false;
+            
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            
+            if (mediaRecorder && mediaRecorder.stream) {
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            }
+            
+            if (intervalTimer) {
+                clearTimeout(intervalTimer);
+                intervalTimer = null;
+            }
+            
+            if (runningTimer) {
+                clearInterval(runningTimer);
+                runningTimer = null;
+            }
+            
+            recordBtn.textContent = '開始持續翻譯';
+            recordBtn.classList.remove('active');
+            systemStatus.textContent = '已停止';
+            systemStatus.classList.remove('active');
+            
+            console.log('ℹ️ 先翻後修系統已停止');
+            console.log(`📊 統計：修正 ${correctionCounter} 次，拒絕 ${rejectedCorrections} 次`);
+        }
+
+        function startNextRecording() {
+            if (!isRunning) return;
+
+            audioChunks = [];
+            
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunks.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                processAudioSegment();
+                
+                if (isRunning) {
+                    intervalTimer = setTimeout(startNextRecording, 0);
+                }
+            };
+
+            mediaRecorder.start();
+            
+            const interval = parseInt(intervalSelect.value) * 1000;
+            setTimeout(() => {
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                }
+            }, interval);
+
+            console.log(`🎙 開始錄製片段 ${segmentCounter + 1}`);
+        }
+
+        async function processAudioSegment() {
+            if (audioChunks.length === 0) return;
+
+            segmentCounter++;
+            processingCounter++;
+            updateCounters();
+            
+            const itemId = `segment-${segmentCounter}`;
+            const segmentId = Date.now();
+            const audioBlob = new Blob(audioChunks, { 
+                type: mediaRecorder.mimeType 
+            });
+
+            console.log(`🎵 處理片段 ${segmentCounter}，大小: ${audioBlob.size} bytes`);
+
+            createTranslationItem(itemId, segmentId, null, 'processing');
+
+            try {
+                const maxContext = parseInt(contextCountSelect.value);
+                const context = translationHistory.slice(-maxContext);
+
+                const formData = new FormData();
+                const fileName = `segment_${segmentCounter}_${Date.now()}.webm`;
+                formData.append('file', audioBlob, fileName);
+                
+                if (context.length > 0) {
+                    formData.append('context', JSON.stringify(context));
+                    console.log(`📚 使用 ${context.length} 段上下文`);
+                }
+
+                const response = await fetch(webhookUrl.value, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`伺服器錯誤 ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('✅ 收到翻譯結果:', result);
+
+                let data;
+                if (Array.isArray(result) && result.length > 0) {
+                    data = result[0];
+                } else {
+                    data = result;
+                }
+
+                if (data && data.success && data.data) {
+                    handleTranslationResponse(itemId, segmentId, data.data);
+                } else {
+                    throw new Error(data.error?.message || '翻譯處理失敗');
+                }
+
+            } catch (error) {
+                console.error('❌ 處理失敗:', error);
+                updateTranslationItemError(itemId, error.message);
+            } finally {
+                processingCounter--;
+                updateCounters();
+            }
+        }
+
+        function handleTranslationResponse(itemId, segmentId, data) {
+            const translationData = {
+                segment_id: segmentId,
+                original: data.original_text,
+                translated: data.translated_text,
+                hasContext: data.context_used || false
+            };
+
+            completeTranslationItem(itemId, translationData);
+            translationHistory.push(translationData);
+
+            // 🔥 處理修正（加入驗證）
+            if (data.has_corrections && data.corrections && data.corrections.length > 0) {
+                console.log(`🔄 收到 ${data.corrections.length} 個修正建議`);
+                
+                data.corrections.forEach(correction => {
+                    const accepted = applyCorrectionToSegment(correction);
+                    if (accepted) {
+                        correctionCounter++;
+                    } else {
+                        rejectedCorrections++;
+                    }
+                });
+                
+                updateCounters();
+            }
+
+            if (translationHistory.length > 5) {
+                translationHistory.shift();
+            }
+
+            // 🔥 新增：自動滾動到底部（像聊天室）
+            scrollToBottom();
+        }
+
+        // 🔥 新增：自動滾動到底部的函數
+        function scrollToBottom() {
+            resultsPanel.scrollTop = resultsPanel.scrollHeight;
+        }
+
+        // 🔥 新增：應用修正（加入三層驗證）
+        function applyCorrectionToSegment(correction) {
+            const segmentIndex = correction.segment_index;
+            const historyIndex = segmentIndex - 1;
+            const segmentData = translationHistory[historyIndex];
+            
+            if (!segmentData) {
+                console.warn(`❌ 驗證失敗：找不到片段 ${segmentIndex}`);
+                return false;
+            }
+
+            // 🔥 驗證 1：old_translation 必須完全匹配
+            if (correction.old_translation !== segmentData.translated) {
+                console.warn(`❌ 驗證失敗：old_translation 不匹配`);
+                console.log('  期望:', segmentData.translated);
+                console.log('  收到:', correction.old_translation);
+                return false;
+            }
+
+            // 🔥 驗證 2：修正長度不能太長（最多加 10 個字）
+            const oldLength = correction.old_translation.length;
+            const newLength = correction.new_translation.length;
+            const addedLength = newLength - oldLength;
+            
+            if (addedLength > 10) {
+                console.warn(`❌ 驗證失敗：修正內容過長（加了 ${addedLength} 個字）`);
+                return false;
+            }
+
+            // 🔥 驗證 3：修正內容必須包含原內容的開頭
+            const oldPrefix = correction.old_translation.slice(0, Math.min(5, oldLength));
+            if (!correction.new_translation.startsWith(oldPrefix)) {
+                console.warn(`❌ 驗證失敗：修正內容與原文差異太大`);
+                return false;
+            }
+
+            // ✅ 通過所有驗證，執行修正
+            const element = segmentElements.get(segmentData.segment_id);
+            
+            if (!element) {
+                console.warn(`⚠️ 找不到 DOM 元素: segment_id=${segmentData.segment_id}`);
+                return false;
+            }
+
+            console.log(`✅ 驗證通過，執行修正片段 ${segmentIndex}`);
+
+            translationHistory[historyIndex].translated = correction.new_translation;
+            translationHistory[historyIndex].corrected = true;
+
+            updateElementWithCorrection(element, segmentData, correction);
+            
+            return true;
+        }
+
+        function updateElementWithCorrection(element, segmentData, correction) {
+            element.classList.remove('completed');
+            element.classList.add('corrected');
+
+            const reasonText = {
+                'merged_with_next': '與下一段合併成完整句子',
+                'incomplete_sentence': '補完被切斷的句子',
+                'no_correction': '無需修正'
+            };
+
+            element.innerHTML = `
+                <div class="item-header">
+                    <span class="item-timestamp">${new Date().toLocaleTimeString('zh-TW')}</span>
+                    <div class="item-badges">
+                        <span class="item-status corrected">🔄 已修正</span>
+                        ${segmentData.hasContext ? '<span class="item-status has-context">含上下文</span>' : ''}
+                    </div>
+                </div>
+                <div class="text-box original">
+                    <div class="text-label">Original</div>
+                    <div>${segmentData.original}</div>
+                </div>
+                <div class="text-box old-translation">
+                    <div class="text-label">原本翻譯</div>
+                    <div>${correction.old_translation}</div>
+                </div>
+                <div class="text-box translated">
+                    <div class="text-label">修正後翻譯</div>
+                    <div>${correction.new_translation}</div>
+                </div>
+                <div class="correction-reason">
+                    💡 修正原因：${reasonText[correction.reason] || correction.reason}
+                </div>
+            `;
+        }
+
+        function createTranslationItem(itemId, segmentId, data, status) {
+            const item = document.createElement('div');
+            item.className = `translation-item ${status}`;
+            item.id = itemId;
+            
+            segmentElements.set(segmentId, item);
+            
+            const statusText = status === 'processing' ? '處理中...' : '已完成';
+            const statusClass = status === 'processing' ? 'processing' : 'completed';
+            
+            item.innerHTML = `
+                <div class="item-header">
+                    <span class="item-timestamp">${new Date().toLocaleTimeString('zh-TW')}</span>
+                    <span class="item-status ${statusClass}">${statusText}</span>
+                </div>
+                <div class="text-box original">
+                    <div class="text-label">Original (偵測中)</div>
+                    <div>⏳ 語音辨識中...</div>
+                </div>
+                <div class="text-box translated">
+                    <div class="text-label">翻譯 (處理中)</div>
+                    <div>⏳ 翻譯處理中...</div>
+                </div>
+            `;
+            
+            // 🔥 改用 appendChild（最新的在最下面）
+            resultsPanel.appendChild(item);
+            
+            // 🔥 新增：自動滾動到底部
+            scrollToBottom();
+        }
+
+        function completeTranslationItem(itemId, data) {
+            const item = document.getElementById(itemId);
+            if (!item) return;
+            
+            const contextBadge = data.hasContext ? 
+                '<span class="item-status has-context">含上下文</span>' : '';
+            
+            item.className = 'translation-item completed';
+            item.innerHTML = `
+                <div class="item-header">
+                    <span class="item-timestamp">${new Date().toLocaleTimeString('zh-TW')}</span>
+                    <div class="item-badges">
+                        <span class="item-status completed">✓ 已完成</span>
+                        ${contextBadge}
+                    </div>
+                </div>
+                <div class="text-box original">
+                    <div class="text-label">Original</div>
+                    <div>${data.original}</div>
+                </div>
+                <div class="text-box translated">
+                    <div class="text-label">中文翻譯</div>
+                    <div>${data.translated}</div>
+                </div>
+            `;
+            
+            console.log(`✅ 片段 ${itemId} 處理完成`);
+            
+            // 🔥 新增：自動滾動到底部
+            scrollToBottom();
+        }
+
+        function updateTranslationItemError(itemId, errorMsg) {
+            const item = document.getElementById(itemId);
+            if (!item) return;
+            
+            item.className = 'translation-item error';
+            item.innerHTML = `
+                <div class="item-header">
+                    <span class="item-timestamp">${new Date().toLocaleTimeString('zh-TW')}</span>
+                    <span class="item-status" style="background: #ff4757;">❌ 錯誤</span>
+                </div>
+                <div class="error-message">
+                    ${errorMsg}
+                </div>
+            `;
+        }
+
+        function updateCounters() {
+            segmentCount.textContent = segmentCounter;
+            correctionCount.textContent = correctionCounter;
+        }
+
+        function updateRunningTime() {
+            if (!startTime) return;
+            
+            const elapsed = Date.now() - startTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            
+            runningTime.textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function clearResults() {
+            if (isRunning) {
+                if (!confirm('系統正在運行中，確定要清空結果嗎？')) {
+                    return;
+                }
+                stopContinuousTranslation();
+            }
+            
+            resultsPanel.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚡</div>
+                    <div class="empty-state-text">準備開始先翻後修</div>
+                    <div class="empty-state-hint">
+                        點擊「開始持續翻譯」按鈕<br>
+                        系統會先立即顯示翻譯<br>
+                        <strong>當下一段到達時，自動修正被切斷的句子</strong>
+                    </div>
+                </div>
+            `;
+            
+            segmentCounter = 0;
+            correctionCounter = 0;
+            rejectedCorrections = 0;
+            processingCounter = 0;
+            translationHistory = [];
+            segmentElements.clear();
+            updateCounters();
+            runningTime.textContent = '00:00';
+            
+            console.log('🗑️ 結果已清空');
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            resultsPanel.appendChild(errorDiv);
+        }
+
+        window.addEventListener('error', function(e) {
+            console.error('❌ 全域錯誤:', e.error);
+        });
+
+        console.log('✅ 先翻後修系統（優化版）已載入');
+    </script>
+</body>
+</html>
