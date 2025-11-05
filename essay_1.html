@@ -608,50 +608,6 @@
             document.getElementById('wordCount').textContent = `字數: ${wordCount}`;
         }
 
-        // 提交作文表單
-        document.getElementById('essayForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const studentName = document.getElementById('studentName').value;
-            const essayText = document.getElementById('essayText').value;
-            
-            if (!studentName || !essayText) {
-                alert('請填寫所有必填欄位');
-                return;
-            }
-            
-            // 顯示載入狀態
-            document.getElementById('loading').classList.add('show');
-            document.getElementById('resultContainer').classList.remove('show');
-            
-            try {
-                const response = await fetch(GRADING_WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        essay_text: essayText,
-                        student_name: studentName
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success && result.data) {
-                    displayGradingResult(result.data);
-                } else {
-                    throw new Error(result.error || '批改失敗');
-                }
-                
-            } catch (error) {
-                console.error('批改錯誤:', error);
-                alert('批改過程中發生錯誤，請重新嘗試');
-            } finally {
-                document.getElementById('loading').classList.remove('show');
-            }
-        });
-
         // 顯示批改結果
         function displayGradingResult(data) {
             // 顯示評分卡片
