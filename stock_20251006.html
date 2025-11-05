@@ -587,7 +587,7 @@
                         </div>
                     </div>
                     <div class="chat-input">
-                        <textarea id="chatInput" placeholder="輸入你想討論的問題..." disabled>摘要與抓重點</textarea>
+                        <textarea id="chatInput" placeholder="輸入你想討論的問題...">摘要與抓重點</textarea>
                         <button onclick="sendMessage()">發送</button>
                     </div>
                 </div>
@@ -795,6 +795,11 @@
                     <div>您好！我是專業的現金流量分析師。請問您對 ${stockCode} 的分析報告有什麼問題嗎？我可以幫您解釋具體的數據指標或投資建議。</div>
                 </div>
             `;
+	    // ✅ 新增這幾行代碼
+	    const chatInput = document.getElementById('chatInput');
+	    chatInput.value = '';  // 清空預設文字
+	    chatInput.disabled = false;  // 確保可以編輯
+	    chatInput.placeholder = '輸入你想討論的問題...';
             
             document.getElementById('discussModal').style.display = 'block';
         }
