@@ -442,17 +442,6 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="essayType">作文類型 *</label>
-                    <select id="essayType" required>
-                        <option value="">請選擇作文類型</option>
-                        <option value="議論文">議論文 (Argumentative Essay)</option>
-                        <option value="說明文">說明文 (Expository Essay)</option>
-                        <option value="記敘文">記敘文 (Narrative Essay)</option>
-                        <option value="描述文">描述文 (Descriptive Essay)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
                     <label for="essayText">作文內容 *</label>
                     <textarea id="essayText" required placeholder="請在此輸入您的英文作文..." oninput="updateWordCount()"></textarea>
                     <div class="word-count" id="wordCount">字數: 0</div>
@@ -521,17 +510,6 @@
                 <div class="form-group">
                     <label for="searchName">學生姓名</label>
                     <input type="text" id="searchName" placeholder="搜尋特定學生">
-                </div>
-                
-                <div class="form-group">
-                    <label for="searchType">作文類型</label>
-                    <select id="searchType">
-                        <option value="">所有類型</option>
-                        <option value="議論文">議論文</option>
-                        <option value="說明文">說明文</option>
-                        <option value="記敘文">記敘文</option>
-                        <option value="描述文">描述文</option>
-                    </select>
                 </div>
                 
                 <div class="form-group">
@@ -734,7 +712,6 @@
         async function searchEssays() {
             const searchParams = {
                 student_name: document.getElementById('searchName').value,
-                essay_type: document.getElementById('searchType').value,
                 date_from: document.getElementById('dateFrom').value,
                 date_to: document.getElementById('dateTo').value
             };
