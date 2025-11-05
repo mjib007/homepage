@@ -743,6 +743,17 @@
         // 查看作文詳細內容
         async function viewEssayDetails(fileId) {
             try {
+                // 顯示載入狀態
+                const loadingHtml = `
+                    <div style="text-align: center; padding: 40px;">
+                        <div class="spinner" style="margin: 0 auto 15px;"></div>
+                        <p>正在載入作文詳細內容...</p>
+                    </div>
+                `;
+                
+                // 創建詳細內容彈出視窗
+                showDetailsModal(loadingHtml);
+                
                 const response = await fetch(DETAILS_WEBHOOK_URL, {
                     method: 'POST',
                     headers: {
@@ -767,18 +778,158 @@
                         throw new Error('無法解析批改結果資料格式');
                     }
                     
-                    displayGradingResult(gradingData);
-                    // 切換到提交作文 tab 顯示結果
-                    showTab('submit');
+                    // 在彈出視窗中顯示詳細內容
+                    const detailsHtml = generateDetailsHtml(gradingData, result.data);
+                    showDetailsModal(detailsHtml);
                 } else {
                     console.error('載入失敗:', result);
-                    alert('無法載入作文詳細內容：' + (result.error || '未知錯誤'));
+                    showDetailsModal(`
+                        <div style="text-align: center; padding: 40px;">
+                            <h3>❌ 載入失敗</h3>
+                            <p>無法載入作文詳細內容：${result.error || '未知錯誤'}</p>
+                        </div>
+                    `);
                 }
                 
             } catch (error) {
                 console.error('載入詳細內容錯誤:', error);
-                alert('載入過程中發生錯誤：' + error.message);
+                showDetailsModal(`
+                    <div style="text-align: center; padding: 40px;">
+                        <h3>❌ 發生錯誤</h3>
+                        <p>載入過程中發生錯誤：${error.message}</p>
+                    </div>
+                `);
             }
+        }
+
+        // 顯示詳細內容彈出視窗
+        function showDetailsModal(content) {
+            // 如果彈出視窗不存在，創建它
+            let modal = document.getElementById('detailsModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'detailsModal';
+                modal.className = 'discussion-modal';
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+                        <button class="close-modal" onclick="closeDetailsModal()">&times;</button>
+                        <div id="detailsContent"></div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                
+                // 點擊外部關閉
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeDetailsModal();
+                    }
+                });
+            }
+            
+            document.getElementById('detailsContent').innerHTML = content;
+            modal.style.display = 'block';
+        }
+
+        // 關閉詳細內容彈出視窗
+        function closeDetailsModal() {
+            const modal = document.getElementById('detailsModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // 生成詳細內容的 HTML
+        function generateDetailsHtml(gradingData, fullData) {
+            return `
+                <h2>📊 作文批改詳細報告</h2>
+                
+                <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>基本資訊：</strong><br>
+                    學生：${gradingData.student_name || fullData.report_info?.student_name || '未知'}<br>
+                    提交時間：${fullData.report_info?.submitted_at ? new Date(fullData.report_info.submitted_at).toLocaleString() : '未知'}<br>
+                    批改時間：${gradingData.graded_at ? new Date(gradingData.graded_at).toLocaleString() : '未知'}
+                </div>
+
+                <div class="score-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                    <div class="score-card" style="background: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #667eea;">${gradingData.overall_score}</div>
+                        <div style="color: #666; font-size: 0.9rem;">總分</div>
+                    </div>
+                    <div class="score-card" style="background: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #667eea;">${gradingData.scores?.content || 0}</div>
+                        <div style="color: #666; font-size: 0.9rem;">內容想法</div>
+                    </div>
+                    <div class="score-card" style="background: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #667eea;">${gradingData.scores?.structure || 0}</div>
+                        <div style="color: #666; font-size: 0.9rem;">組織架構</div>
+                    </div>
+                    <div class="score-card" style="background: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #667eea;">${gradingData.scores?.language || 0}</div>
+                        <div style="color: #666; font-size: 0.9rem;">語言運用</div>
+                    </div>
+                    <div class="score-card" style="background: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #667eea;">${gradingData.scores?.grammar || 0}</div>
+                        <div style="color: #666; font-size: 0.9rem;">文法正確性</div>
+                    </div>
+                    <div class="score-card" style="background: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="font-size: 1.8rem; font-weight: bold; color: #667eea;">${gradingData.grade || 'N/A'}</div>
+                        <div style="color: #666; font-size: 0.9rem;">等級</div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #333; margin-bottom: 10px;">💪 作文優點</h3>
+                    <div style="background: #d4edda; border-left: 4px solid #28a745; padding: 15px; border-radius: 8px;">
+                        ${gradingData.strengths?.map(strength => `<p>✅ ${strength}</p>`).join('') || '<p>無資料</p>'}
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #333; margin-bottom: 10px;">🎯 改進建議</h3>
+                    <div style="background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; border-radius: 8px;">
+                        ${gradingData.weaknesses?.map(weakness => `<p>⚠️ ${weakness}</p>`).join('') || '<p>無資料</p>'}
+                    </div>
+                </div>
+
+                ${gradingData.grammar_errors && gradingData.grammar_errors.length > 0 ? `
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #333; margin-bottom: 10px;">🔧 文法錯誤</h3>
+                    <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 8px;">
+                        ${gradingData.grammar_errors.map(error => `
+                            <div style="background: white; padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #e1e1e1;">
+                                <strong>${error.error_type}:</strong><br>
+                                錯誤: <span style="color: #dc3545; text-decoration: line-through; font-weight: bold;">${error.original}</span><br>
+                                修正: <span style="color: #28a745; font-weight: bold;">${error.corrected}</span><br>
+                                說明: ${error.explanation}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #333; margin-bottom: 10px;">✨ 建議開頭</h3>
+                    <div style="background: #d4edda; border-left: 4px solid #28a745; padding: 15px; border-radius: 8px;">
+                        <p>${gradingData.improved_opening || '無建議開頭'}</p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #333; margin-bottom: 10px;">📝 詳細評語</h3>
+                    <div style="background: #d4edda; border-left: 4px solid #28a745; padding: 15px; border-radius: 8px;">
+                        <p>${gradingData.detailed_feedback || '無詳細評語'}</p>
+                    </div>
+                </div>
+
+                ${fullData.original_essay?.text ? `
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #333; margin-bottom: 10px;">📄 原始作文</h3>
+                    <div style="background: #f8f9fa; border: 1px solid #e1e1e1; padding: 15px; border-radius: 8px; white-space: pre-wrap; font-family: 'Courier New', monospace;">
+${fullData.original_essay.text}
+                    </div>
+                </div>
+                ` : ''}
+            `;
         }
 
         // 開始討論
