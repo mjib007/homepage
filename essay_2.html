@@ -724,7 +724,6 @@
                             <div class="essay-date">${file.submitted_date} ${file.submitted_time}</div>
                         </div>
                         <div class="essay-meta">
-                            檔案大小: ${file.size} | 
                             <a href="${file.view_url}" target="_blank">在Google Drive中查看</a>
                         </div>
                         <div class="essay-actions">
@@ -853,7 +852,44 @@
             // 從 fullData 中提取檔案 ID 和學生資訊
             const fileId = fullData.file_id || 'unknown';
             const studentName = gradingData.student_name || fullData.report_info?.student_name || '未知';
-            const submitDate = fullData.report_info?.submitted_at || '';
+            
+            // 正確的提交時間應該從 report_info.submitted_at 或 grading_result 中取得
+            const actualSubmitTime = fullData.report_info?.submitted_at || 
+                                   fullData.grading_result?.submitted_at || 
+                                   gradingData.submitted_at || '';
+            
+            // 安全的日期格式化函數
+            function formatDate(dateString) {
+                if (!dateString) return '未知';
+                
+                try {
+                    // 如果是時間戳格式 (20251105134055)
+                    if (/^\d{14}$/.test(dateString)) {
+                        const year = dateString.slice(0, 4);
+                        const month = dateString.slice(4, 6);
+                        const day = dateString.slice(6, 8);
+                        const hour = dateString.slice(8, 10);
+                        const minute = dateString.slice(10, 12);
+                        const second = dateString.slice(12, 14);
+                        return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+                    }
+                    
+                    // 如果是 ISO 格式或其他格式，嘗試解析
+                    const date = new Date(dateString);
+                    if (isNaN(date.getTime())) {
+                        return '未知';
+                    }
+                    return date.toLocaleString();
+                } catch (error) {
+                    return '未知';
+                }
+            }
+            
+            console.log('調試資訊:', {
+                actualSubmitTime,
+                gradingData,
+                fullData
+            });
             
             return `
                 <h2>📊 作文批改詳細報告</h2>
@@ -862,10 +898,10 @@
                     <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; flex: 1; margin-right: 10px;">
                         <strong>基本資訊：</strong><br>
                         學生：${studentName}<br>
-                        提交時間：${submitDate ? new Date(submitDate).toLocaleString() : '未知'}<br>
-                        批改時間：${gradingData.graded_at ? new Date(gradingData.graded_at).toLocaleString() : '未知'}
+                        提交時間：${formatDate(actualSubmitTime)}<br>
+                        批改時間：${formatDate(gradingData.graded_at)}
                     </div>
-                    <button class="button" onclick="startDiscussionFromDetails('${fileId}', '${studentName}', '${submitDate}')" style="margin: 0; padding: 12px 20px; font-size: 0.9rem;">
+                    <button class="button" onclick="startDiscussionFromDetails('${fileId}', '${studentName}', '${actualSubmitTime}')" style="margin: 0; padding: 12px 20px; font-size: 0.9rem;">
                         💬 與AI討論
                     </button>
                 </div>
