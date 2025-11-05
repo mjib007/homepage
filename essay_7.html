@@ -1188,6 +1188,8 @@ ${fullData.original_essay.text}
         // 提問
         async function askQuestion() {
             const question = document.getElementById('discussionQuestion').value;
+            const submitButton = document.querySelector('#discussionModal button[onclick="askQuestion()"]');
+            const answerDiv = document.getElementById('discussionAnswer');
             
             if (!question.trim()) {
                 alert('請輸入您的問題');
@@ -1198,6 +1200,15 @@ ${fullData.original_essay.text}
                 alert('檔案ID錯誤');
                 return;
             }
+            
+            // 設定載入狀態
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.innerHTML = '🤔 思考中...';
+            submitButton.disabled = true;
+            submitButton.style.opacity = '0.6';
+            
+            // 顯示載入訊息
+            answerDiv.innerHTML = '<div style="color: #667eea; padding: 15px; text-align: center;">🤔 AI正在思考您的問題...</div>';
             
             try {
                 const response = await fetch(DISCUSS_WEBHOOK_URL, {
@@ -1214,7 +1225,7 @@ ${fullData.original_essay.text}
                 const result = await response.json();
                 
                 if (result.success) {
-                    document.getElementById('discussionAnswer').innerHTML = `
+                    answerDiv.innerHTML = `
                         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #667eea;">
                             <h4>🤖 AI回答:</h4>
                             <p>${result.answer.replace(/\n/g, '<br>')}</p>
@@ -1222,12 +1233,17 @@ ${fullData.original_essay.text}
                         </div>
                     `;
                 } else {
-                    alert('獲取回答時發生錯誤');
+                    answerDiv.innerHTML = '<div style="color: #dc3545; padding: 15px;">❌ 獲取回答時發生錯誤，請重新嘗試</div>';
                 }
                 
             } catch (error) {
                 console.error('提問錯誤:', error);
-                alert('提問過程中發生錯誤');
+                answerDiv.innerHTML = '<div style="color: #dc3545; padding: 15px;">❌ 提問過程中發生錯誤，請檢查網路連線</div>';
+            } finally {
+                // 恢復按鈕狀態
+                submitButton.innerHTML = originalButtonText;
+                submitButton.disabled = false;
+                submitButton.style.opacity = '1';
             }
         }
 
