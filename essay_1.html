@@ -148,9 +148,17 @@
         .loading {
             display: none;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            gap: 15px;
             color: #667eea;
-            margin-top: 20px;
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8eaff 100%);
+            border-radius: 15px;
+            border: 2px solid #667eea;
+            font-size: 1.1rem;
+            font-weight: 500;
+            animation: pulse 2s ease-in-out infinite;
         }
 
         .loading.show {
@@ -158,10 +166,10 @@
         }
 
         .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #e1e1e1;
-            border-top: 2px solid #667eea;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e1e1e1;
+            border-top: 3px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -169,6 +177,11 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
         }
 
         .result-container {
@@ -454,7 +467,7 @@
 
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <span>AI正在批改您的作文，請稍候...</span>
+                <span id="loadingText">🤖 AI正在仔細閱讀您的作文...</span>
             </div>
 
             <!-- 批改結果顯示區域 -->
@@ -600,10 +613,9 @@
             e.preventDefault();
             
             const studentName = document.getElementById('studentName').value;
-            const essayType = document.getElementById('essayType').value;
             const essayText = document.getElementById('essayText').value;
             
-            if (!studentName || !essayType || !essayText) {
+            if (!studentName || !essayText) {
                 alert('請填寫所有必填欄位');
                 return;
             }
@@ -620,7 +632,6 @@
                     },
                     body: JSON.stringify({
                         essay_text: essayText,
-                        essay_type: essayType,
                         student_name: studentName
                     })
                 });
@@ -895,6 +906,82 @@
             
             document.getElementById('dateFrom').value = weekAgo;
             document.getElementById('dateTo').value = today;
+            
+            // 提交作文表單事件監聽器
+            document.getElementById('essayForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const studentName = document.getElementById('studentName').value;
+                const essayText = document.getElementById('essayText').value;
+                
+                if (!studentName || !essayText) {
+                    alert('請填寫所有必填欄位');
+                    return;
+                }
+                
+                // 立即禁用按鈕並顯示載入狀態
+                const submitButton = document.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<div class="spinner" style="width: 16px; height: 16px; border-width: 2px;"></div><span>批改中...</span>';
+                
+                // 顯示載入動畫
+                document.getElementById('loading').classList.add('show');
+                document.getElementById('resultContainer').classList.remove('show');
+                
+                // 動態載入訊息
+                const loadingMessages = [
+                    '🤖 AI正在仔細閱讀您的作文...',
+                    '📝 正在分析文章結構和邏輯...',
+                    '🔍 檢查文法和語言運用...',
+                    '💭 評估內容深度和創意...',
+                    '✨ 準備詳細的改進建議...'
+                ];
+                let messageIndex = 0;
+                const loadingTextElement = document.getElementById('loadingText');
+                
+                const messageInterval = setInterval(() => {
+                    messageIndex = (messageIndex + 1) % loadingMessages.length;
+                    loadingTextElement.textContent = loadingMessages[messageIndex];
+                }, 2000);
+                
+                try {
+                    const response = await fetch(GRADING_WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            essay_text: essayText,
+                            student_name: studentName
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    if (result.success && result.data) {
+                        displayGradingResult(result.data);
+                    } else {
+                        throw new Error(result.error || '批改失敗');
+                    }
+                    
+                } catch (error) {
+                    console.error('批改錯誤:', error);
+                    alert('批改過程中發生錯誤，請重新嘗試: ' + error.message);
+                } finally {
+                    // 清除訊息計時器
+                    clearInterval(messageInterval);
+                    
+                    // 恢復按鈕狀態
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                    document.getElementById('loading').classList.remove('show');
+                }
+            });
         });
     </script>
 </body>
