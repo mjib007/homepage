@@ -600,7 +600,14 @@
             
             // 顯示選中的 tab
             document.getElementById(tabName + '-tab').classList.add('active');
-            event.target.classList.add('active');
+            
+            // 設定對應的 tab button 為 active
+            const tabButtons = document.querySelectorAll('.tab-button');
+            if (tabName === 'submit') {
+                tabButtons[0].classList.add('active');
+            } else if (tabName === 'history') {
+                tabButtons[1].classList.add('active');
+            }
         }
 
         // 字數統計
@@ -801,19 +808,32 @@
                 });
                 
                 const result = await response.json();
+                console.log('詳細內容回應:', result); // 除錯用
                 
                 if (result.success && result.data) {
-                    // 顯示詳細批改結果
-                    displayGradingResult(result.data.grading_result);
+                    // 檢查資料結構並顯示批改結果
+                    let gradingData;
+                    if (result.data.grading_result) {
+                        // 新格式：有 grading_result 包裝
+                        gradingData = result.data.grading_result;
+                    } else if (result.data.overall_score) {
+                        // 舊格式：直接是批改結果
+                        gradingData = result.data;
+                    } else {
+                        throw new Error('無法解析批改結果資料格式');
+                    }
+                    
+                    displayGradingResult(gradingData);
                     // 切換到提交作文 tab 顯示結果
                     showTab('submit');
                 } else {
-                    alert('無法載入作文詳細內容');
+                    console.error('載入失敗:', result);
+                    alert('無法載入作文詳細內容：' + (result.error || '未知錯誤'));
                 }
                 
             } catch (error) {
                 console.error('載入詳細內容錯誤:', error);
-                alert('載入過程中發生錯誤');
+                alert('載入過程中發生錯誤：' + error.message);
             }
         }
 
