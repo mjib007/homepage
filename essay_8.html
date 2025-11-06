@@ -512,6 +512,13 @@
                         <!-- 詳細評語將動態載入 -->
                     </div>
                 </div>
+
+                <div class="feedback-section">
+                    <div class="feedback-title">📚 延伸學習</div>
+                    <div class="strengths" id="extendedLearning">
+                        <!-- 延伸學習內容將動態載入 -->
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -717,6 +724,60 @@
             
             // 顯示詳細評語
             document.getElementById('detailedFeedback').innerHTML = `<p>${data.detailed_feedback}</p>`;
+            
+            // 顯示延伸學習內容
+            const extendedLearningElement = document.getElementById('extendedLearning');
+            if (data.extended_learning) {
+                let extendedContent = '';
+                
+                // 詞彙提升
+                if (data.extended_learning.vocabulary_enhancement && data.extended_learning.vocabulary_enhancement.length > 0) {
+                    extendedContent += '<h4>🔤 詞彙提升</h4>';
+                    data.extended_learning.vocabulary_enhancement.forEach(vocab => {
+                        extendedContent += `
+                            <div style="background: #f8f9fa; padding: 15px; margin-bottom: 15px; border-radius: 8px; border-left: 4px solid #007bff;">
+                                <strong style="color: #007bff;">${vocab.original_word}</strong><br>
+                                <small style="color: #666;">同義詞:</small> ${vocab.synonyms.join(', ')}<br>
+                                ${vocab.antonyms.length > 0 ? `<small style="color: #666;">反義詞:</small> ${vocab.antonyms.join(', ')}<br>` : ''}
+                                <small style="color: #666;">片語:</small> ${vocab.related_phrases.join(', ')}<br>
+                                <small style="color: #666;">例句:</small> <em>${vocab.example_sentences.join(' / ')}</em>
+                            </div>
+                        `;
+                    });
+                }
+                
+                // 實用片語
+                if (data.extended_learning.useful_phrases && data.extended_learning.useful_phrases.length > 0) {
+                    extendedContent += '<h4>💬 實用片語</h4>';
+                    data.extended_learning.useful_phrases.forEach(phrase => {
+                        extendedContent += `
+                            <div style="background: #fff3cd; padding: 15px; margin-bottom: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                                <strong style="color: #856404;">${phrase.category}</strong><br>
+                                <small style="color: #666;">片語:</small> ${phrase.phrases.join(', ')}<br>
+                                <small style="color: #666;">用法:</small> ${phrase.usage}
+                            </div>
+                        `;
+                    });
+                }
+                
+                // 文法要點
+                if (data.extended_learning.grammar_tips && data.extended_learning.grammar_tips.length > 0) {
+                    extendedContent += '<h4>📖 文法要點</h4>';
+                    data.extended_learning.grammar_tips.forEach(tip => {
+                        extendedContent += `
+                            <div style="background: #d1ecf1; padding: 15px; margin-bottom: 15px; border-radius: 8px; border-left: 4px solid #17a2b8;">
+                                <strong style="color: #0c5460;">${tip.topic}</strong><br>
+                                <p style="margin: 8px 0;">${tip.explanation}</p>
+                                <small style="color: #666;">例句:</small> <em>${tip.examples.join(' / ')}</em>
+                            </div>
+                        `;
+                    });
+                }
+                
+                extendedLearningElement.innerHTML = extendedContent || '<p>暫無延伸學習內容</p>';
+            } else {
+                extendedLearningElement.innerHTML = '<p>暫無延伸學習內容</p>';
+            }
             
             // 顯示結果容器
             document.getElementById('resultContainer').classList.add('show');
@@ -1041,6 +1102,53 @@
                         <p>${gradingData.detailed_feedback || '無詳細評語'}</p>
                     </div>
                 </div>
+
+                ${gradingData.extended_learning ? `
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #333; margin-bottom: 10px;">📚 延伸學習</h3>
+                    
+                    ${gradingData.extended_learning.vocabulary_enhancement && gradingData.extended_learning.vocabulary_enhancement.length > 0 ? `
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #007bff; margin-bottom: 10px;">🔤 詞彙提升</h4>
+                        ${gradingData.extended_learning.vocabulary_enhancement.map(vocab => `
+                            <div style="background: #f8f9fa; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 4px solid #007bff;">
+                                <strong style="color: #007bff;">${vocab.original_word}</strong><br>
+                                <small style="color: #666;">同義詞:</small> ${vocab.synonyms.join(', ')}<br>
+                                ${vocab.antonyms.length > 0 ? `<small style="color: #666;">反義詞:</small> ${vocab.antonyms.join(', ')}<br>` : ''}
+                                <small style="color: #666;">片語:</small> ${vocab.related_phrases.join(', ')}<br>
+                                <small style="color: #666;">例句:</small> <em>${vocab.example_sentences.join(' / ')}</em>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                    
+                    ${gradingData.extended_learning.useful_phrases && gradingData.extended_learning.useful_phrases.length > 0 ? `
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #856404; margin-bottom: 10px;">💬 實用片語</h4>
+                        ${gradingData.extended_learning.useful_phrases.map(phrase => `
+                            <div style="background: #fff3cd; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                                <strong style="color: #856404;">${phrase.category}</strong><br>
+                                <small style="color: #666;">片語:</small> ${phrase.phrases.join(', ')}<br>
+                                <small style="color: #666;">用法:</small> ${phrase.usage}
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                    
+                    ${gradingData.extended_learning.grammar_tips && gradingData.extended_learning.grammar_tips.length > 0 ? `
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #0c5460; margin-bottom: 10px;">📖 文法要點</h4>
+                        ${gradingData.extended_learning.grammar_tips.map(tip => `
+                            <div style="background: #d1ecf1; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 4px solid #17a2b8;">
+                                <strong style="color: #0c5460;">${tip.topic}</strong><br>
+                                <p style="margin: 8px 0;">${tip.explanation}</p>
+                                <small style="color: #666;">例句:</small> <em>${tip.examples.join(' / ')}</em>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                </div>
+                ` : ''}
 
                 ${fullData.original_essay?.text ? `
                 <div style="margin-bottom: 20px;">
