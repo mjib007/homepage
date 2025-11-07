@@ -681,7 +681,7 @@
                 </div>
 
                 <div class="feedback-section">
-                    <div class="feedback-title">✨ 建議開頭</div>
+                    <div class="feedback-title">✨ 萬用開頭句型</div>
                     <div class="strengths" id="improvedOpening">
                         <!-- 改寫開頭將動態載入 -->
                     </div>
@@ -998,7 +998,21 @@
                 grammarErrorsElement.innerHTML = '<p>🎉 沒有發現明顯的文法錯誤！</p>';
             }
             
-            document.getElementById('improvedOpening').innerHTML = `<p>${data.improved_opening || '無建議'}</p>`;
+            document.getElementById('improvedOpening').innerHTML = `
+                <div style="margin-bottom: 15px;">
+                <h4 style="color: #1976d2; margin-bottom: 8px;">🌟 萬用開頭句型</h4>
+                <p style="background: #e3f2fd; padding: 12px; border-radius: 6px; font-style: italic; margin: 0;">
+                    "${data.universal_sentences?.opening || '無萬用開頭建議'}"
+                </p>
+                </div>
+                <div style="margin-bottom: 10px;">
+                <h4 style="color: #7b1fa2; margin-bottom: 8px;">🎯 萬用結尾句型</h4>
+                <p style="background: #f3e5f5; padding: 12px; border-radius: 6px; font-style: italic; margin: 0;">
+                    "${data.universal_sentences?.closing || '無萬用結尾建議'}"
+                </p>
+                </div>
+                <small style="color: #666; font-size: 12px;">💡 這些句型可以套用在任何英文作文題目中</small>
+            `;
             document.getElementById('detailedFeedback').innerHTML = `<p>${data.detailed_feedback || '無詳細評語'}</p>`;
             
             const extendedLearningElement = document.getElementById('extendedLearning');
@@ -1280,10 +1294,15 @@
                 </div>
                 <!-- 在這裡加入三個缺少的區塊 -->
                 <div style="margin-bottom: 20px;">
-                    <h3 style="color: #333; margin-bottom: 10px;">✨ 建議開頭</h3>
-                    <div style="background: #d4edda; border-left: 4px solid #28a745; padding: 15px; border-radius: 8px;">
-                        <p>${gradingData.improved_opening || '無建議開頭'}</p>
-                    </div>
+                <h3 style="color: #333; margin-bottom: 10px;">📝 萬用句型</h3>
+                <div style="background: #d4edda; border-left: 4px solid #28a745; padding: 15px; border-radius: 8px;">
+                    <h4 style="color: #1976d2; margin-bottom: 8px;">🌟 萬用開頭句型</h4>
+                    <p style="font-style: italic; margin-bottom: 10px;">"${gradingData.universal_sentences?.opening || '無萬用開頭建議'}"</p>
+                    <h4 style="color: #7b1fa2; margin-bottom: 8px;">🎯 萬用結尾句型</h4>
+                    <p style="font-style: italic; margin: 0;">"${gradingData.universal_sentences?.closing || '無萬用結尾建議'}"</p>
+                    <small style="color: #666; font-size: 12px; display: block; margin-top: 10px;">💡 這些句型可以套用在任何英文作文題目中</small>
+                </div>
+
                 </div>
 
                 <div style="margin-bottom: 20px;">
