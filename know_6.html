@@ -733,13 +733,22 @@ function fallbackCopy(button, text) {
 
         const result = await response.text();
         
-        if (result && result.includes('成功儲存')) {
-          showStatus('筆記已成功儲存！', 'success');
-          document.getElementById('noteTitle').value = '';
-          document.getElementById('fileContent').value = '';
-        } else {
-          showStatus('儲存失敗：未收到有效回應', 'error');
-        }
+console.log('伺服器回應:', result); // 除錯用，查看實際回應
+console.log('HTTP 狀態:', response.status); // 除錯用
+
+// 優先檢查 HTTP 狀態碼
+if (response.status >= 200 && response.status < 300) {
+  showStatus('筆記已成功儲存！', 'success');
+  document.getElementById('noteTitle').value = '';
+  document.getElementById('fileContent').value = '';
+} else if (result && result.includes('成功儲存')) {
+  // 備用檢查：回應包含成功訊息
+  showStatus('筆記已成功儲存！', 'success');
+  document.getElementById('noteTitle').value = '';
+  document.getElementById('fileContent').value = '';
+} else {
+  showStatus('儲存失敗：' + (result || '未收到有效回應'), 'error');
+}
       } catch (error) {
         console.error('詳細錯誤:', error);
         if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
