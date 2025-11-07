@@ -598,6 +598,22 @@
             margin-top: 8px;
             font-style: italic;
         }
+        .template-category {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            border: 1px solid #e1e8ff;
+        }
+
+        .template-category h5 {
+            color: #5a67d8;
+            margin: 0 0 12px 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e1e8ff;
+        }
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -672,19 +688,40 @@
                         <label for="essayText">作文內容 *</label>
                         <textarea id="essayText" placeholder="請在此輸入您的英文作文..." oninput="updateWordCount()"></textarea>
                         <div class="word-count" id="wordCount">字數: 0</div>
-                        <!-- ✨ 萬用模板句子 -->
-                        <div class="universal-templates">
-                            <h4>✨ 萬用模板句子 (點擊即可複製)</h4>
-                            <div class="template-sentence" onclick="copyTemplate(this)">
-                                💡 Every story begins with a small moment that changes everything.
-                            </div>
-                            <div class="template-sentence" onclick="copyTemplate(this)">
-                                🌟 Life will never be perfect, but every moment teaches us something worth remembering.
-                            </div>
-                            <div class="template-hint">
-                                💭 這些句子可以用在任何作文題目中，多練習就能熟練運用！
-                            </div>
-                        </div>
+<!-- ✨ 第一段寫作模板 -->
+<div class="universal-templates">
+    <h4>📝 第一段寫作模板 (點擊即可複製)</h4>
+    
+    <div class="template-category">
+        <h5>模板一（觀察與分析型）</h5>
+        <div class="template-sentence" onclick="copyTemplate(this)">
+            🔍 In our modern world, visual images surround us everywhere and play an increasingly important role in communication.
+        </div>
+        <div class="template-sentence" onclick="copyTemplate(this)">
+            📖 When we examine a specific image carefully, we often discover hidden messages and deeper meanings that deserve our attention.
+        </div>
+        <div class="template-sentence" onclick="copyTemplate(this)">
+            ✍️ This essay will analyze the key elements shown in this picture and discuss the important insights it reveals about [主題].
+        </div>
+    </div>
+    
+    <div class="template-category">
+        <h5>模板二（社會現象型）</h5>
+        <div class="template-sentence" onclick="copyTemplate(this)">
+            🏛️ Throughout history, certain situations and behaviors have reflected the values and challenges of society at different times.
+        </div>
+        <div class="template-sentence" onclick="copyTemplate(this)">
+            🎯 The scene depicted in this image represents one such example that highlights important aspects of contemporary life.
+        </div>
+        <div class="template-sentence" onclick="copyTemplate(this)">
+            📝 By examining this picture closely, we can better understand [主題] and its significance in today's world.
+        </div>
+    </div>
+    
+    <div class="template-hint">
+        💡 [主題] 可替換為：family relationships, environmental issues, social media impact, education methods, lifestyle changes 等
+    </div>
+</div>
                     </div>
                 </div>
 
