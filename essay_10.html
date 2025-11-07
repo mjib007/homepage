@@ -548,7 +548,56 @@
             font-size: 0.9rem;
             margin-top: 5px;
         }
+        /* 萬用模板樣式 */
+        .universal-templates {
+            margin-top: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8eaff 100%);
+            border-radius: 10px;
+            border: 2px solid #e1e8ff;
+        }
 
+        .universal-templates h4 {
+            color: #667eea;
+            margin: 0 0 12px 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .template-sentence {
+            background: white;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border: 1px solid #d1d8ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Georgia', serif;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            color: #444;
+            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .template-sentence:hover {
+            background: #f0f4ff;
+            border-color: #667eea;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+        }
+
+        .template-sentence:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+        }
+
+        .template-hint {
+            color: #666;
+            font-size: 0.85rem;
+            text-align: center;
+            margin-top: 8px;
+            font-style: italic;
+        }
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -623,6 +672,19 @@
                         <label for="essayText">作文內容 *</label>
                         <textarea id="essayText" placeholder="請在此輸入您的英文作文..." oninput="updateWordCount()"></textarea>
                         <div class="word-count" id="wordCount">字數: 0</div>
+                        <!-- ✨ 萬用模板句子 -->
+                        <div class="universal-templates">
+                            <h4>✨ 萬用模板句子 (點擊即可複製)</h4>
+                            <div class="template-sentence" onclick="copyTemplate(this)">
+                                💡 Every story begins with a small moment that changes everything.
+                            </div>
+                            <div class="template-sentence" onclick="copyTemplate(this)">
+                                🌟 Life will never be perfect, but every moment teaches us something worth remembering.
+                            </div>
+                            <div class="template-hint">
+                                💭 這些句子可以用在任何作文題目中，多練習就能熟練運用！
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -756,6 +818,48 @@
     </div>
 
     <script>
+        // ✨ 複製萬用模板句子到作文輸入框
+        function copyTemplate(element) {
+        const templateText = element.textContent.trim();
+        // 移除表情符號，只保留英文句子
+        const englishText = templateText.replace(/^[^\w\s]+\s*/, '').trim();
+        
+        const textarea = document.getElementById('essayText');
+        const currentText = textarea.value;
+        
+        // 如果文字框為空，直接插入
+        if (!currentText.trim()) {
+            textarea.value = englishText;
+        } else {
+        // 如果已有內容，在最後換行插入
+        textarea.value = currentText + (currentText.endsWith('\n') ? '' : '\n') + englishText;
+        }
+    
+            // 更新字數統計
+            updateWordCount();
+            
+            // 聚焦到文字框
+            textarea.focus();
+            
+            // 游標移動到最後
+            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+            
+            // 視覺回饋
+            element.style.background = '#e8f5e8';
+            element.style.borderColor = '#28a745';
+            
+            setTimeout(() => {
+                element.style.background = 'white';
+                element.style.borderColor = '#d1d8ff';
+            }, 500);
+            
+            // 簡短提示
+            const originalText = element.innerHTML;
+            element.innerHTML = '✅ 已複製到作文框！';
+            setTimeout(() => {
+                element.innerHTML = originalText;
+            }, 1000);
+        }
         // 全域變數
         let currentInputType = 'text';
         let uploadedImage = null;
