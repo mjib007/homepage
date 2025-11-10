@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台股現金流量/暗黑指標分析系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .version-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: white;
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .tab:hover:not(.active) {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .analyze-section {
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .stock-input {
+            width: 100%;
+            max-width: 300px;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            border: 3px solid #e9ecef;
+            border-radius: 10px;
+            text-align: center;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            outline: none;
+            font-weight: bold;
+        }
+
+        .stock-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .analyze-button {
+            width: 100%;
+            max-width: 300px;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .analyze-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .analyze-button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .examples {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+
+        .example-stocks {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .example-stock {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid #e9ecef;
+            font-size: 0.9rem;
+        }
+
+        .example-stock:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .info-panel {
+            margin-top: 20px;
+            padding: 20px;
+            background: #e8f5e8;
+            border-radius: 10px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .info-panel h3 {
+            color: #2d5a2d;
+            margin-bottom: 10px;
+        }
+
+        .info-panel ul {
+            color: #2d5a2d;
+            line-height: 1.6;
+            margin-left: 20px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .search-btn {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s;
+            height: fit-content;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            border: 2px solid #ecf0f1;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .result-card:hover {
+            border-color: #3498db;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stock-code {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .file-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .file-info p {
+            margin: 5px 0;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-view {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-download {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-discuss {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #bdc3c7;
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            display: none;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+            text-align: center;
+        }
+
+        .success-message {
+            display: none;
+            margin: 15px 0;
+            padding: 15px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 50px;
+        }
+
+        .search-result-header {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e8f5e8;
+            border-radius: 8px;
+            text-align: center;
+            color: #2d5a2d;
+            font-weight: 600;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 20px;
+            background: #34495e;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .discussion-area h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .chat-messages {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ecf0f1;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            line-height: 1.5;
+        }
+
+        .message.user {
+            background: #e3f2fd;
+            text-align: right;
+            margin-left: 20%;
+        }
+
+        .message.ai {
+            background: #f3e5f5;
+            margin-right: 20%;
+        }
+
+        .message-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .chat-input button {
+            padding: 12px 20px;
+            background: #9b59b6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                flex-direction: column;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .card-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>台股現金流量/暗黑指標分析系統</h1>
+            <p>專業現金流量健康度分析（年度累計版）、暗黑指標分析，與歷史記錄查詢</p>
+            <div class="version-info">系統版本: v2.0 | 支持年度累計資料分析 | 自動儲存至 Google Drive</div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('analyze')">新增分析</button>
+            <button class="tab" onclick="switchTab('search')">搜尋記錄</button>
+        </div>
+
+        <div id="analyzeTab" class="tab-content active">
+            <div class="analyze-section">
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="stockCode" 
+                        class="stock-input" 
+                        placeholder="請輸入股票代號 (如: 2330)"
+                        maxlength="6"
+                        pattern="[0-9]+"
+                    >
+                    <button id="analyzeBtn" class="analyze-button">現金流量表分析</button>
+                    <button id="analyzeDarkBtn" class="analyze-button" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">暗黑指標分析</button>
+                </div>
+
+                <div id="analyzeLoading" class="loading"></div>
+                <div id="analyzeError" class="error-message"></div>
+                <div id="analyzeSuccess" class="success-message"></div>
+
+                <div class="examples">
+                    <h3>熱門股票範例</h3>
+                    <div class="example-stocks">
+                        <div class="example-stock" onclick="fillStock('2330')">2330 台積電</div>
+                        <div class="example-stock" onclick="fillStock('2317')">2317 鴻海</div>
+                        <div class="example-stock" onclick="fillStock('2454')">2454 聯發科</div>
+                        <div class="example-stock" onclick="fillStock('2382')">2382 廣達</div>
+                        <div class="example-stock" onclick="fillStock('2408')">2408 南亞科</div>
+                        <div class="example-stock" onclick="fillStock('4506')">4506 崇友</div>
+                    </div>
+                </div>
+
+                <div class="info-panel">
+                    <h3>📊 年度累計分析特色</h3>
+                    <ul>
+                        <li><strong>長期趨勢視角</strong>：分析過去5年年度累計資料，專注長期財務健康</li>
+                        <li><strong>投資級評估</strong>：適合機構投資者和長期投資決策參考</li>
+                        <li><strong>智能比較</strong>：自動處理完整年度vs部分年度的數據比較</li>
+                        <li><strong>產業適應</strong>：針對半導體等資本密集產業優化評分標準</li>
+                        <li><strong>專業報告</strong>：生成詳細的HTML分析報告並自動儲存</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="searchTab" class="tab-content">
+            <form class="search-form" id="searchForm">
+                <div class="form-group">
+                    <label for="searchStockCode">股票代號</label>
+                    <input type="text" id="searchStockCode" placeholder="例：2330" required>
+                </div>
+                <button type="submit" class="search-btn">搜尋 Google Drive 記錄</button>
+            </form>
+
+            <div id="searchLoading" class="loading">搜尋中...</div>
+            <div id="searchError" class="error-message"></div>
+            
+            <div id="resultsDiv">
+                <div class="empty-state">
+                    <p>請輸入股票代號開始查詢 Google Drive 中的歷史分析記錄</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="discussModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">現金流量分析討論</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="discussion-area">
+                    <h4>AI 討論助手</h4>
+                    <div id="chatMessages" class="chat-messages">
+                        <div class="message ai">
+                            <div class="message-label">AI 助手</div>
+                            <div>您好！我是專業的現金流量分析師。請問您對這份分析報告有什麼問題嗎？我可以幫您解釋具體的數據指標或投資建議。</div>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <textarea id="chatInput" placeholder="輸入你想討論的問題...">摘要與抓重點</textarea>
+                        <button onclick="sendMessage()">發送</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ANALYZE_API_URL = 'https://kf0630.zeabur.app/webhook/cashflow-analysis';
+        const DARK_INDICATOR_API_URL = 'https://kf0630.zeabur.app/webhook/dark-indicator-analysis';
+        const SEARCH_API_URL = 'https://kf0630.zeabur.app/webhook/search-stock-reports';
+        const DISCUSS_API_URL = 'https://kf0630.zeabur.app/webhook/discuss-report';
+
+        let currentFileId = null;
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        const stockCodeInput = document.getElementById('stockCode');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+
+        stockCodeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') analyzeStock();
+        });
+
+        stockCodeInput.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
+
+        analyzeBtn.addEventListener('click', analyzeStock);
+        document.getElementById('analyzeDarkBtn').addEventListener('click', analyzeDarkIndicator);
+
+        async function analyzeDarkIndicator() {
+            const stockCode = stockCodeInput.value.trim();
+            if (!stockCode || stockCode.length < 4) {
+                showMessage('analyzeError', '請輸入有效的股票代號');
+                return;
+            }
+            
+            hideMessage('analyzeError');
+            setAnalyzeLoading(true, 'analyzeDarkBtn', '暗黑指標分析', '正在分析暗黑指標數據，請稍候...');
+            
+            try {
+                const response = await fetch(DARK_INDICATOR_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stock_code: stockCode })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const htmlResult = await response.text();
+                const newWindow = window.open('', '_blank');
+                newWindow.document.write(htmlResult);
+                newWindow.document.close();
+                
+                showMessage('analyzeSuccess', '暗黑指標分析完成！');
+            } catch (error) {
+                showMessage('analyzeError', '分析失敗: ' + error.message);
+            } finally {
+                setAnalyzeLoading(false, 'analyzeDarkBtn', '暗黑指標分析');
+            }
+        }
+
+        function fillStock(stockCode) {
+            stockCodeInput.value = stockCode;
+            stockCodeInput.focus();
+        }
+
+        async function analyzeStock() {
+            const stockCode = stockCodeInput.value.trim();
+
+            if (!stockCode) {
+                showMessage('analyzeError', '請輸入股票代號');
+                return;
+            }
+
+            if (stockCode.length < 4) {
+                showMessage('analyzeError', '股票代號至少需要4位數字');
+                return;
+            }
+
+            hideMessage('analyzeError');
+            setAnalyzeLoading(true, 'analyzeBtn', '現金流量表分析', '正在分析現金流量數據，請稍候...');
+
+            try {
+                const response = await fetch(ANALYZE_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stock_code: stockCode })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const htmlResult = await response.text();
+                const newWindow = window.open('', '_blank');
+                newWindow.document.write(htmlResult);
+                newWindow.document.close();
+
+                showMessage('analyzeSuccess', '分析完成！結果已在新視窗中開啟，並自動儲存至 Google Drive。');
+
+            } catch (error) {
+                console.error('分析錯誤:', error);
+                showMessage('analyzeError', '分析失敗，請稍後再試。錯誤: ' + error.message);
+            } finally {
+                setAnalyzeLoading(false, 'analyzeBtn', '現金流量表分析');
+            }
+        }
+
+        const searchForm = document.getElementById('searchForm');
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            searchRecords();
+        });
+
+        async function searchRecords() {
+            const stockCode = document.getElementById('searchStockCode').value.trim();
+
+            if (!stockCode) {
+                showMessage('searchError', '請輸入股票代號');
+                return;
+            }
+
+            hideMessage('searchError');
+            setSearchLoading(true);
+
+            try {
+                const response = await fetch(SEARCH_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stock_code: stockCode })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const result = await response.json();
+                displaySearchResults(result);
+
+            } catch (error) {
+                console.error('搜尋錯誤:', error);
+                showMessage('searchError', '搜尋失敗，請稍後再試。');
+                document.getElementById('resultsDiv').innerHTML = '<div class="empty-state"><p>搜尋失敗</p></div>';
+            } finally {
+                setSearchLoading(false);
+            }
+        }
+
+        function displaySearchResults(result) {
+            const resultsDiv = document.getElementById('resultsDiv');
+            
+            if (!result.success || result.count === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="empty-state">
+                        <p>沒有找到 ${result.stock_code || '該'} 的分析記錄</p>
+                        <p style="margin-top: 10px; font-size: 0.9rem; color: #aaa;">試試先做一次新分析，報告會自動儲存到 Google Drive</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = `
+                <div class="search-result-header">
+                    ${result.message}
+                </div>
+                <div class="results-grid">
+                    ${result.files.map(file => `
+                        <div class="result-card">
+                            <div class="card-header">
+                                <div class="stock-code">${file.stock_code}</div>
+                            </div>
+                            <div class="file-info">
+                                <p><strong>檔案名稱：</strong>${file.name || file.fileName || '未命名檔案'}</p>
+                                <p><strong>分析日期：</strong>${file.analysis_date || '未知'}</p>
+                                <p><strong>分析時間：</strong>${file.analysis_time || '未知'}</p>
+                            </div>
+                            <div class="card-actions">
+                                <a href="${file.view_url}" target="_blank" class="btn btn-view">查看檔案（原始碼）</a>
+                                <a href="${file.download_url}" class="btn btn-download">下載並查看報告</a>
+                                <button class="btn btn-discuss" onclick="startDiscussion('${file.id}', '${file.stock_code}')">AI討論</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        async function startDiscussion(fileId, stockCode) {
+            currentFileId = fileId;
+            document.getElementById('modalTitle').textContent = `${stockCode} - 現金流量分析討論`;
+            
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="message ai">
+                    <div class="message-label">AI 助手</div>
+                    <div>您好！我是專業的現金流量分析師。請問您對 ${stockCode} 的分析報告有什麼問題嗎？我可以幫您解釋具體的數據指標或投資建議。</div>
+                </div>
+            `;
+            const chatInput = document.getElementById('chatInput');
+            chatInput.value = '';
+            chatInput.disabled = false;
+            chatInput.placeholder = '輸入你想討論的問題...';
+            
+            document.getElementById('discussModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('discussModal').style.display = 'none';
+            currentFileId = null;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const question = input.value.trim();
+            
+            if (!question || !currentFileId) return;
+
+            addMessage('user', question);
+            input.value = '';
+
+            try {
+                const response = await fetch(DISCUSS_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        file_id: currentFileId, 
+                        question: question 
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const result = await response.json();
+                addMessage('ai', result.answer);
+
+            } catch (error) {
+                console.error('討論錯誤:', error);
+                addMessage('ai', '抱歉，目前無法回應您的問題，請稍後再試。');
+            }
+        }
+
+        function addMessage(type, content) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const label = type === 'user' ? '您' : 'AI 助手';
+            
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'message-label';
+            labelDiv.textContent = label;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.style.whiteSpace = 'pre-wrap';
+            contentDiv.textContent = content;
+            
+            messageDiv.appendChild(labelDiv);
+            messageDiv.appendChild(contentDiv);
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('discussModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        function setAnalyzeLoading(loading, buttonId = 'analyzeBtn', buttonText = '開始分析', loadingMessage = '正在分析數據，請稍候...') {
+            const loadingDiv = document.getElementById('analyzeLoading');
+            loadingDiv.textContent = loadingMessage;
+            loadingDiv.style.display = loading ? 'block' : 'none';
+            
+            const button = document.getElementById(buttonId);
+            button.disabled = loading;
+            button.textContent = loading ? '分析中...' : buttonText;
+        }
+
+        function setSearchLoading(loading) {
+            document.getElementById('searchLoading').style.display = loading ? 'block' : 'none';
+        }
+
+        function showMessage(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+
+        function hideMessage(elementId) {
+            document.getElementById(elementId).style.display = 'none';
+        }
+
+        window.addEventListener('load', function() {
+            stockCodeInput.focus();
+        });
+    </script>
+</body>
+</html>
