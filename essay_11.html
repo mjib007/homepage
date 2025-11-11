@@ -599,6 +599,51 @@
             margin-top: 8px;
             font-style: italic;
         }
+
+        /* 摺疊模板樣式 */
+        .templates-toggle {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .templates-toggle:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .templates-toggle .arrow {
+            transition: transform 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .templates-toggle.expanded .arrow {
+            transform: rotate(180deg);
+        }
+
+        .templates-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+        }
+
+        .templates-content.expanded {
+            max-height: 2000px;
+            transition: max-height 0.6s ease-in;
+        }
         .template-category {
             margin-bottom: 20px;
             padding: 15px;
@@ -705,74 +750,81 @@
 
 <!-- ✨ 第一段寫作模板 -->
 <div class="universal-templates">
-    <h4>📝 寫作模板 (點擊即可複製)</h4>
+    <button class="templates-toggle" onclick="toggleTemplates()">
+        <span>📝 寫作模板 (點擊展開/摺疊)</span>
+        <span class="arrow">▼</span>
+    </button>
     
-    <div class="template-category">
-        <h5>第一段模板一（觀察與分析型）</h5>
-        <div class="template-sentence" onclick="copyTemplate(this)">
-            🔍 In our modern world, visual images surround us everywhere and play an increasingly important role in communication.
+    <div class="templates-content" id="templatesContent">
+        <div class="template-category">
+            <h5>第一段模板一（觀察與分析型）</h5>
+            <div class="template-sentence" onclick="copyTemplate(this)">
+                🔍 In our modern world, visual images surround us everywhere and play an increasingly important role in communication.
+            </div>
+            <div class="template-sentence" onclick="copyTemplate(this)">
+                📖 When we examine a specific image carefully, we often discover hidden messages and deeper meanings that deserve our attention.
+            </div>
+            <div class="template-sentence" onclick="copyTemplate(this)">
+                ✍️ This essay will analyze the key elements shown in this picture and discuss the important insights it reveals about <font color="red">[主題]</font>.
+            </div>
         </div>
-        <div class="template-sentence" onclick="copyTemplate(this)">
-            📖 When we examine a specific image carefully, we often discover hidden messages and deeper meanings that deserve our attention.
+        
+        <div class="template-category">
+            <h5>第一段模板二（社會現象型）</h5>
+            <div class="template-sentence" onclick="copyTemplate(this)">
+                🏛️ Throughout history, certain situations and behaviors have reflected the values and challenges of society at different times.
+            </div>
+            <div class="template-sentence" onclick="copyTemplate(this)">
+                🎯 The scene depicted in this image represents one such example that highlights important aspects of contemporary life.
+            </div>
+            <div class="template-sentence" onclick="copyTemplate(this)">
+                📝 By examining this picture closely, we can better understand <font color="red">[主題]</font> and its significance in today's world.
+            </div>
         </div>
-        <div class="template-sentence" onclick="copyTemplate(this)">
-            ✍️ This essay will analyze the key elements shown in this picture and discuss the important insights it reveals about <font color="red">[主題]</font>.
+        
+        <div class="template-category">
+            <h5>最後一段模板一（總結反思型）</h5>
+            <div class="template-sentence" onclick="copyTemplate(this)">
+                📋 In conclusion, the image we have analyzed reveals several important aspects of <font color="red">[主題]</font> that are worth our consideration.
+            </div>
+            <div class="template-sentence" onclick="copyTemplate(this)">
+                💭 This picture reminds us that in our daily lives, we should pay more attention to <font color="red">[相關議題]</font> and learn from what we observe.
+            </div>
+            <div class="template-sentence" onclick="copyTemplate(this)">
+                🌟 As we move forward, it is essential that we apply these insights to create a better understanding of the world around us.
+            </div>
         </div>
-    </div>
-    
-    <div class="template-category">
-        <h5>第一段模板二（社會現象型）</h5>
-        <div class="template-sentence" onclick="copyTemplate(this)">
-            🏛️ Throughout history, certain situations and behaviors have reflected the values and challenges of society at different times.
-        </div>
-        <div class="template-sentence" onclick="copyTemplate(this)">
-            🎯 The scene depicted in this image represents one such example that highlights important aspects of contemporary life.
-        </div>
-        <div class="template-sentence" onclick="copyTemplate(this)">
-            📝 By examining this picture closely, we can better understand <font color="red">[主題]</font> and its significance in today's world.
-        </div>
-    </div>
-    <div class="template-category">
-    <h5>最後一段模板一（總結反思型）</h5>
-    <div class="template-sentence" onclick="copyTemplate(this)">
-        📋 In conclusion, the image we have analyzed reveals several important aspects of <font color="red">[主題]</font> that are worth our consideration.
-    </div>
-    <div class="template-sentence" onclick="copyTemplate(this)">
-        💭 This picture reminds us that in our daily lives, we should pay more attention to <font color="red">[相關議題]</font> and learn from what we observe.
-    </div>
-    <div class="template-sentence" onclick="copyTemplate(this)">
-        🌟 As we move forward, it is essential that we apply these insights to create a better understanding of the world around us.
-    </div>
-</div>
 
-<div class="template-category">
-    <h5>最後一段模板二（呼籲行動型）</h5>
-    <div class="template-sentence" onclick="copyTemplate(this)">
-        ⚡ The situation shown in this picture clearly demonstrates the significance of <font color="red">[主題]</font> in our modern society.
-    </div>
-    <div class="template-sentence" onclick="copyTemplate(this)">
-        🤝 It is our responsibility to take action and make positive changes based on what we have learned from this analysis.
-    </div>
-    <div class="template-sentence" onclick="copyTemplate(this)">
-        🌈 Only by working together can we hope to address these issues and build a more harmonious and understanding community.
-    </div>
-</div>
+        <div class="template-category">
+            <h5>最後一段模板二（呼籲行動型）</h5>
+            <div class="template-sentence" onclick="copyTemplate(this)">
+                ⚡ The situation shown in this picture clearly demonstrates the significance of <font color="red">[主題]</font> in our modern society.
+            </div>
+            <div class="template-sentence" onclick="copyTemplate(this)">
+                🤝 It is our responsibility to take action and make positive changes based on what we have learned from this analysis.
+            </div>
+            <div class="template-sentence" onclick="copyTemplate(this)">
+                🌈 Only by working together can we hope to address these issues and build a more harmonious and understanding community.
+            </div>
+        </div>
 
-<div class="template-category">
-    <h5>最後一段模板三（啟發成長型）</h5>
-    <div class="template-sentence" onclick="copyTemplate(this)">
-        🎓 Through careful examination of this image, we gain valuable insights into <font color="red">[主題]</font> and its impact on our lives.
-    </div>
-    <div class="template-sentence" onclick="copyTemplate(this)">
-        🌱 This analysis has taught me the importance of observing details and thinking critically about the world we live in.
-    </div>
-    <div class="template-sentence" onclick="copyTemplate(this)">
-        📚 Moving forward, I will continue to develop my ability to understand and appreciate the deeper meanings behind everyday scenes.
-    </div>
-</div>
-    <div class="template-hint">
-        💡 [主題] 可替換為：family relationships, environmental issues, social media impact, education methods, lifestyle changes 等
-        📝 建議：第一段選一個模板，最後一段選一個模板，形成完整架構
+        <div class="template-category">
+            <h5>最後一段模板三（啟發成長型）</h5>
+            <div class="template-sentence" onclick="copyTemplate(this)">
+                🎓 Through careful examination of this image, we gain valuable insights into <font color="red">[主題]</font> and its impact on our lives.
+            </div>
+            <div class="template-sentence" onclick="copyTemplate(this)">
+                🌱 This analysis has taught me the importance of observing details and thinking critically about the world we live in.
+            </div>
+            <div class="template-sentence" onclick="copyTemplate(this)">
+                📚 Moving forward, I will continue to develop my ability to understand and appreciate the deeper meanings behind everyday scenes.
+            </div>
+        </div>
+        
+        <div class="template-hint">
+            💡 [主題] 可替換為：family relationships, environmental issues, social media impact, education methods, lifestyle changes 等
+            📝 建議：第一段選一個模板，最後一段選一個模板，形成完整架構
+        </div>
     </div>
 </div>
                     </div>
@@ -946,6 +998,24 @@
             setTimeout(() => {
                 element.innerHTML = originalText;
             }, 1000);
+        }
+
+        // 🔽 摺疊/展開模板功能
+        function toggleTemplates() {
+            const content = document.getElementById('templatesContent');
+            const toggle = document.querySelector('.templates-toggle');
+            
+            if (content.classList.contains('expanded')) {
+                // 摺疊
+                content.classList.remove('expanded');
+                toggle.classList.remove('expanded');
+                toggle.querySelector('span').textContent = '📝 寫作模板 (點擊展開/摺疊)';
+            } else {
+                // 展開
+                content.classList.add('expanded');
+                toggle.classList.add('expanded');
+                toggle.querySelector('span').textContent = '📝 寫作模板 (點擊展開/摺疊)';
+            }
         }
         // 全域變數
         let currentInputType = 'text';
