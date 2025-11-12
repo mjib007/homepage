@@ -1055,20 +1055,20 @@
                 document.getElementById('essayText').required = false;
                 document.getElementById('essayText').value = '';
                 updateWordCount();
-            }
-            // 圖片模式：只顯示簡單的開始批改按鈕
-            const submitButtonHtml = `
-                <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e1e1e1;">
-                    <button type="submit" class="button">
-                        <span>🚀 開始批改</span>
-                    </button>
-                </div>
-            `;
+                // 圖片模式：只顯示簡單的開始批改按鈕
+                const submitButtonHtml = `
+                    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e1e1e1;">
+                        <button type="submit" class="button">
+                            <span>🚀 開始批改</span>
+                        </button>
+                    </div>
+                `;
 
-            // 移除現有按鈕區域，插入新的簡單按鈕
-            const existingButtonArea = document.querySelector('div[style*="justify-content: space-between"]');
-            if (existingButtonArea) {
-                existingButtonArea.innerHTML = submitButtonHtml;
+                // 移除現有按鈕區域，插入新的簡單按鈕
+                const existingButtonArea = document.querySelector('div[style*="justify-content: space-between"]');
+                if (existingButtonArea) {
+                    existingButtonArea.innerHTML = submitButtonHtml;
+                }
             }
         }
 
