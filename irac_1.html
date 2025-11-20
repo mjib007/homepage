@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRAC 法律思維導航儀</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50; /* 法律專業深藍 */
+            --accent-color: #c0392b; /* 警示/重點紅 */
+            --success-color: #27ae60;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "PingFang TC", "Heiti TC", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: #333;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        h1 { margin: 0; font-size: 1.5rem; }
+        .subtitle { font-size: 0.9rem; opacity: 0.8; }
+
+        /* Main Layout */
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden; /* 防止整頁滾動 */
+        }
+
+        /* Left Panel: Case Facts */
+        .left-panel {
+            width: 35%;
+            background-color: #eef2f5;
+            padding: 2rem;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+        }
+
+        .case-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            line-height: 1.8;
+        }
+
+        .case-title {
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        /* Right Panel: Interaction */
+        .right-panel {
+            width: 65%;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            background: white;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 1.5rem;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0.4;
+            transition: all 0.3s;
+            position: relative;
+            flex: 1;
+        }
+
+        .step.active { opacity: 1; font-weight: bold; color: var(--primary-color); }
+        .step.completed { opacity: 1; color: var(--success-color); }
+        
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #ccc;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .step.active .step-circle { background: var(--primary-color); transform: scale(1.1); }
+        .step.completed .step-circle { background: var(--success-color); }
+
+        /* Chat Area */
+        .chat-history {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 1rem;
+            border-radius: 12px;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            background-color: #f0f4f8;
+            color: #2c3e50;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .ai-message.feedback-fail {
+            background-color: #fff5f5;
+            border-left-color: var(--accent-color);
+        }
+
+        .ai-message.feedback-pass {
+            background-color: #e8f8f5;
+            border-left-color: var(--success-color);
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 2rem;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 1rem;
+        }
+
+        textarea {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            resize: none;
+            font-size: 1rem;
+            height: 60px;
+            font-family: inherit;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        button {
+            padding: 0 2rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover { background-color: #34495e; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        /* Loading dots */
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80%, 100% { content: ''; }
+        }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>IRAC 法律思維導航儀</h1>
+        <span class="subtitle">AI-Powered Legal Reasoning Trainer</span>
+    </div>
+    <div style="font-size: 0.9rem;">課程：法律與人工智慧</div>
+</header>
+
+<div class="container">
+    <div class="left-panel">
+        <div class="case-card">
+            <div class="case-title">案例事實 (Case Facts)</div>
+            <p id="caseFactsText">
+                甲（男，30歲）與乙（男，28歲）為鄰居，素有積怨。某日晚間，兩人在社區門口相遇，發生激烈口角。乙突然從口袋拿出折疊刀，對甲叫囂：「信不信我捅死你！」並向甲逼近。
+                <br><br>
+                甲見狀驚恐，隨手拿起路邊的磚頭丟向乙。磚頭擊中乙的頭部，乙當場倒地，送醫後因顱內出血不治死亡。
+                <br><br>
+                請依據上述事實，分析甲的刑事責任。
+            </p>
+        </div>
+        <div style="margin-top: 20px; color: #666; font-size: 0.85rem;">
+            <p><strong>💡 老師的小提示：</strong></p>
+            <ul>
+                <li>請不要急著判斷有罪無罪。</li>
+                <li>依照右側的導航，一步一步建立論證。</li>
+                <li>AI 將擔任你的「蘇格拉底導師」。</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="progress-bar">
+            <div class="step active" id="step-issue">
+                <div class="step-circle">I</div>
+                <span>爭點 (Issue)</span>
+            </div>
+            <div class="step" id="step-rule">
+                <div class="step-circle">R</div>
+                <span>規則 (Rule)</span>
+            </div>
+            <div class="step" id="step-application">
+                <div class="step-circle">A</div>
+                <span>涵攝 (Application)</span>
+            </div>
+            <div class="step" id="step-conclusion">
+                <div class="step-circle">C</div>
+                <span>結論 (Conclusion)</span>
+            </div>
+        </div>
+
+        <div class="chat-history" id="chatHistory">
+            <div class="message ai-message">
+                歡迎來到思維訓練。我們從第一步開始：<br><br>
+                <strong>請指出本案最核心的法律爭點（Issue）是什麼？</strong><br>
+                （請試著用問句形式提出，例如：甲的行為是否構成...？）
+            </div>
+        </div>
+
+        <div class="input-area">
+            <textarea id="userInput" placeholder="在此輸入你的想法..."></textarea>
+            <button id="sendBtn" onclick="handleSubmit()">送出</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // =================CONFIG=================
+    // 請將您的 n8n Webhook URL 貼在這裡
+    // 記得要是 Production URL，或者是 Test URL (但 Test URL 需要保持 n8n 視窗開啟)
+    const N8N_WEBHOOK_URL = "hhttps://kf0630.zeabur.app/webhook/irac-tutor"; 
+    // ========================================
+
+    const stages = ['issue', 'rule', 'application', 'conclusion'];
+    let currentStageIndex = 0;
+    
+    // 階段提示語 (當進入該階段時顯示)
+    const stagePrompts = {
+        'issue': '請指出本案最核心的法律爭點（Issue）是什麼？',
+        'rule': '針對你提出的爭點，法律規範（Rule）是什麼？請列出具體的構成要件。',
+        'application': '現在進行涵攝（Application）。請將本案事實填入上述要件中，並論證為何符合（或不符合）。',
+        'conclusion': '最後，請根據上述推論，給出簡潔的法律結論（Conclusion）。'
+    };
+
+    const chatHistory = document.getElementById('chatHistory');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const caseFacts = document.getElementById('caseFactsText').innerText;
+
+    // 按下 Enter 也能送出 (Shift+Enter 換行)
+    userInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSubmit();
+        }
+    });
+
+    async function handleSubmit() {
+        const text = userInput.value.trim();
+        if (!text) return;
+
+        // 1. 顯示使用者訊息
+        appendMessage(text, 'user-message');
+        userInput.value = '';
+        userInput.disabled = true;
+        sendBtn.disabled = true;
+        sendBtn.textContent = '思考中...';
+
+        // 2. 準備送往 n8n 的資料
+        const payload = {
+            student_input: text,
+            current_stage: stages[currentStageIndex],
+            case_facts: caseFacts
+        };
+
+        try {
+            // 3. 呼叫 n8n Webhook
+            // 注意：如果您還沒設定好 n8n，這個 fetch 會失敗。
+            // 在課堂 demo 前，請確保 n8n Workflow 處於 Active 狀態。
+            
+            const response = await fetch(N8N_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error('網路連線錯誤或 n8n 未回應');
+            }
+
+            const data = await response.json();
+            // 預期 n8n 回傳格式: { "pass": boolean, "feedback": "string" }
+
+            handleAIResponse(data);
+
+        } catch (error) {
+            console.error(error);
+            appendMessage("⚠️ 系統連線錯誤。請檢查 n8n Webhook URL 是否正確，或 n8n 是否已啟動。", "ai-message feedback-fail");
+            
+            // --- 測試用 (如果您還沒架好 n8n，可以取消下面註解來測試介面效果) ---
+            // setTimeout(() => {
+            //     const mockData = { pass: false, feedback: "（這是測試回應）你的爭點有點太廣泛了，請聚焦在正當防衛的要件上。" };
+            //     handleAIResponse(mockData);
+            // }, 1000);
+            // ----------------------------------------------------------------
+            
+        } finally {
+            userInput.disabled = false;
+            sendBtn.disabled = false;
+            sendBtn.textContent = '送出';
+            userInput.focus();
+        }
+    }
+
+    function handleAIResponse(data) {
+        const isPass = data.pass;
+        const feedbackClass = isPass ? 'feedback-pass' : 'feedback-fail';
+        
+        // 顯示 AI 回饋
+        appendMessage(data.feedback, `ai-message ${feedbackClass}`);
+
+        if (isPass) {
+            // 如果通過，進入下一階段
+            if (currentStageIndex < stages.length - 1) {
+                currentStageIndex++;
+                updateProgressBar();
+                // 延遲一下再顯示下一關的題目
+                setTimeout(() => {
+                    appendMessage(`✅ 階段完成！接下來：<br>${stagePrompts[stages[currentStageIndex]]}`, 'ai-message');
+                }, 800);
+            } else {
+                // 全部完成
+                setTimeout(() => {
+                    appendMessage("🎉 太棒了！你已經完成了完整的 IRAC 法律推論過程。", 'ai-message feedback-pass');
+                    // 可以在這裡加一個「重新開始」的按鈕
+                }, 800);
+            }
+        }
+    }
+
+    function appendMessage(htmlText, className) {
+        const div = document.createElement('div');
+        div.className = `message ${className}`;
+        div.innerHTML = htmlText.replace(/\n/g, '<br>');
+        chatHistory.appendChild(div);
+        chatHistory.scrollTop = chatHistory.scrollHeight; // 自動捲動到底部
+    }
+
+    function updateProgressBar() {
+        // 更新上方進度條樣式
+        const allSteps = document.querySelectorAll('.step');
+        allSteps.forEach((step, index) => {
+            step.classList.remove('active');
+            if (index < currentStageIndex) {
+                step.classList.add('completed');
+            } else if (index === currentStageIndex) {
+                step.classList.add('active');
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
