@@ -526,7 +526,6 @@
 <script>
     // =================CONFIG=================
     const N8N_WEBHOOK_URL = "https://kf0630.zeabur.app/webhook/irac-tutor"; 
-    const SAVE_RECORD_URL = "https://kf0630.zeabur.app/webhook/save-student-record";
     
     // 案例資料庫
     const CASE_DATABASE = {
@@ -925,9 +924,7 @@
             setTimeout(() => {
                 appendMessage("🎉 太棒了！你已經完成了完整的 IRAC 法律推論過程。", 'ai-message feedback-pass');
                 
-                // 儲存學習記錄
-                saveStudentRecord();
-                
+
                 // 加入重新開始按鈕到次要控制區
                 const secondaryControls = document.querySelector('.secondary-controls');
                 const resetBtn = document.createElement('button');
@@ -942,39 +939,6 @@
     }
 
     // 儲存學習記錄到 Google Drive
-    async function saveStudentRecord() {
-        try {
-            const recordData = {
-                sessionId: studentSession.sessionId,
-                studentName: studentSession.studentName,
-                caseId: studentSession.caseId,
-                caseTitle: currentCase.title,
-                startTime: studentSession.startTime,
-                endTime: studentSession.endTime,
-                totalDuration: new Date(studentSession.endTime) - new Date(studentSession.startTime),
-                stageProgress: studentSession.stageProgress,
-                totalInteractions: studentSession.interactions.length,
-                practiceMode: practiceMode,
-                summary: {
-                    totalAttempts: Object.values(studentSession.stageProgress).reduce((sum, stage) => sum + stage.attempts, 0),
-                    completedStages: Object.values(studentSession.stageProgress).filter(stage => stage.completed).length,
-                    mostDifficultStage: Object.entries(studentSession.stageProgress).reduce((max, [stage, data]) => 
-                        data.attempts > (studentSession.stageProgress[max] || {attempts: 0}).attempts ? stage : max, 'issue')
-                }
-            };
-
-            await fetch(SAVE_RECORD_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(recordData)
-            });
-
-            console.log('學習記錄已儲存', recordData);
-        } catch (error) {
-            console.error('儲存學習記錄失敗:', error);
-        }
-    }
-
     function appendMessage(htmlText, className) {
         const div = document.createElement('div');
         div.className = `message ${className}`;
