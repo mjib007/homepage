@@ -44,6 +44,36 @@
         h1 { margin: 0; font-size: 1.5rem; }
         .subtitle { font-size: 0.9rem; opacity: 0.8; }
 
+        /* Case Selector */
+        .case-selector {
+            background: #ecf0f1;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .case-selector select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            min-width: 200px;
+        }
+
+        .case-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .badge-criminal { background: #e74c3c; color: white; }
+        .badge-civil { background: #3498db; color: white; }
+        .badge-beginner { background: #27ae60; color: white; }
+        .badge-intermediate { background: #f39c12; color: white; }
+
         /* Main Layout */
         .container {
             display: flex;
@@ -329,6 +359,9 @@
             h1 { font-size: 1.2rem; }
             .course-info { display: none; }
 
+            .case-selector { padding: 0.8rem 1rem; }
+            .case-selector select { min-width: 150px; font-size: 0.8rem; }
+
             .mobile-case-toggle { display: block; }
 
             .left-panel {
@@ -393,6 +426,17 @@
     <div class="course-info" style="font-size: 0.9rem;">課程：法律與人工智慧</div>
 </header>
 
+<div class="case-selector">
+    <label for="caseSelect"><strong>📚 選擇案例：</strong></label>
+    <select id="caseSelect" onchange="switchCase()">
+        <option value="self_defense">正當防衛案例</option>
+        <option value="theft_basic">竊盜案例</option>
+        <option value="contract_dispute">契約履行爭議</option>
+    </select>
+    <span id="caseType" class="case-badge badge-criminal">刑法</span>
+    <span id="caseDifficulty" class="case-badge badge-beginner">初級</span>
+</div>
+
 <div class="mobile-case-toggle" onclick="toggleMobileCase()">
     📄 點擊查看/隱藏 案例事實
 </div>
@@ -401,16 +445,12 @@
     <div class="left-panel" id="leftPanel">
         <div class="case-card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div class="case-title" style="margin-bottom:0;">案例事實 (Case Facts)</div>
+                <div class="case-title" style="margin-bottom:0;" id="caseTitle">案例事實 (Case Facts)</div>
                 <button onclick="toggleMobileCase()" class="mobile-close-btn" style="display:none; width:auto; height:auto; padding:5px 10px; background:none; color:#999; font-size:1.2rem;">✕</button>
             </div>
             
             <p id="caseFactsText" style="margin-top: 1rem;">
-                甲（男，30歲）與乙（男，28歲）為鄰居，素有積怨。某日晚間，兩人在社區門口相遇，發生激烈口角。乙突然從口袋拿出折疊刀，對甲叫囂：「信不信我捅死你！」並向甲逼近。
-                <br><br>
-                甲見狀驚恐，隨手拿起路邊的磚頭丟向乙。磚頭擊中乙的頭部，乙當場倒地，送醫後因顱內出血不治死亡。
-                <br><br>
-                請依據上述事實，分析甲的刑事責任。
+                <!-- 案例事實將由 JavaScript 動態更新 -->
             </p>
             
             <button onclick="toggleMobileCase()" class="mobile-close-btn" style="width:100%; margin-top:15px; height:45px; background:#7f8c8d; display:none;">
@@ -424,42 +464,7 @@
         
         <div id="exampleContent" class="example-content">
             <h4>📝 各階段答題範例：</h4>
-            
-            <div style="margin-bottom: 15px;">
-                <strong>Issue (爭點)：</strong>
-                <p class="example-text">
-                    甲的行為是否符合刑法第23條之正當防衛？
-                </p>
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-                <strong>Rule (規則)：</strong>
-                <p class="example-text">
-                    刑法第277條傷害罪：故意傷害他人身體<br>
-                    刑法第276條過失致死罪：過失致人於死<br>
-                    刑法第23條正當防衛：現在不法侵害、防衛行為、必要性
-                </p>
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-                <strong>Application (涵攝)：</strong>
-                <p class="example-text">
-                    因為「甲在乙持刀威脅生命的緊急狀況下，出於保護自己而丟擲磚頭」，<br>
-                    符合「正當防衛的防衛意圖要件」，<br>
-                    所以「甲主觀上具有防衛意圖而非傷害故意」。<br><br>
-                    
-                    因為「乙持刀逼近構成現在進行中的不法侵害」，<br>
-                    符合「刑法第23條正當防衛的時間要件」，<br>
-                    所以「甲的防衛行為時機正當」。
-                </p>
-            </div>
-            
-            <div>
-                <strong>Conclusion (結論)：</strong>
-                <p class="example-text">
-                    甲的行為符合正當防衛，阻卻違法，不構成犯罪。
-                </p>
-            </div>
+            <!-- 範例內容將由 JavaScript 動態更新 -->
         </div>
         
         <div style="margin-top: 20px; color: #666; font-size: 0.85rem;">
@@ -521,6 +526,98 @@
 <script>
     // =================CONFIG=================
     const N8N_WEBHOOK_URL = "https://kf0630.zeabur.app/webhook/irac-tutor"; 
+    const SAVE_RECORD_URL = "https://kf0630.zeabur.app/webhook/save-student-record";
+    
+    // 案例資料庫
+    const CASE_DATABASE = {
+        "self_defense": {
+            id: "self_defense",
+            title: "正當防衛案例",
+            type: "刑法",
+            difficulty: "初級",
+            facts: `甲（男，30歲）與乙（男，28歲）為鄰居，素有積怨。某日晚間，兩人在社區門口相遇，發生激烈口角。乙突然從口袋拿出折疊刀，對甲叫囂：「信不信我捅死你！」並向甲逼近。
+
+甲見狀驚恐，隨手拿起路邊的磚頭丟向乙。磚頭擊中乙的頭部，乙當場倒地，送醫後因顱內出血不治死亡。
+
+請依據上述事實，分析甲的刑事責任。`,
+            examples: {
+                issue: "甲的行為是否符合刑法第23條之正當防衛？",
+                rule: "刑法第277條傷害罪：故意傷害他人身體<br>刑法第276條過失致死罪：過失致人於死<br>刑法第23條正當防衛：現在不法侵害、防衛行為、必要性",
+                application: `因為「甲在乙持刀威脅生命的緊急狀況下，出於保護自己而丟擲磚頭」，<br>符合「正當防衛的防衛意圖要件」，<br>所以「甲主觀上具有防衛意圖而非傷害故意」。<br><br>因為「乙持刀逼近構成現在進行中的不法侵害」，<br>符合「刑法第23條正當防衛的時間要件」，<br>所以「甲的防衛行為時機正當」。`,
+                conclusion: "甲的行為符合正當防衛，阻卻違法，不構成犯罪。"
+            },
+            hints: {
+                issue: ["想想甲的行為性質是什麼？", "是攻擊還是防衛？", "可以問「甲的行為是否符合正當防衛？」"],
+                rule: ["想想有哪些相關法條？刑法第277條？第23條？", "正當防衛的要件是什麼？", "列出「現在不法侵害」、「防衛行為」、「必要性」"],
+                application: ["記得使用「因為...符合...所以」的句型", "先說明甲的主觀意圖（防衛還是傷害？）", "再說明客觀上是否符合正當防衛的要件"],
+                conclusion: ["根據前面的分析，給出明確結論", "甲的行為是否構成犯罪？", "如果是正當防衛，結論應該是「不構成犯罪」"]
+            }
+        },
+        "theft_basic": {
+            id: "theft_basic",
+            title: "竊盜案例",
+            type: "刑法",
+            difficulty: "初級",
+            facts: `甲（男，25歲）因失業缺錢，某日深夜見鄰居乙家門窗未鎖，遂潛入乙家客廳，竊取放在桌上的現金新台幣5,000元及手機一支後離去。
+
+隔日上午，乙發現財物遭竊，查看監視器發現甲的身影，隨即報警。警方循線逮捕甲，甲坦承犯行。
+
+請分析甲的刑事責任。`,
+            examples: {
+                issue: "甲是否構成刑法第320條之竊盜罪？",
+                rule: "刑法第320條竊盜罪：意圖為自己或第三人不法之所有，而竊取他人之動產<br>構成要件：（1）客觀上竊取他人動產（2）主觀上具不法所有意圖",
+                application: `因為「甲潛入乙家拿取現金和手機」，<br>符合「竊取他人動產的客觀行為要件」，<br>所以「甲客觀上實施了竊取行為」。<br><br>因為「甲因缺錢而竊取，意圖據為己有」，<br>符合「不法所有意圖的主觀要件」，<br>所以「甲主觀上具備犯罪故意」。`,
+                conclusion: "甲的行為完全符合竊盜罪構成要件，成立竊盜罪。"
+            },
+            hints: {
+                issue: ["甲的行為涉及什麼犯罪？", "是竊盜還是其他罪名？", "可以問「甲是否構成竊盜罪？」"],
+                rule: ["竊盜罪的法條是什麼？", "刑法第320條的構成要件", "列出「竊取他人動產」、「不法所有意圖」等要件"],
+                application: ["甲是否有竊取行為？", "甲是否具有不法所有意圖？", "客觀上是否符合竊盜罪構成要件？"],
+                conclusion: ["甲是否構成竊盜罪？", "根據分析給出明確結論"]
+            }
+        },
+        "contract_dispute": {
+            id: "contract_dispute",
+            title: "契約履行爭議",
+            type: "民法",
+            difficulty: "中級",
+            facts: `甲欲出售其所有之房屋，與乙簽訂不動產買賣契約，約定價金為新台幣1,000萬元，乙應於簽約後30日內付清價金，甲則於收到價金後辦理所有權移轉登記。
+
+契約簽訂後第25日，乙表示因銀行貸款未通過，無法如期付款，請求延期30日。甲不同意延期，於第31日發函催告乙於10日內付款，否則解除契約。乙未於期限內付款。
+
+甲欲解除契約並請求違約金。請分析相關法律問題。`,
+            examples: {
+                issue: "甲是否可依民法第254條解除與乙之買賣契約？",
+                rule: "民法第254條：契約當事人之一方遲延給付者，他方當事人得定相當期限催告其履行，於期限內不履行時，得解除其契約<br>構成要件：（1）債務人給付遲延（2）催告程序合法（3）經催告仍不履行",
+                application: `因為「乙逾期第31日仍未付款」，<br>符合「債務人給付遲延的客觀事實」，<br>所以「乙構成給付遲延」。<br><br>因為「甲於第31日發函催告並給予10日寬限期」，<br>符合「定相當期限催告履行的法定程序」，<br>所以「催告程序合法有效」。`,
+                conclusion: "甲催告程序合法，乙經催告仍不履行，甲得依法解除契約。"
+            },
+            hints: {
+                issue: ["契約是否有效成立？", "乙的行為是否構成違約？", "甲是否可以解除契約？"],
+                rule: ["契約解除的要件", "債務不履行的類型", "民法第254條、第256條等相關規定"],
+                application: ["乙是否構成給付遲延？", "甲的催告程序是否合法？", "解除權是否已具備要件？"],
+                conclusion: ["甲是否可以解除契約？", "是否可以請求違約金？"]
+            }
+        }
+    };
+    
+    // 當前選中的案例
+    let currentCase = CASE_DATABASE.self_defense;
+    
+    // 學生學習記錄
+    let studentSession = {
+        sessionId: Date.now().toString(),
+        studentName: "匿名學生" + Math.random().toString(36).substr(2, 4),
+        startTime: new Date().toISOString(),
+        caseId: currentCase.id,
+        interactions: [],
+        stageProgress: {
+            issue: { attempts: 0, completed: false, answers: [] },
+            rule: { attempts: 0, completed: false, answers: [] },
+            application: { attempts: 0, completed: false, answers: [] },
+            conclusion: { attempts: 0, completed: false, answers: [] }
+        }
+    };
     // ========================================
 
     const stages = ['issue', 'rule', 'application', 'conclusion'];
@@ -536,34 +633,84 @@
         'conclusion': '最後，請根據上述推論，給出簡潔的法律結論（Conclusion）。'
     };
 
-    // 完整保留的練習提示語
-    const practiceHints = {
-        'issue': [
-            '提示：想想甲的行為性質是什麼？是攻擊還是防衛？',
-            '提示：可以問「甲的行為是否符合正當防衛？」',
-            '提示：或問「甲是否構成傷害致死罪？」'
-        ],
-        'rule': [
-            '提示：想想有哪些相關法條？刑法第277條？第23條？',
-            '提示：正當防衛的要件是什麼？',
-            '提示：列出「現在不法侵害」、「防衛行為」、「必要性」'
-        ],
-        'application': [
-            '提示：記得使用「因為...符合...所以」的句型',
-            '提示：先說明甲的主觀意圖（防衛還是傷害？）',
-            '提示：再說明客觀上是否符合正當防衛的要件'
-        ],
-        'conclusion': [
-            '提示：根據前面的分析，給出明確結論',
-            '提示：甲的行為是否構成犯罪？',
-            '提示：如果是正當防衛，結論應該是「不構成犯罪」'
-        ]
-    };
-
     const chatHistory = document.getElementById('chatHistory');
     const userInput = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
-    const caseFacts = document.getElementById('caseFactsText').innerText;
+
+    // 初始化頁面
+    function initializePage() {
+        loadCase('self_defense');
+    }
+
+    // 切換案例
+    function switchCase() {
+        const caseSelect = document.getElementById('caseSelect');
+        const selectedCaseId = caseSelect.value;
+        
+        // 重置訓練狀態
+        resetTraining();
+        
+        // 加載新案例
+        loadCase(selectedCaseId);
+        
+        // 記錄案例切換
+        studentSession.caseId = selectedCaseId;
+        studentSession.interactions.push({
+            timestamp: new Date().toISOString(),
+            action: 'case_switch',
+            data: { newCase: selectedCaseId }
+        });
+    }
+
+    // 載入案例
+    function loadCase(caseId) {
+        currentCase = CASE_DATABASE[caseId];
+        
+        // 更新案例事實
+        document.getElementById('caseFactsText').innerHTML = currentCase.facts;
+        document.getElementById('caseTitle').textContent = currentCase.title;
+        
+        // 更新標籤
+        const typeElem = document.getElementById('caseType');
+        const difficultyElem = document.getElementById('caseDifficulty');
+        
+        typeElem.textContent = currentCase.type;
+        typeElem.className = `case-badge ${currentCase.type === '刑法' ? 'badge-criminal' : 'badge-civil'}`;
+        
+        difficultyElem.textContent = currentCase.difficulty;
+        difficultyElem.className = `case-badge ${currentCase.difficulty === '初級' ? 'badge-beginner' : 'badge-intermediate'}`;
+        
+        // 更新範例內容
+        updateExampleContent();
+    }
+
+    // 更新範例內容
+    function updateExampleContent() {
+        const exampleContent = document.getElementById('exampleContent');
+        exampleContent.innerHTML = `
+            <h4>📝 各階段答題範例：</h4>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Issue (爭點)：</strong>
+                <p class="example-text">${currentCase.examples.issue}</p>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Rule (規則)：</strong>
+                <p class="example-text">${currentCase.examples.rule}</p>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Application (涵攝)：</strong>
+                <p class="example-text">${currentCase.examples.application}</p>
+            </div>
+            
+            <div>
+                <strong>Conclusion (結論)：</strong>
+                <p class="example-text">${currentCase.examples.conclusion}</p>
+            </div>
+        `;
+    }
 
     // Enter送出
     userInput.addEventListener('keydown', function(e) {
@@ -612,7 +759,7 @@
             appendMessage('🎯 練習模式已開啟！我會提供更多提示幫助你學習。', 'ai-message hint');
             
             // 立即給一個提示
-            const hints = practiceHints[stages[currentStageIndex]];
+            const hints = currentCase.hints[stages[currentStageIndex]];
             if (hints && hints[0]) {
                 setTimeout(() => {
                     appendMessage(hints[0], 'ai-message hint');
@@ -623,6 +770,13 @@
             button.style.background = '#f39c12';
             appendMessage('練習模式已關閉。', 'ai-message');
         }
+        
+        // 記錄練習模式切換
+        studentSession.interactions.push({
+            timestamp: new Date().toISOString(),
+            action: 'toggle_practice_mode',
+            data: { enabled: practiceMode }
+        });
     }
 
     async function handleSubmit() {
@@ -630,6 +784,23 @@
         if (!text) return;
 
         appendMessage(text, 'user-message');
+        
+        // 記錄學生回答
+        const currentStage = stages[currentStageIndex];
+        studentSession.stageProgress[currentStage].attempts++;
+        studentSession.stageProgress[currentStage].answers.push({
+            attempt: studentSession.stageProgress[currentStage].attempts,
+            answer: text,
+            timestamp: new Date().toISOString()
+        });
+        
+        studentSession.interactions.push({
+            timestamp: new Date().toISOString(),
+            action: 'student_answer',
+            stage: currentStage,
+            data: { answer: text, attempt: studentSession.stageProgress[currentStage].attempts }
+        });
+
         userInput.value = '';
         userInput.disabled = true;
         sendBtn.disabled = true;
@@ -637,9 +808,10 @@
 
         const payload = {
             student_input: text,
-            current_stage: stages[currentStageIndex],
-            case_facts: caseFacts,
-            practice_mode: practiceMode
+            current_stage: currentStage,
+            case_facts: currentCase.facts,
+            practice_mode: practiceMode,
+            case_id: currentCase.id
         };
 
         try {
@@ -673,11 +845,19 @@
         
         appendMessage(data.feedback, `ai-message ${feedbackClass}`);
 
+        // 記錄AI回饋
+        studentSession.interactions.push({
+            timestamp: new Date().toISOString(),
+            action: 'ai_feedback',
+            stage: stages[currentStageIndex],
+            data: { pass: isPass, feedback: data.feedback, attempt: attemptCount + 1 }
+        });
+
         // 處理失敗情況
         if (!isPass) {
             attemptCount++;
             
-            // Application 階段的額外提示 (保留原始邏輯)
+            // Application 階段的額外提示
             if (currentStageIndex === 2 && attemptCount >= 2) {
                 appendMessage(
                     `💡 <strong>額外提示：</strong><br>
@@ -692,14 +872,14 @@
             
             // 練習模式下給更多提示
             if (practiceMode && attemptCount >= 1) {
-                const hints = practiceHints[stages[currentStageIndex]];
+                const hints = currentCase.hints[stages[currentStageIndex]];
                 const hintIndex = Math.min(attemptCount, hints.length - 1);
                 setTimeout(() => {
                     appendMessage(hints[hintIndex], 'ai-message hint');
                 }, 1000);
             }
             
-            // 失敗太多次自動通過（給學生信心）
+            // 失敗太多次自動通過
             if (attemptCount >= 4) {
                 setTimeout(() => {
                     appendMessage(
@@ -716,6 +896,10 @@
     }
 
     function proceedToNextStage() {
+        // 標記當前階段完成
+        const currentStage = stages[currentStageIndex];
+        studentSession.stageProgress[currentStage].completed = true;
+        
         attemptCount = 0;
         
         if (currentStageIndex < stages.length - 1) {
@@ -727,7 +911,7 @@
                 
                 // 練習模式下自動給提示
                 if (practiceMode) {
-                    const hints = practiceHints[stages[currentStageIndex]];
+                    const hints = currentCase.hints[stages[currentStageIndex]];
                     if (hints && hints[0]) {
                         setTimeout(() => {
                             appendMessage(hints[0], 'ai-message hint');
@@ -737,8 +921,12 @@
             }, 800);
         } else {
             // 全部完成
+            studentSession.endTime = new Date().toISOString();
             setTimeout(() => {
                 appendMessage("🎉 太棒了！你已經完成了完整的 IRAC 法律推論過程。", 'ai-message feedback-pass');
+                
+                // 儲存學習記錄
+                saveStudentRecord();
                 
                 // 加入重新開始按鈕到次要控制區
                 const secondaryControls = document.querySelector('.secondary-controls');
@@ -750,6 +938,40 @@
                 resetBtn.onclick = resetTraining;
                 secondaryControls.appendChild(resetBtn);
             }, 800);
+        }
+    }
+
+    // 儲存學習記錄到 Google Drive
+    async function saveStudentRecord() {
+        try {
+            const recordData = {
+                sessionId: studentSession.sessionId,
+                studentName: studentSession.studentName,
+                caseId: studentSession.caseId,
+                caseTitle: currentCase.title,
+                startTime: studentSession.startTime,
+                endTime: studentSession.endTime,
+                totalDuration: new Date(studentSession.endTime) - new Date(studentSession.startTime),
+                stageProgress: studentSession.stageProgress,
+                totalInteractions: studentSession.interactions.length,
+                practiceMode: practiceMode,
+                summary: {
+                    totalAttempts: Object.values(studentSession.stageProgress).reduce((sum, stage) => sum + stage.attempts, 0),
+                    completedStages: Object.values(studentSession.stageProgress).filter(stage => stage.completed).length,
+                    mostDifficultStage: Object.entries(studentSession.stageProgress).reduce((max, [stage, data]) => 
+                        data.attempts > (studentSession.stageProgress[max] || {attempts: 0}).attempts ? stage : max, 'issue')
+                }
+            };
+
+            await fetch(SAVE_RECORD_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(recordData)
+            });
+
+            console.log('學習記錄已儲存', recordData);
+        } catch (error) {
+            console.error('儲存學習記錄失敗:', error);
         }
     }
 
@@ -779,6 +1001,21 @@
         attemptCount = 0;
         chatHistory.innerHTML = '';
         
+        // 重置學習記錄
+        studentSession = {
+            sessionId: Date.now().toString(),
+            studentName: "匿名學生" + Math.random().toString(36).substr(2, 4),
+            startTime: new Date().toISOString(),
+            caseId: currentCase.id,
+            interactions: [],
+            stageProgress: {
+                issue: { attempts: 0, completed: false, answers: [] },
+                rule: { attempts: 0, completed: false, answers: [] },
+                application: { attempts: 0, completed: false, answers: [] },
+                conclusion: { attempts: 0, completed: false, answers: [] }
+            }
+        };
+        
         // 清除次要控制區的重新開始按鈕
         const secondaryControls = document.querySelector('.secondary-controls');
         const existingResetBtn = secondaryControls.querySelector('button[onclick*="resetTraining"]');
@@ -795,6 +1032,9 @@
             'ai-message'
         );
     }
+
+    // 頁面載入時初始化
+    document.addEventListener('DOMContentLoaded', initializePage);
 </script>
 
 </body>
