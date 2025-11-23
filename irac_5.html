@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IRAC 法律思維導航儀</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #c0392b;
+            --success-color: #27ae60;
+            --info-color: #3498db;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "PingFang TC", "Heiti TC", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: #333;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        h1 { margin: 0; font-size: 1.5rem; }
+        .subtitle { font-size: 0.9rem; opacity: 0.8; }
+
+        /* Case Selector */
+        .case-selector {
+            background: #ecf0f1;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .case-selector select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            min-width: 200px;
+        }
+
+        .case-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .badge-criminal { background: #e74c3c; color: white; }
+        .badge-civil { background: #3498db; color: white; }
+        .badge-beginner { background: #27ae60; color: white; }
+        .badge-intermediate { background: #f39c12; color: white; }
+
+        /* Main Layout */
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 手機版專用：切換按鈕樣式 */
+        .mobile-case-toggle {
+            display: none;
+            background: #ecf0f1;
+            color: var(--primary-color);
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            border-bottom: 1px solid #ddd;
+            font-size: 1rem;
+            z-index: 15;
+        }
+        .mobile-case-toggle:hover { background: #dee2e6; }
+
+        /* Left Panel: Case Facts */
+        .left-panel {
+            width: 35%;
+            background-color: #eef2f5;
+            padding: 2rem;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .case-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            line-height: 1.8;
+        }
+
+        .case-title {
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        /* 參考範例按鈕樣式 */
+        .example-button {
+            background: var(--info-color);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .example-button:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .example-content {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 8px;
+            border-left: 4px solid var(--info-color);
+        }
+
+        .example-content h4 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        .example-text {
+            color: #27ae60;
+            font-style: italic;
+            line-height: 1.8;
+            font-size: 0.9rem;
+        }
+
+        /* 練習模式標示 */
+        .practice-mode-indicator {
+            display: none;
+            background: #f39c12;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        /* Right Panel: Interaction */
+        .right-panel {
+            width: 65%;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            background: white;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 1.5rem;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            flex-shrink: 0;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0.4;
+            transition: all 0.3s;
+            position: relative;
+            flex: 1;
+        }
+
+        .step.active { opacity: 1; font-weight: bold; color: var(--primary-color); }
+        .step.completed { opacity: 1; color: var(--success-color); }
+        
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #ccc;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .step.active .step-circle { background: var(--primary-color); transform: scale(1.1); }
+        .step.completed .step-circle { background: var(--success-color); }
+
+        /* Chat Area */
+        .chat-history {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 1rem;
+            border-radius: 12px;
+            line-height: 1.6;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            background-color: #f0f4f8;
+            color: #2c3e50;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .ai-message.feedback-fail {
+            background-color: #fff5f5;
+            border-left-color: var(--accent-color);
+        }
+
+        .ai-message.feedback-pass {
+            background-color: #e8f8f5;
+            border-left-color: var(--success-color);
+        }
+
+        .ai-message.hint {
+            background-color: #fff9e6;
+            border-left-color: #f39c12;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Input Area - 改善後的樣式 */
+        .input-area {
+            padding: 2rem;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            flex-shrink: 0;
+        }
+
+        textarea {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 1rem;
+            height: 120px;
+            min-height: 80px;
+            max-height: 250px;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        button {
+            padding: 0 2rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            height: 120px;
+        }
+
+        button:hover { background-color: #34495e; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        /* 次要控制區域 */
+        .secondary-controls {
+            padding: 1rem 2rem;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .practice-button {
+            background: #f39c12;
+            padding: 8px 16px;
+            height: auto;
+        }
+
+        .practice-button:hover {
+            background: #e67e22;
+        }
+
+        /* Loading dots */
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80%, 100% { content: ''; }
+        }
+
+        /* 手機版響應式 CSS */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            header { padding: 0.8rem 1rem; }
+            h1 { font-size: 1.2rem; }
+            .course-info { display: none; }
+
+            .case-selector { padding: 0.8rem 1rem; }
+            .case-selector select { min-width: 150px; font-size: 0.8rem; }
+
+            .mobile-case-toggle { display: block; }
+
+            .left-panel {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 50;
+                display: none;
+                border-right: none;
+                padding: 1.5rem;
+            }
+
+            .left-panel.show {
+                display: block;
+                animation: slideDown 0.3s ease-out;
+            }
+
+            .right-panel {
+                width: 100%;
+                height: 100%;
+            }
+
+            .progress-bar { padding: 10px 5px; }
+            .step span { font-size: 0.7rem; display: none; }
+            .step.active span { display: block; }
+            .step-circle { width: 25px; height: 25px; font-size: 12px; }
+
+            .chat-history { padding: 1rem; gap: 1rem; }
+            .message { max-width: 90%; padding: 0.8rem; font-size: 0.95rem; }
+
+            .input-area { padding: 0.8rem; gap: 0.5rem; }
+            textarea { 
+                padding: 0.8rem; 
+                height: 100px; 
+                min-height: 70px; 
+                max-height: 180px; 
+            }
+            button { padding: 0 1rem; height: 100px; font-size: 0.9rem; }
+            
+            .secondary-controls { padding: 0.8rem 1rem; }
+            .practice-button span { display: none; }
+            .practice-button::after { content: "🎯"; }
+            .practice-button { font-size: 1.2rem; padding: 8px 12px; }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>IRAC 法律思維導航儀</h1>
+        <span class="subtitle">AI-Powered Legal Reasoning Trainer</span>
+    </div>
+    <div class="course-info" style="font-size: 0.9rem;">課程：法律與人工智慧</div>
+</header>
+
+<div class="case-selector">
+    <label for="caseSelect"><strong>📚 選擇案例：</strong></label>
+    <select id="caseSelect" onchange="switchCase()">
+        <option value="self_defense">正當防衛案例</option>
+        <option value="theft_basic">竊盜案例</option>
+        <option value="contract_dispute">契約履行爭議</option>
+    </select>
+    <span id="caseType" class="case-badge badge-criminal">刑法</span>
+    <span id="caseDifficulty" class="case-badge badge-beginner">初級</span>
+</div>
+
+<div class="mobile-case-toggle" onclick="toggleMobileCase()">
+    📄 點擊查看/隱藏 案例事實
+</div>
+
+<div class="container">
+    <div class="left-panel" id="leftPanel">
+        <div class="case-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="case-title" style="margin-bottom:0;" id="caseTitle">案例事實 (Case Facts)</div>
+                <button onclick="toggleMobileCase()" class="mobile-close-btn" style="display:none; width:auto; height:auto; padding:5px 10px; background:none; color:#999; font-size:1.2rem;">✕</button>
+            </div>
+            
+            <p id="caseFactsText" style="margin-top: 1rem;">
+                <!-- 案例事實將由 JavaScript 動態更新 -->
+            </p>
+            
+            <button onclick="toggleMobileCase()" class="mobile-close-btn" style="width:100%; margin-top:15px; height:45px; background:#7f8c8d; display:none;">
+                回到對話
+            </button>
+        </div>
+        
+        <button class="example-button" onclick="toggleExample()">
+            📖 查看參考範例
+        </button>
+        
+        <div id="exampleContent" class="example-content">
+            <h4>📝 各階段答題範例：</h4>
+            <!-- 範例內容將由 JavaScript 動態更新 -->
+        </div>
+        
+        <div style="margin-top: 20px; color: #666; font-size: 0.85rem;">
+            <p><strong>💡 老師的小提示：</strong></p>
+            <ul>
+                <li>請不要急著判斷有罪無罪。</li>
+                <li>依照右側的導航，一步一步建立論證。</li>
+                <li>AI 將擔任你的「蘇格拉底導師」。</li>
+                <li>卡關時可以點擊「練習模式」獲得更多提示。</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="progress-bar">
+            <div class="step active" id="step-issue">
+                <div class="step-circle">I</div>
+                <span>爭點 (Issue)</span>
+            </div>
+            <div class="step" id="step-rule">
+                <div class="step-circle">R</div>
+                <span>規則 (Rule)</span>
+            </div>
+            <div class="step" id="step-application">
+                <div class="step-circle">A</div>
+                <span>涵攝 (Application)</span>
+            </div>
+            <div class="step" id="step-conclusion">
+                <div class="step-circle">C</div>
+                <span>結論 (Conclusion)</span>
+            </div>
+        </div>
+
+        <div id="practiceModeIndicator" class="practice-mode-indicator">
+            🎯 練習模式開啟中 - AI會提供更多引導
+        </div>
+
+        <div class="chat-history" id="chatHistory">
+            <div class="message ai-message">
+                歡迎來到思維訓練。我們從第一步開始：<br><br>
+                <strong>請指出本案最核心的法律爭點（Issue）是什麼？</strong><br>
+                （請試著用問句形式提出，例如：甲的行為是否構成...？）
+            </div>
+        </div>
+
+        <div class="input-area">
+            <textarea id="userInput" placeholder="在此輸入你的想法..."></textarea>
+            <button id="sendBtn" onclick="handleSubmit()">送出</button>
+        </div>
+        
+        <div class="secondary-controls">
+            <button class="practice-button" onclick="togglePracticeMode()">
+                <span>🎯 練習模式</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // =================CONFIG=================
+    const N8N_WEBHOOK_URL = "https://kf0630.zeabur.app/webhook/irac-tutor"; 
+    
+    // 案例資料庫
+    const CASE_DATABASE = {
+        "self_defense": {
+            id: "self_defense",
+            title: "正當防衛案例",
+            type: "刑法",
+            difficulty: "初級",
+            facts: `甲（男，30歲）與乙（男，28歲）為鄰居，素有積怨。某日晚間，兩人在社區門口相遇，發生激烈口角。乙突然從口袋拿出折疊刀，對甲叫囂：「信不信我捅死你！」並向甲逼近。
+
+甲見狀驚恐，隨手拿起路邊的磚頭丟向乙。磚頭擊中乙的頭部，乙當場倒地，送醫後因顱內出血不治死亡。
+
+請依據上述事實，分析甲的刑事責任。`,
+            examples: {
+                issue: "甲的行為是否符合刑法第23條之正當防衛？",
+                rule: "刑法第277條傷害罪：故意傷害他人身體<br>刑法第276條過失致死罪：過失致人於死<br>刑法第23條正當防衛：現在不法侵害、防衛行為、必要性",
+                application: `因為「甲在乙持刀威脅生命的緊急狀況下，出於保護自己而丟擲磚頭」，<br>符合「正當防衛的防衛意圖要件」，<br>所以「甲主觀上具有防衛意圖而非傷害故意」。<br><br>因為「乙持刀逼近構成現在進行中的不法侵害」，<br>符合「刑法第23條正當防衛的時間要件」，<br>所以「甲的防衛行為時機正當」。`,
+                conclusion: "甲的行為符合正當防衛，阻卻違法，不構成犯罪。"
+            },
+            hints: {
+                issue: ["想想甲的行為性質是什麼？", "是攻擊還是防衛？", "可以問「甲的行為是否符合正當防衛？」"],
+                rule: ["想想有哪些相關法條？刑法第277條？第23條？", "正當防衛的要件是什麼？", "列出「現在不法侵害」、「防衛行為」、「必要性」"],
+                application: ["記得使用「因為...符合...所以」的句型", "先說明甲的主觀意圖（防衛還是傷害？）", "再說明客觀上是否符合正當防衛的要件"],
+                conclusion: ["根據前面的分析，給出明確結論", "甲的行為是否構成犯罪？", "如果是正當防衛，結論應該是「不構成犯罪」"]
+            }
+        },
+        "theft_basic": {
+            id: "theft_basic",
+            title: "竊盜案例",
+            type: "刑法",
+            difficulty: "初級",
+            facts: `甲（男，25歲）因失業缺錢，某日深夜見鄰居乙家門窗未鎖，遂潛入乙家客廳，竊取放在桌上的現金新台幣5,000元及手機一支後離去。
+
+隔日上午，乙發現財物遭竊，查看監視器發現甲的身影，隨即報警。警方循線逮捕甲，甲坦承犯行。
+
+請分析甲的刑事責任。`,
+            examples: {
+                issue: "甲是否構成刑法第320條之竊盜罪？",
+                rule: "刑法第320條竊盜罪：意圖為自己或第三人不法之所有，而竊取他人之動產<br>構成要件：（1）客觀上竊取他人動產（2）主觀上具不法所有意圖",
+                application: `因為「甲潛入乙家拿取現金和手機」，<br>符合「竊取他人動產的客觀行為要件」，<br>所以「甲客觀上實施了竊取行為」。<br><br>因為「甲因缺錢而竊取，意圖據為己有」，<br>符合「不法所有意圖的主觀要件」，<br>所以「甲主觀上具備犯罪故意」。`,
+                conclusion: "甲的行為完全符合竊盜罪構成要件，成立竊盜罪。"
+            },
+            hints: {
+                issue: ["甲的行為涉及什麼犯罪？", "是竊盜還是其他罪名？", "可以問「甲是否構成竊盜罪？」"],
+                rule: ["竊盜罪的法條是什麼？", "刑法第320條的構成要件", "列出「竊取他人動產」、「不法所有意圖」等要件"],
+                application: ["甲是否有竊取行為？", "甲是否具有不法所有意圖？", "客觀上是否符合竊盜罪構成要件？"],
+                conclusion: ["甲是否構成竊盜罪？", "根據分析給出明確結論"]
+            }
+        },
+        "contract_dispute": {
+            id: "contract_dispute",
+            title: "契約履行爭議",
+            type: "民法",
+            difficulty: "中級",
+            facts: `甲欲出售其所有之房屋，與乙簽訂不動產買賣契約，約定價金為新台幣1,000萬元，乙應於簽約後30日內付清價金，甲則於收到價金後辦理所有權移轉登記。
+
+契約簽訂後第25日，乙表示因銀行貸款未通過，無法如期付款，請求延期30日。甲不同意延期，於第31日發函催告乙於10日內付款，否則解除契約。乙未於期限內付款。
+
+甲欲解除契約並請求違約金。請分析相關法律問題。`,
+            examples: {
+                issue: "甲是否可依民法第254條解除與乙之買賣契約？",
+                rule: "民法第254條：契約當事人之一方遲延給付者，他方當事人得定相當期限催告其履行，於期限內不履行時，得解除其契約<br>構成要件：（1）債務人給付遲延（2）催告程序合法（3）經催告仍不履行",
+                application: `因為「乙逾期第31日仍未付款」，<br>符合「債務人給付遲延的客觀事實」，<br>所以「乙構成給付遲延」。<br><br>因為「甲於第31日發函催告並給予10日寬限期」，<br>符合「定相當期限催告履行的法定程序」，<br>所以「催告程序合法有效」。`,
+                conclusion: "甲催告程序合法，乙經催告仍不履行，甲得依法解除契約。"
+            },
+            hints: {
+                issue: ["契約是否有效成立？", "乙的行為是否構成違約？", "甲是否可以解除契約？"],
+                rule: ["契約解除的要件", "債務不履行的類型", "民法第254條、第256條等相關規定"],
+                application: ["乙是否構成給付遲延？", "甲的催告程序是否合法？", "解除權是否已具備要件？"],
+                conclusion: ["甲是否可以解除契約？", "是否可以請求違約金？"]
+            }
+        }
+    };
+    
+    // 當前選中的案例
+    let currentCase = CASE_DATABASE.self_defense;
+    
+    // 學生學習記錄
+    let studentSession = {
+        sessionId: Date.now().toString(),
+        studentName: "匿名學生" + Math.random().toString(36).substr(2, 4),
+        startTime: new Date().toISOString(),
+        caseId: currentCase.id,
+        interactions: [],
+        stageProgress: {
+            issue: { attempts: 0, completed: false, answers: [] },
+            rule: { attempts: 0, completed: false, answers: [] },
+            application: { attempts: 0, completed: false, answers: [] },
+            conclusion: { attempts: 0, completed: false, answers: [] }
+        }
+    };
+    // ========================================
+
+    const stages = ['issue', 'rule', 'application', 'conclusion'];
+    let currentStageIndex = 0;
+    let attemptCount = 0;
+    let practiceMode = false;
+    
+    // 階段提示語
+    const stagePrompts = {
+        'issue': '請指出本案最核心的法律爭點（Issue）是什麼？',
+        'rule': '針對你提出的爭點，法律規範（Rule）是什麼？請列出具體的構成要件。',
+        'application': '現在進行涵攝（Application）。請將本案事實填入上述要件中，並論證為何符合（或不符合）。',
+        'conclusion': '最後，請根據上述推論，給出簡潔的法律結論（Conclusion）。'
+    };
+
+    const chatHistory = document.getElementById('chatHistory');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // 初始化頁面
+    function initializePage() {
+        loadCase('self_defense');
+    }
+
+    // 切換案例
+    function switchCase() {
+        const caseSelect = document.getElementById('caseSelect');
+        const selectedCaseId = caseSelect.value;
+        
+        // 重置訓練狀態
+        resetTraining();
+        
+        // 加載新案例
+        loadCase(selectedCaseId);
+        
+        // 記錄案例切換
+        studentSession.caseId = selectedCaseId;
+        studentSession.interactions.push({
+            timestamp: new Date().toISOString(),
+            action: 'case_switch',
+            data: { newCase: selectedCaseId }
+        });
+    }
+
+    // 載入案例
+    function loadCase(caseId) {
+        currentCase = CASE_DATABASE[caseId];
+        
+        // 更新案例事實
+        document.getElementById('caseFactsText').innerHTML = currentCase.facts;
+        document.getElementById('caseTitle').textContent = currentCase.title;
+        
+        // 更新標籤
+        const typeElem = document.getElementById('caseType');
+        const difficultyElem = document.getElementById('caseDifficulty');
+        
+        typeElem.textContent = currentCase.type;
+        typeElem.className = `case-badge ${currentCase.type === '刑法' ? 'badge-criminal' : 'badge-civil'}`;
+        
+        difficultyElem.textContent = currentCase.difficulty;
+        difficultyElem.className = `case-badge ${currentCase.difficulty === '初級' ? 'badge-beginner' : 'badge-intermediate'}`;
+        
+        // 更新範例內容
+        updateExampleContent();
+    }
+
+    // 更新範例內容
+    function updateExampleContent() {
+        const exampleContent = document.getElementById('exampleContent');
+        exampleContent.innerHTML = `
+            <h4>📝 各階段答題範例：</h4>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Issue (爭點)：</strong>
+                <p class="example-text">${currentCase.examples.issue}</p>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Rule (規則)：</strong>
+                <p class="example-text">${currentCase.examples.rule}</p>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Application (涵攝)：</strong>
+                <p class="example-text">${currentCase.examples.application}</p>
+            </div>
+            
+            <div>
+                <strong>Conclusion (結論)：</strong>
+                <p class="example-text">${currentCase.examples.conclusion}</p>
+            </div>
+        `;
+    }
+
+    // Enter送出
+    userInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSubmit();
+        }
+    });
+
+    // 手機版：切換案例顯示
+    function toggleMobileCase() {
+        const panel = document.getElementById('leftPanel');
+        panel.classList.toggle('show');
+        
+        const closeBtns = document.querySelectorAll('.mobile-close-btn');
+        if (window.innerWidth <= 768) {
+            closeBtns.forEach(btn => {
+                btn.style.display = panel.classList.contains('show') ? 'block' : 'none';
+            });
+        }
+    }
+
+    // 切換參考範例顯示
+    function toggleExample() {
+        const example = document.getElementById('exampleContent');
+        const button = document.querySelector('.example-button');
+        
+        if (example.style.display === 'none' || !example.style.display) {
+            example.style.display = 'block';
+            button.textContent = '📖 隱藏參考範例';
+        } else {
+            example.style.display = 'none';
+            button.textContent = '📖 查看參考範例';
+        }
+    }
+
+    // 切換練習模式
+    function togglePracticeMode() {
+        practiceMode = !practiceMode;
+        const indicator = document.getElementById('practiceModeIndicator');
+        const button = document.querySelector('.practice-button');
+        
+        if (practiceMode) {
+            indicator.style.display = 'block';
+            button.style.background = '#e67e22';
+            appendMessage('🎯 練習模式已開啟！我會提供更多提示幫助你學習。', 'ai-message hint');
+            
+            // 立即給一個提示
+            const hints = currentCase.hints[stages[currentStageIndex]];
+            if (hints && hints[0]) {
+                setTimeout(() => {
+                    appendMessage(hints[0], 'ai-message hint');
+                }, 500);
+            }
+        } else {
+            indicator.style.display = 'none';
+            button.style.background = '#f39c12';
+            appendMessage('練習模式已關閉。', 'ai-message');
+        }
+        
+        // 記錄練習模式切換
+        studentSession.interactions.push({
+            timestamp: new Date().toISOString(),
+            action: 'toggle_practice_mode',
+            data: { enabled: practiceMode }
+        });
+    }
+
+    async function handleSubmit() {
+        const text = userInput.value.trim();
+        if (!text) return;
+
+        appendMessage(text, 'user-message');
+        
+        // 記錄學生回答
+        const currentStage = stages[currentStageIndex];
+        studentSession.stageProgress[currentStage].attempts++;
+        studentSession.stageProgress[currentStage].answers.push({
+            attempt: studentSession.stageProgress[currentStage].attempts,
+            answer: text,
+            timestamp: new Date().toISOString()
+        });
+        
+        studentSession.interactions.push({
+            timestamp: new Date().toISOString(),
+            action: 'student_answer',
+            stage: currentStage,
+            data: { answer: text, attempt: studentSession.stageProgress[currentStage].attempts }
+        });
+
+        userInput.value = '';
+        userInput.disabled = true;
+        sendBtn.disabled = true;
+        sendBtn.textContent = '...';
+
+        // 產生或取得唯一的學習會話 ID
+        let sessionId = sessionStorage.getItem('irac_session_id');
+        if (!sessionId) {
+            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+            sessionStorage.setItem('irac_session_id', sessionId);
+        }
+
+        const payload = {
+            student_input: text,
+            current_stage: stages[currentStageIndex],
+            case_facts: currentCase.facts,
+            practice_mode: practiceMode,
+            case_id: currentCase.id,
+            student_session_id: sessionId  // 新增這一行
+        };
+
+        try {
+            const response = await fetch(N8N_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error('網路連線錯誤或 n8n 未回應');
+            }
+
+            const data = await response.json();
+            handleAIResponse(data);
+
+        } catch (error) {
+            console.error(error);
+            appendMessage("⚠️ 系統連線錯誤。請檢查 n8n Webhook URL 是否正確。", "ai-message feedback-fail");
+        } finally {
+            userInput.disabled = false;
+            sendBtn.disabled = false;
+            sendBtn.textContent = '送出';
+            userInput.focus();
+        }
+    }
+
+    function handleAIResponse(data) {
+        const isPass = data.pass;
+        const feedbackClass = isPass ? 'feedback-pass' : 'feedback-fail';
+        
+        appendMessage(data.feedback, `ai-message ${feedbackClass}`);
+
+        // 記錄AI回饋
+        studentSession.interactions.push({
+            timestamp: new Date().toISOString(),
+            action: 'ai_feedback',
+            stage: stages[currentStageIndex],
+            data: { pass: isPass, feedback: data.feedback, attempt: attemptCount + 1 }
+        });
+
+        // 處理失敗情況
+        if (!isPass) {
+            attemptCount++;
+            
+            // Application 階段的額外提示
+            if (currentStageIndex === 2 && attemptCount >= 2) {
+                appendMessage(
+                    `💡 <strong>額外提示：</strong><br>
+                    試著這樣組織你的答案：<br>
+                    1. 先說明甲的主觀心態（防衛意圖）<br>
+                    2. 再說明乙的行為（現在不法侵害）<br>
+                    3. 最後說明防衛手段是否適當<br>
+                    <br>記得用「因為...符合...所以」的句型！`, 
+                    'ai-message hint'
+                );
+            }
+            
+            // 練習模式下給更多提示
+            if (practiceMode && attemptCount >= 1) {
+                const hints = currentCase.hints[stages[currentStageIndex]];
+                const hintIndex = Math.min(attemptCount, hints.length - 1);
+                setTimeout(() => {
+                    appendMessage(hints[hintIndex], 'ai-message hint');
+                }, 1000);
+            }
+            
+            // 失敗太多次自動通過
+            if (attemptCount >= 4) {
+                setTimeout(() => {
+                    appendMessage(
+                        '💪 看得出來你很努力！讓我們先進入下一階段，之後可以再回來練習。', 
+                        'ai-message feedback-pass'
+                    );
+                    proceedToNextStage();
+                }, 2000);
+            }
+        } else {
+            // 通過！進入下一階段
+            proceedToNextStage();
+        }
+    }
+
+    function proceedToNextStage() {
+        // 標記當前階段完成
+        const currentStage = stages[currentStageIndex];
+        studentSession.stageProgress[currentStage].completed = true;
+        
+        attemptCount = 0;
+        
+        if (currentStageIndex < stages.length - 1) {
+            currentStageIndex++;
+            updateProgressBar();
+            
+            setTimeout(() => {
+                appendMessage(`✅ 階段完成！接下來：<br>${stagePrompts[stages[currentStageIndex]]}`, 'ai-message');
+                
+                // 練習模式下自動給提示
+                if (practiceMode) {
+                    const hints = currentCase.hints[stages[currentStageIndex]];
+                    if (hints && hints[0]) {
+                        setTimeout(() => {
+                            appendMessage(hints[0], 'ai-message hint');
+                        }, 1000);
+                    }
+                }
+            }, 800);
+        } else {
+            // 全部完成
+            studentSession.endTime = new Date().toISOString();
+            setTimeout(() => {
+                appendMessage("🎉 太棒了！你已經完成了完整的 IRAC 法律推論過程。", 'ai-message feedback-pass');
+                
+
+                // 加入重新開始按鈕到次要控制區
+                const secondaryControls = document.querySelector('.secondary-controls');
+                const resetBtn = document.createElement('button');
+                resetBtn.textContent = '🔄 重新開始新案例';
+                resetBtn.style.height = 'auto';
+                resetBtn.style.padding = '8px 16px';
+                resetBtn.style.marginLeft = '10px';
+                resetBtn.onclick = resetTraining;
+                secondaryControls.appendChild(resetBtn);
+            }, 800);
+        }
+    }
+
+    // 儲存學習記錄到 Google Drive
+    function appendMessage(htmlText, className) {
+        const div = document.createElement('div');
+        div.className = `message ${className}`;
+        div.innerHTML = htmlText.replace(/\n/g, '<br>');
+        chatHistory.appendChild(div);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function updateProgressBar() {
+        const allSteps = document.querySelectorAll('.step');
+        allSteps.forEach((step, index) => {
+            step.classList.remove('active');
+            if (index < currentStageIndex) {
+                step.classList.add('completed');
+            } else if (index === currentStageIndex) {
+                step.classList.add('active');
+            }
+        });
+    }
+
+    // 重新開始訓練
+    function resetTraining() {
+        currentStageIndex = 0;
+        attemptCount = 0;
+        chatHistory.innerHTML = '';
+        
+        // 重置學習記錄
+        studentSession = {
+            sessionId: Date.now().toString(),
+            studentName: "匿名學生" + Math.random().toString(36).substr(2, 4),
+            startTime: new Date().toISOString(),
+            caseId: currentCase.id,
+            interactions: [],
+            stageProgress: {
+                issue: { attempts: 0, completed: false, answers: [] },
+                rule: { attempts: 0, completed: false, answers: [] },
+                application: { attempts: 0, completed: false, answers: [] },
+                conclusion: { attempts: 0, completed: false, answers: [] }
+            }
+        };
+        
+        // 清除次要控制區的重新開始按鈕
+        const secondaryControls = document.querySelector('.secondary-controls');
+        const existingResetBtn = secondaryControls.querySelector('button[onclick*="resetTraining"]');
+        if (existingResetBtn && existingResetBtn.textContent.includes('重新開始')) {
+            existingResetBtn.remove();
+        }
+        
+        updateProgressBar();
+        
+        appendMessage(
+            '歡迎來到思維訓練。我們從第一步開始：<br><br>' +
+            '<strong>請指出本案最核心的法律爭點（Issue）是什麼？</strong><br>' +
+            '（請試著用問句形式提出，例如：甲的行為是否構成...？）',
+            'ai-message'
+        );
+    }
+
+    // 頁面載入時初始化
+    document.addEventListener('DOMContentLoaded', initializePage);
+</script>
+
+</body>
+</html>
