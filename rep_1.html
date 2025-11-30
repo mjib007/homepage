@@ -275,6 +275,10 @@
         <div class="header">
             <h1>🤖 REP協定智能協調平台</h1>
             <p>讓AI幫助群體做出更好的決策</p>
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 12px; margin: 10px 0; font-size: 0.9rem; color: #856404;">
+                <strong>💡 使用提醒：</strong>
+                • 參與者回應會自動同步到Google Sheets • 建議主持人先建立會話，再分享會話ID
+            </div>
 
         </div>
         
@@ -633,8 +637,8 @@
             document.getElementById('flexibilityLabel').textContent = labels[value];
         }
         
-        // 提交回應
-        function submitResponse() {
+        // 提交回應 - 直接寫入Google Sheets
+        async function submitResponse() {
             const sessionId = sessionStorage.getItem('currentParticipantSession');
             const participantName = sessionStorage.getItem('currentParticipantName');
             
@@ -649,24 +653,76 @@
                 return;
             }
             
-            // 移除舊回應
-            sessions[sessionId].responses = sessions[sessionId].responses.filter(r => r.name !== participantName);
+            showAlert('warning', '📤 正在提交回應到Google Sheets...');
             
-            // 加入新回應
-            sessions[sessionId].responses.push({
-                name: participantName,
-                preference,
-                sensitivity,
-                constraints,
-                flexibility: parseInt(flexibility),
-                notes,
-                submitTime: new Date().toISOString()
-            });
-            
-            // 儲存到localStorage
-            localStorage.setItem('rep_sessions', JSON.stringify(sessions));
-            
-            showAlert('success', '✅ 回應提交成功！請等待主持人開始分析');
+            try {
+                // 準備要寫入Google Sheets的資料
+                const sheetData = {
+                    session_id: sessionId,
+                    action: 'submit_response',
+                    participant_data: {
+                        姓名: participantName,
+                        偏好描述: preference,
+                        敏感性信號: sensitivity,
+                        底線限制: constraints,
+                        '彈性度(1-10)': parseInt(flexibility),
+                        備註: notes,
+                        提交時間: new Date().toISOString()
+                    },
+                    sheet_id: '1tIsurF3wPtHqmvw2BHB7gX1-LCVPR43SzhEwxxystRs'
+                };
+                
+                // 調用N8N來寫入Google Sheets
+                const response = await fetch('https://kf0630.zeabur.app/webhook/rep-coordination', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(sheetData)
+                });
+                
+                if (response.ok) {
+                    showAlert('success', '✅ 回應已成功提交到Google Sheets！');
+                    showAlert('info', '💡 主持人可以在Google Sheets中看到您的回應，並在準備好時開始分析');
+                    
+                    // 本地也儲存一份（用於界面顯示）
+                    const sessionData = sessions[sessionId] || { responses: [] };
+                    sessionData.responses = sessionData.responses.filter(r => r.name !== participantName);
+                    sessionData.responses.push({
+                        name: participantName,
+                        preference,
+                        sensitivity,
+                        constraints,
+                        flexibility: parseInt(flexibility),
+                        notes,
+                        submitTime: new Date().toISOString()
+                    });
+                    sessions[sessionId] = sessionData;
+                    localStorage.setItem('rep_sessions', JSON.stringify(sessions));
+                    
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+            } catch (error) {
+                console.error('提交回應失敗:', error);
+                showAlert('error', `❌ 提交失敗: ${error.message}`);
+                showAlert('warning', '🔄 改為本地儲存，請確保主持人使用相同瀏覽器查看');
+                
+                // 降級到本地儲存
+                const sessionData = sessions[sessionId] || { responses: [] };
+                sessionData.responses = sessionData.responses.filter(r => r.name !== participantName);
+                sessionData.responses.push({
+                    name: participantName,
+                    preference,
+                    sensitivity,
+                    constraints,
+                    flexibility: parseInt(flexibility),
+                    notes,
+                    submitTime: new Date().toISOString()
+                });
+                sessions[sessionId] = sessionData;
+                localStorage.setItem('rep_sessions', JSON.stringify(sessions));
+                showAlert('success', '✅ 回應已本地儲存');
+            }
             
             // 清空表單
             document.getElementById('userPreference').value = '';
