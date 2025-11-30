@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REP協定智能協調平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 15px 15px 0 0;
+            overflow: hidden;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .tab.active {
+            background: white;
+            color: #667eea;
+        }
+        
+        .tab:hover {
+            background: #e9ecef;
+        }
+        
+        .tab-content {
+            background: white;
+            border-radius: 0 0 15px 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            min-height: 600px;
+        }
+        
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .status-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .metric-card {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .metric-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .metric-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .participant-list {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .participant-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .participant-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 REP協定智能協調平台</h1>
+            <p>讓AI幫助群體做出更好的決策</p>
+
+        </div>
+        
+        <!-- 標籤頁 -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('host')">🎯 主持人界面</button>
+            <button class="tab" onclick="showTab('participant')">👥 參與者界面</button>
+            <button class="tab" onclick="showTab('results')">📊 結果查看</button>
+        </div>
+        
+        <div class="tab-content">
+            <!-- 主持人界面 -->
+            <div id="host" class="tab-panel active">
+                <h2>🎯 主持人控制台</h2>
+                
+                <!-- 創建會話 -->
+                <div class="status-card">
+                    <h3>➕ 創建新的協調會話</h3>
+                    <div class="two-columns">
+                        <div>
+                            <div class="form-group">
+                                <label>主持人姓名</label>
+                                <input type="text" id="hostName" value="主持人" />
+                            </div>
+                            <div class="form-group">
+                                <label>會話標題</label>
+                                <input type="text" id="sessionTitle" value="群體決策協調" />
+                            </div>
+                        </div>
+                        <div>
+                            <div class="form-group">
+                                <label>問題模板</label>
+                                <select id="questionTemplate" onchange="updateQuestion()">
+                                    <option value="聚會安排">聚會安排</option>
+                                    <option value="會議時間">會議時間</option>
+                                    <option value="項目資源">項目資源</option>
+                                    <option value="自定義">自定義</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>協調問題</label>
+                        <textarea id="sessionQuestion" rows="3">我們要安排一次聚會活動，請說明您的時間、地點、預算偏好，以及如果其他條件改變您會如何調整？</textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="createSession()">🚀 創建會話</button>
+                </div>
+                
+                <!-- 會話監控 -->
+                <div id="sessionMonitor" class="hidden">
+                    <h3>📊 會話監控</h3>
+                    <div class="status-grid">
+                        <div class="metric-card">
+                            <div class="metric-number" id="totalParticipants">0</div>
+                            <div class="metric-label">總參與者</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-number" id="completedResponses">0</div>
+                            <div class="metric-label">已完成回應</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-number" id="pendingResponses">0</div>
+                            <div class="metric-label">待回應</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-number" id="sessionStatus">等待中</div>
+                            <div class="metric-label">會話狀態</div>
+                        </div>
+                    </div>
+                    
+                    <div class="status-card">
+                        <h4>📋 會話資訊</h4>
+                        <p><strong>會話ID：</strong><span id="currentSessionId"></span></p>
+                        <p><strong>分享給參與者：</strong>請將會話ID提供給所有參與者</p>
+                    </div>
+                    
+                    <div class="participant-list">
+                        <h4>👥 參與者狀態</h4>
+                        <div id="participantsList">
+                            <p>還沒有參與者加入...</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-success" id="analyzeBtn" onclick="startAnalysis()" disabled>🤖 開始REP協定分析</button>
+                        <button class="btn btn-warning" onclick="refreshStatus()" style="margin-left: 10px;">🔄 重新整理</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 參與者界面 -->
+            <div id="participant" class="tab-panel">
+                <h2>👥 參與者界面</h2>
+                
+                <!-- 加入會話 -->
+                <div class="status-card">
+                    <h3>🚀 加入協調會話</h3>
+                    <div class="two-columns">
+                        <div class="form-group">
+                            <label>會話ID</label>
+                            <input type="text" id="joinSessionId" placeholder="輸入主持人提供的會話ID" />
+                        </div>
+                        <div class="form-group">
+                            <label>您的姓名</label>
+                            <input type="text" id="participantName" placeholder="請輸入您的姓名" />
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="joinSession()">📝 加入會話</button>
+                </div>
+                
+                <!-- 回應表單 -->
+                <div id="responseForm" class="hidden">
+                    <div class="status-card">
+                        <h3 id="sessionQuestionDisplay"></h3>
+                        
+                        <div class="form-group">
+                            <label>🎯 您的理想偏好</label>
+                            <textarea id="userPreference" rows="3" placeholder="請描述您希望的理想安排..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>🔄 敏感性信號</label>
+                            <textarea id="userSensitivity" rows="4" placeholder="如果其他條件改變（時間/預算/地點等），您會如何調整？請用「如果...那麼...」的方式描述"></textarea>
+                        </div>
+                        
+                        <div class="two-columns">
+                            <div class="form-group">
+                                <label>🚫 絕對底線</label>
+                                <input type="text" id="userConstraints" placeholder="什麼是您絕對不能接受的？" />
+                            </div>
+                            <div class="form-group">
+                                <label>🤝 彈性度 (1-10)</label>
+                                <input type="range" id="userFlexibility" min="1" max="10" value="5" oninput="updateFlexibilityDisplay()" />
+                                <div style="text-align: center; margin-top: 5px;">
+                                    <span id="flexibilityDisplay">5</span> - <span id="flexibilityLabel">中等彈性</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>💭 額外備註</label>
+                            <input type="text" id="userNotes" placeholder="其他想說的話..." />
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="submitResponse()">📤 提交回應</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 結果查看 -->
+            <div id="results" class="tab-panel">
+                <h2>📊 協調結果</h2>
+                
+                <div class="status-card">
+                    <div class="form-group">
+                        <label>輸入會話ID查看結果</label>
+                        <input type="text" id="resultSessionId" placeholder="輸入會話ID" />
+                    </div>
+                    <button class="btn btn-primary" onclick="viewResults()">🔍 查看結果</button>
+                </div>
+                
+                <div id="resultsDisplay" class="hidden">
+                    <!-- 結果將在這裡顯示 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // N8N Webhook URL
+        const N8N_WEBHOOK_URL = 'https://kf0630.zeabur.app/webhook/rep-coordination';
+        
+        // 本地資料儲存
+        let sessions = JSON.parse(localStorage.getItem('rep_sessions') || '{}');
+        let currentSession = null;
+        
+        // 頁面載入時恢復資料
+        window.onload = function() {
+            // 恢復會話資料
+            const savedSessions = localStorage.getItem('rep_sessions');
+            if (savedSessions) {
+                sessions = JSON.parse(savedSessions);
+            }
+            
+            // 恢復當前會話
+            const savedCurrentSession = localStorage.getItem('currentSession');
+            if (savedCurrentSession && sessions[savedCurrentSession]) {
+                currentSession = savedCurrentSession;
+                document.getElementById('currentSessionId').textContent = currentSession;
+                document.getElementById('sessionMonitor').classList.remove('hidden');
+                updateSessionStatus();
+            }
+        };
+        
+        // 標籤頁切換
+        function showTab(tabName) {
+            // 隱藏所有標籤頁
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 顯示選定的標籤頁
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // 更新問題模板
+        function updateQuestion() {
+            const templates = {
+                '聚會安排': '我們要安排一次聚會活動，請說明您的時間、地點、預算偏好，以及如果其他條件改變您會如何調整？',
+                '會議時間': '我們需要安排重要會議時間，請說明您的可用時間和限制條件，以及您的彈性空間？',
+                '項目資源': '項目資源分配決策，請說明您認為的優先順序和資源需求，以及可接受的調整範圍？',
+                '自定義': ''
+            };
+            
+            const selected = document.getElementById('questionTemplate').value;
+            document.getElementById('sessionQuestion').value = templates[selected] || '';
+        }
+        
+        // 創建會話
+        function createSession() {
+            const hostName = document.getElementById('hostName').value;
+            const title = document.getElementById('sessionTitle').value;
+            const question = document.getElementById('sessionQuestion').value;
+            
+            if (!hostName || !title || !question) {
+                alert('請填寫所有必要資訊');
+                return;
+            }
+            
+            // 生成會話ID
+            const sessionId = Math.random().toString(36).substr(2, 8).toUpperCase();
+            
+            // 創建會話資料
+            sessions[sessionId] = {
+                hostName,
+                title,
+                question,
+                createdTime: new Date().toISOString(),
+                participants: {},
+                responses: [],
+                status: 'collecting'
+            };
+            
+            currentSession = sessionId;
+            
+            // 儲存到localStorage
+            localStorage.setItem('rep_sessions', JSON.stringify(sessions));
+            localStorage.setItem('currentSession', sessionId);
+            
+            // 更新UI
+            document.getElementById('currentSessionId').textContent = sessionId;
+            document.getElementById('sessionMonitor').classList.remove('hidden');
+            updateSessionStatus();
+            
+            showAlert('success', `✅ 會話創建成功！會話ID：${sessionId}`);
+        }
+        
+        // 更新會話狀態
+        function updateSessionStatus() {
+            if (!currentSession || !sessions[currentSession]) return;
+            
+            const session = sessions[currentSession];
+            const participantCount = Object.keys(session.participants).length;
+            const responseCount = session.responses.length;
+            const pendingCount = participantCount - responseCount;
+            
+            document.getElementById('totalParticipants').textContent = participantCount;
+            document.getElementById('completedResponses').textContent = responseCount;
+            document.getElementById('pendingResponses').textContent = pendingCount;
+            document.getElementById('sessionStatus').textContent = session.status === 'collecting' ? '收集中' : session.status;
+            
+            // 更新參與者列表
+            updateParticipantsList();
+            
+            // 更新分析按鈕
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            analyzeBtn.disabled = responseCount === 0;
+        }
+        
+        // 更新參與者列表
+        function updateParticipantsList() {
+            if (!currentSession || !sessions[currentSession]) return;
+            
+            const session = sessions[currentSession];
+            const listDiv = document.getElementById('participantsList');
+            
+            if (Object.keys(session.participants).length === 0) {
+                listDiv.innerHTML = '<p>還沒有參與者加入...</p>';
+                return;
+            }
+            
+            let html = '';
+            Object.keys(session.participants).forEach(name => {
+                const hasResponse = session.responses.some(r => r.name === name);
+                const statusClass = hasResponse ? 'status-completed' : 'status-pending';
+                const statusText = hasResponse ? '已完成' : '待完成';
+                
+                html += `
+                    <div class="participant-item">
+                        <span>${name}</span>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                `;
+            });
+            
+            listDiv.innerHTML = html;
+        }
+        
+        // 加入會話
+        function joinSession() {
+            const sessionId = document.getElementById('joinSessionId').value.trim().toUpperCase();
+            const participantName = document.getElementById('participantName').value.trim();
+            
+            if (!sessionId || !participantName) {
+                alert('請輸入會話ID和您的姓名');
+                return;
+            }
+            
+            if (!sessions[sessionId]) {
+                alert('會話不存在，請檢查ID是否正確');
+                return;
+            }
+            
+            // 加入參與者
+            sessions[sessionId].participants[participantName] = {
+                joinedTime: new Date().toISOString()
+            };
+            
+            // 顯示回應表單
+            document.getElementById('sessionQuestionDisplay').textContent = `📝 ${sessions[sessionId].title}`;
+            document.getElementById('sessionQuestionDisplay').innerHTML += `<br><small style="color: #666;">問題：${sessions[sessionId].question}</small>`;
+            document.getElementById('responseForm').classList.remove('hidden');
+            
+            // 儲存當前參與資訊
+            sessionStorage.setItem('currentParticipantSession', sessionId);
+            sessionStorage.setItem('currentParticipantName', participantName);
+            
+            showAlert('success', '✅ 成功加入會話！請填寫您的想法');
+        }
+        
+        // 更新彈性度顯示
+        function updateFlexibilityDisplay() {
+            const value = document.getElementById('userFlexibility').value;
+            document.getElementById('flexibilityDisplay').textContent = value;
+            
+            const labels = {
+                1: '完全不妥協', 2: '很少妥協', 3: '較少妥協', 4: '有點妥協',
+                5: '中等彈性', 6: '較有彈性', 7: '很有彈性', 8: '高度彈性',
+                9: '極度彈性', 10: '完全彈性'
+            };
+            
+            document.getElementById('flexibilityLabel').textContent = labels[value];
+        }
+        
+        // 提交回應
+        function submitResponse() {
+            const sessionId = sessionStorage.getItem('currentParticipantSession');
+            const participantName = sessionStorage.getItem('currentParticipantName');
+            
+            const preference = document.getElementById('userPreference').value.trim();
+            const sensitivity = document.getElementById('userSensitivity').value.trim();
+            const constraints = document.getElementById('userConstraints').value.trim();
+            const flexibility = document.getElementById('userFlexibility').value;
+            const notes = document.getElementById('userNotes').value.trim();
+            
+            if (!preference || !sensitivity || !constraints) {
+                alert('請填寫所有必要欄位');
+                return;
+            }
+            
+            // 移除舊回應
+            sessions[sessionId].responses = sessions[sessionId].responses.filter(r => r.name !== participantName);
+            
+            // 加入新回應
+            sessions[sessionId].responses.push({
+                name: participantName,
+                preference,
+                sensitivity,
+                constraints,
+                flexibility: parseInt(flexibility),
+                notes,
+                submitTime: new Date().toISOString()
+            });
+            
+            // 儲存到localStorage
+            localStorage.setItem('rep_sessions', JSON.stringify(sessions));
+            
+            showAlert('success', '✅ 回應提交成功！請等待主持人開始分析');
+            
+            // 清空表單
+            document.getElementById('userPreference').value = '';
+            document.getElementById('userSensitivity').value = '';
+            document.getElementById('userConstraints').value = '';
+            document.getElementById('userFlexibility').value = '5';
+            document.getElementById('userNotes').value = '';
+            updateFlexibilityDisplay();
+        }
+        
+        // 重新整理狀態
+        function refreshStatus() {
+            updateSessionStatus();
+            showAlert('success', '✅ 狀態已更新');
+        }
+        
+        // 開始分析 - 連接到N8N後端
+        async function startAnalysis() {
+            if (!currentSession || !sessions[currentSession]) return;
+            
+            const session = sessions[currentSession];
+            if (session.responses.length === 0) {
+                alert('還沒有任何回應，無法進行分析');
+                return;
+            }
+            
+            // 更新狀態
+            session.status = 'analyzing';
+            updateSessionStatus();
+            
+            showAlert('warning', '🤖 正在發送資料到N8N進行REP協定分析...');
+            
+            try {
+                // 準備發送給N8N的資料格式
+                const requestData = {
+                    session_id: currentSession,
+                    sheet_id: 'web_platform_' + currentSession, // 模擬Sheet ID
+                    question: session.question,
+                    participants_data: session.responses.map(response => ({
+                        姓名: response.name,
+                        偏好描述: response.preference,
+                        敏感性信號: response.sensitivity,
+                        底線限制: response.constraints,
+                        '彈性度(1-10)': response.flexibility,
+                        備註: response.notes
+                    }))
+                };
+                
+                showAlert('info', '📡 正在調用N8N API：https://kf0630.zeabur.app/webhook/rep-coordination');
+                
+                // 呼叫您的N8N Webhook
+                const response = await fetch('https://kf0630.zeabur.app/webhook/rep-coordination', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.text();
+                    console.log('N8N回應:', result);
+                    
+                    showAlert('success', '✅ REP分析請求已成功發送到N8N！');
+                    showAlert('info', '⏳ N8N正在處理分析，這需要2-3分鐘時間...');
+                    
+                    // 等待一段時間後提供模擬結果（因為N8N是異步處理）
+                    setTimeout(() => {
+                        showAlert('warning', '💡 N8N正在後台處理真實分析，這裡先提供模擬結果預覽');
+                        session.status = 'completed';
+                        session.results = generateMockResults(session);
+                        session.n8nProcessed = true;
+                        session.n8nTimestamp = new Date().toISOString();
+                        updateSessionStatus();
+                        showAlert('success', '✅ 已提供模擬結果！真實N8N分析結果請查看Google Sheets或N8N日誌');
+                    }, 5000);
+                    
+                } else {
+                    throw new Error(`N8N回應錯誤: HTTP ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('N8N API調用失敗:', error);
+                showAlert('error', `❌ N8N連接失敗: ${error.message}`);
+                
+                // 降級到模擬分析
+                showAlert('warning', '🔄 改用本地模擬分析模式...');
+                setTimeout(() => {
+                    session.status = 'completed';
+                    session.results = generateMockResults(session);
+                    updateSessionStatus();
+                    showAlert('success', '✅ 模擬分析完成！請到「結果查看」標籤查看協調結果');
+                }, 3000);
+            }
+        }
+        
+        // 生成模擬結果
+        function generateMockResults(session) {
+            return {
+                sessionSummary: {
+                    question: session.question,
+                    totalParticipants: session.responses.length,
+                    analysisTime: new Date().toISOString()
+                },
+                recommendedSolution: {
+                    finalDecision: "週六下午2-5點聚會，預算控制在每人400元以內，選擇市中心交通便利的餐廳",
+                    rationale: "根據多數決分析，這個安排能滿足70%參與者的主要需求，並將不便降到最低",
+                    implementationSteps: [
+                        "確認最終參與人數",
+                        "預訂符合預算的餐廳", 
+                        "通知所有人最終安排",
+                        "建立群組持續溝通"
+                    ]
+                },
+                satisfactionReport: {
+                    highSatisfaction: session.responses.slice(0, Math.ceil(session.responses.length * 0.7)).map(r => r.name),
+                    mediumSatisfaction: session.responses.slice(Math.ceil(session.responses.length * 0.7), Math.ceil(session.responses.length * 0.9)).map(r => r.name),
+                    requiresCompromise: session.responses.slice(Math.ceil(session.responses.length * 0.9)).map(r => ({
+                        name: r.name,
+                        compromiseDetails: "時間安排需要調整個人計劃",
+                        severity: "medium"
+                    }))
+                },
+                repInsights: {
+                    coordinationEffectiveness: "高效 - 避免了冗長討論，快速達成共識",
+                    keyTradeOffs: "時間 vs 預算的平衡，個人便利 vs 群體最佳",
+                    alternativeSolutions: "如果預算可以提高到500元，則有更多時間選擇"
+                }
+            };
+        }
+        
+        // 查看結果
+        function viewResults() {
+            const sessionId = document.getElementById('resultSessionId').value.trim().toUpperCase();
+            
+            if (!sessionId) {
+                alert('請輸入會話ID');
+                return;
+            }
+            
+            if (!sessions[sessionId]) {
+                alert('會話不存在');
+                return;
+            }
+            
+            const session = sessions[sessionId];
+            
+            if (session.status !== 'completed' || !session.results) {
+                alert('該會話還未完成分析');
+                return;
+            }
+            
+            displayResults(session.results);
+        }
+        
+        // 顯示結果
+        function displayResults(results) {
+            const displayDiv = document.getElementById('resultsDisplay');
+            
+            const html = `
+                <div class="status-card">
+                    <h3>📋 會話概要</h3>
+                    <p><strong>參與人數：</strong>${results.sessionSummary.totalParticipants}</p>
+                    <p><strong>問題：</strong>${results.sessionSummary.question}</p>
+                    <p><strong>分析完成：</strong>${new Date(results.sessionSummary.analysisTime).toLocaleString()}</p>
+                </div>
+                
+                <div class="status-card">
+                    <h3>🎯 最終協調方案</h3>
+                    <div class="alert alert-success">
+                        <strong>決定：</strong>${results.recommendedSolution.finalDecision}
+                    </div>
+                    <p><strong>理由：</strong>${results.recommendedSolution.rationale}</p>
+                    
+                    <h4>📋 實施步驟：</h4>
+                    <ol>
+                        ${results.recommendedSolution.implementationSteps.map(step => `<li>${step}</li>`).join('')}
+                    </ol>
+                </div>
+                
+                <div class="status-card">
+                    <h3>📈 滿足度分析</h3>
+                    <div class="two-columns">
+                        <div>
+                            <h4>😊 高滿意度</h4>
+                            <ul>
+                                ${results.satisfactionReport.highSatisfaction.map(name => `<li>${name}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>😞 需要妥協</h4>
+                            <ul>
+                                ${results.satisfactionReport.requiresCompromise.map(person => 
+                                    `<li>${person.name}: ${person.compromiseDetails}</li>`
+                                ).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="status-card">
+                    <h3>🤖 REP協定分析</h3>
+                    <p><strong>協調效果：</strong>${results.repInsights.coordinationEffectiveness}</p>
+                    <p><strong>主要權衡：</strong>${results.repInsights.keyTradeOffs}</p>
+                    <p><strong>備選方案：</strong>${results.repInsights.alternativeSolutions}</p>
+                </div>
+            `;
+            
+            displayDiv.innerHTML = html;
+            displayDiv.classList.remove('hidden');
+            
+            showAlert('success', '✅ 結果載入完成');
+        }
+        
+        // 顯示提示訊息
+        function showAlert(type, message) {
+            // 移除舊的alert
+            const existingAlert = document.querySelector('.alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            // 創建新的alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            // 插入到container頂部
+            const container = document.querySelector('.container');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            // 3秒後自動移除
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateFlexibilityDisplay();
+        });
+    </script>
+</body>
+</html>
