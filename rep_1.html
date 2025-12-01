@@ -1266,7 +1266,11 @@
                     
                     <h4>📋 實施步驟：</h4>
                     <ol>
-                        ${implementationSteps.map(step => `<li>${step}</li>`).join('')}
+                        ${implementationSteps.map(step => {
+                            // 移除步驟前的數字編號（如果存在）
+                            const cleanStep = step.replace(/^\d+\.\s*/, '').trim();
+                            return `<li>${cleanStep}</li>`;
+                        }).join('')}
                     </ol>
                 </div>
                 
@@ -1297,8 +1301,8 @@
                     
                     <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
                         <h4>詳細REP分析：</h4>
-                        <p><strong>波紋效應：</strong>${repAnalysis.ripple_effects || '參與者偏好的改變可能導致連鎖反應'}</p>
-                        <p><strong>共同利益：</strong>${repAnalysis.common_interests || '所有參與者都希望找到最佳解決方案'}</p>
+                        <p><strong>波紋效應：</strong><br>${(repAnalysis.ripple_effects || '參與者偏好的改變可能導致連鎖反應').replace(/\n/g, '<br>')}</p>
+                        <p><strong>共同利益：</strong><br>${(repAnalysis.common_interests || '所有參與者都希望找到最佳解決方案').replace(/\n/g, '<br>')}</p>
                         <p><strong>彈性評估：</strong></p>
                         <div style="margin-left: 20px;">
                             ${(() => {
