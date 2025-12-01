@@ -1116,21 +1116,31 @@
                     })
                 });
                 
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
                 if (response.ok) {
                     const result = await response.json();
-                    console.log('N8N回應的分析結果:', result);
+                    console.log('N8N回應的完整結果:', result);
+                    console.log('result.success:', result.success);
+                    console.log('result.data:', result.data);
                     
                     if (result.success && result.data) {
                         showAlert('success', `✅ 成功讀取會話 ${sessionId} 的分析結果！`);
+                        console.log('準備調用displayRealResults...');
                         displayRealResults(result.data);
+                        console.log('displayRealResults調用完成');
                     } else {
+                        console.log('沒有成功或沒有data，result:', result);
                         showAlert('warning', result.message || '未找到分析結果');
                         if (result.available_sessions && result.available_sessions.length > 0) {
                             showAlert('info', `💡 可用的會話ID: ${result.available_sessions.join(', ')}`);
                         }
                     }
                 } else {
-                    throw new Error(`HTTP ${response.status}`);
+                    const errorText = await response.text();
+                    console.log('HTTP錯誤，回應內容:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
                 }
                 
             } catch (error) {
@@ -1210,13 +1220,26 @@
         
         // 顯示真實的N8N分析結果
         function displayRealResults(analysisData) {
+            console.log('displayRealResults被調用，接收到的資料:', analysisData);
+            
             const displayDiv = document.getElementById('resultsDisplay');
+            console.log('找到的displayDiv:', displayDiv);
+            
+            if (!displayDiv) {
+                console.error('找不到resultsDisplay元素！');
+                showAlert('error', '❌ 前端顯示元素錯誤');
+                return;
+            }
             
             const repAnalysis = analysisData.rep_analysis || {};
+            console.log('repAnalysis:', repAnalysis);
+            
             const implementationSteps = Array.isArray(repAnalysis.implementation_steps) ? 
                 repAnalysis.implementation_steps : 
                 (typeof repAnalysis.implementation_steps === 'string' ? 
                     [repAnalysis.implementation_steps] : []);
+            
+            console.log('implementationSteps:', implementationSteps);
             
             const html = `
                 <div class="status-card">
