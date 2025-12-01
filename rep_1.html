@@ -603,15 +603,29 @@
                 return;
             }
             
+            // 移除會話存在檢查，因為跨瀏覽器時localStorage不共享
+            // 參與者可以加入任何會話ID，由後端N8N和Google Sheets處理驗證
+            
+            // 創建或更新本地會話資料（用於界面顯示）
             if (!sessions[sessionId]) {
-                alert('會話不存在，請檢查ID是否正確');
-                return;
+                sessions[sessionId] = {
+                    id: sessionId,
+                    title: '協調會話',
+                    question: '群體決策協調',
+                    participants: {},
+                    responses: [],
+                    status: 'collecting',
+                    createdTime: new Date().toISOString()
+                };
             }
             
             // 加入參與者
             sessions[sessionId].participants[participantName] = {
                 joinedTime: new Date().toISOString()
             };
+            
+            // 儲存到localStorage（僅用於界面顯示）
+            localStorage.setItem('rep_sessions', JSON.stringify(sessions));
             
             // 顯示回應表單
             document.getElementById('sessionQuestionDisplay').textContent = `📝 ${sessions[sessionId].title}`;
@@ -622,7 +636,8 @@
             sessionStorage.setItem('currentParticipantSession', sessionId);
             sessionStorage.setItem('currentParticipantName', participantName);
             
-            showAlert('success', '✅ 成功加入會話！請填寫您的想法');
+            showAlert('success', `✅ 成功加入會話 ${sessionId}！請填寫您的想法`);
+            showAlert('info', '💡 您的回應將直接儲存到雲端系統');
         }
         
         // 更新彈性度顯示
