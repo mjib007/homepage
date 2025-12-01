@@ -307,6 +307,17 @@
                                 <label>會話標題</label>
                                 <input type="text" id="sessionTitle" value="群體決策協調" />
                             </div>
+                            <div class="form-group">
+                                <label>會話模式</label>
+                                <select id="sessionMode" onchange="toggleSessionMode()">
+                                    <option value="new">創建新會話</option>
+                                    <option value="existing">恢復現有會話</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="existingSessionGroup" style="display: none;">
+                                <label>現有會話ID</label>
+                                <input type="text" id="existingSessionId" placeholder="輸入要恢復的會話ID（如：GNSDSTT0）" style="text-transform: uppercase;" />
+                            </div>
                         </div>
                         <div>
                             <div class="form-group">
@@ -503,30 +514,73 @@
             document.getElementById('sessionQuestion').value = templates[selected] || '';
         }
         
-        // 創建會話
+        // 切換會話模式
+        function toggleSessionMode() {
+            const mode = document.getElementById('sessionMode').value;
+            const existingGroup = document.getElementById('existingSessionGroup');
+            
+            if (mode === 'existing') {
+                existingGroup.style.display = 'block';
+            } else {
+                existingGroup.style.display = 'none';
+            }
+        }
+        
+        // 創建或恢復會話
         function createSession() {
             const hostName = document.getElementById('hostName').value;
             const title = document.getElementById('sessionTitle').value;
             const question = document.getElementById('sessionQuestion').value;
+            const sessionMode = document.getElementById('sessionMode').value;
             
             if (!hostName || !title || !question) {
                 alert('請填寫所有必要資訊');
                 return;
             }
             
-            // 生成會話ID
-            const sessionId = Math.random().toString(36).substr(2, 8).toUpperCase();
+            let sessionId;
             
-            // 創建會話資料
-            sessions[sessionId] = {
-                hostName,
-                title,
-                question,
-                createdTime: new Date().toISOString(),
-                participants: {},
-                responses: [],
-                status: 'collecting'
-            };
+            if (sessionMode === 'existing') {
+                // 恢復現有會話
+                sessionId = document.getElementById('existingSessionId').value.trim().toUpperCase();
+                if (!sessionId) {
+                    alert('請輸入要恢復的會話ID');
+                    return;
+                }
+                
+                // 檢查是否已存在此會話
+                if (sessions[sessionId]) {
+                    showAlert('info', `恢復會話 ${sessionId}`);
+                } else {
+                    // 創建會話結構
+                    sessions[sessionId] = {
+                        hostName,
+                        title,
+                        question,
+                        createdTime: new Date().toISOString(),
+                        participants: {},
+                        responses: [],
+                        status: 'collecting'
+                    };
+                    showAlert('success', `會話 ${sessionId} 已恢復，正在從Google Sheets載入參與者資料`);
+                }
+            } else {
+                // 創建新會話
+                sessionId = Math.random().toString(36).substr(2, 8).toUpperCase();
+                
+                // 創建會話資料
+                sessions[sessionId] = {
+                    hostName,
+                    title,
+                    question,
+                    createdTime: new Date().toISOString(),
+                    participants: {},
+                    responses: [],
+                    status: 'collecting'
+                };
+                
+                showAlert('success', `✅ 會話創建成功！會話ID：${sessionId}`);
+            }
             
             currentSession = sessionId;
             
@@ -537,9 +591,14 @@
             // 更新UI
             document.getElementById('currentSessionId').textContent = sessionId;
             document.getElementById('sessionMonitor').classList.remove('hidden');
-            updateSessionStatus();
             
-            showAlert('success', `✅ 會話創建成功！會話ID：${sessionId}`);
+            // 如果是恢復現有會話，立即刷新參與者資料
+            if (sessionMode === 'existing') {
+                refreshParticipantsFromSheets();
+            } else {
+                updateSessionStatus();
+            }
+        }
         }
         
         // 更新會話狀態
@@ -547,9 +606,19 @@
             if (!currentSession || !sessions[currentSession]) return;
             
             const session = sessions[currentSession];
-            const participantCount = Object.keys(session.participants).length;
-            const responseCount = session.responses.length;
-            const pendingCount = participantCount - responseCount;
+            
+            // 修正：使用回應資料來計算參與者人數
+            const responseCount = session.responses ? session.responses.length : 0;
+            const participantCount = responseCount; // 有回應的就是參與者
+            const pendingCount = Math.max(0, participantCount - responseCount); // 確保不會是負數
+            
+            console.log('更新會話狀態:', {
+                currentSession,
+                participantCount,
+                responseCount,
+                pendingCount,
+                responses: session.responses
+            });
             
             document.getElementById('totalParticipants').textContent = participantCount;
             document.getElementById('completedResponses').textContent = responseCount;
@@ -561,7 +630,9 @@
             
             // 更新分析按鈕
             const analyzeBtn = document.getElementById('analyzeBtn');
-            analyzeBtn.disabled = responseCount === 0;
+            if (analyzeBtn) {
+                analyzeBtn.disabled = responseCount === 0;
+            }
         }
         
         // 更新參與者列表
@@ -571,21 +642,21 @@
             const session = sessions[currentSession];
             const listDiv = document.getElementById('participantsList');
             
-            if (Object.keys(session.participants).length === 0) {
+            // 修正：使用responses來顯示參與者，而不是participants
+            if (!session.responses || session.responses.length === 0) {
                 listDiv.innerHTML = '<p>還沒有參與者加入...</p>';
                 return;
             }
             
             let html = '';
-            Object.keys(session.participants).forEach(name => {
-                const hasResponse = session.responses.some(r => r.name === name);
-                const statusClass = hasResponse ? 'status-completed' : 'status-pending';
-                const statusText = hasResponse ? '已完成' : '待完成';
-                
+            session.responses.forEach(response => {
                 html += `
                     <div class="participant-item">
-                        <span>${name}</span>
-                        <span class="status-badge ${statusClass}">${statusText}</span>
+                        <span>${response.name}</span>
+                        <span class="status-badge status-completed">已完成</span>
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 4px;">
+                            彈性度: ${response.flexibility}/10 | 提交時間: ${new Date(response.submitTime).toLocaleString('zh-TW')}
+                        </div>
                     </div>
                 `;
             });
