@@ -1301,8 +1301,8 @@
                     
                     <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
                         <h4>詳細REP分析：</h4>
-                        <p><strong>波紋效應：</strong><br>${(repAnalysis.ripple_effects || '參與者偏好的改變可能導致連鎖反應').replace(/\n/g, '<br>')}</p>
-                        <p><strong>共同利益：</strong><br>${(repAnalysis.common_interests || '所有參與者都希望找到最佳解決方案').replace(/\n/g, '<br>')}</p>
+                        <p><strong>波紋效應：</strong><br>${(repAnalysis.ripple_effects || '參與者偏好的改變可能導致連鎖反應').replace(/(\d+\.\s)/g, '<br>$1').replace(/^<br>/, '').replace(/\n/g, '<br>')}</p>
+                        <p><strong>共同利益：</strong><br>${(repAnalysis.common_interests || '所有參與者都希望找到最佳解決方案').replace(/(\d+\.\s)/g, '<br>$1').replace(/^<br>/, '').replace(/\n/g, '<br>')}</p>
                         <p><strong>彈性評估：</strong></p>
                         <div style="margin-left: 20px;">
                             ${(() => {
@@ -1320,8 +1320,12 @@
                                     });
                                     return result;
                                 } else {
-                                    // 如果是字串，直接顯示
-                                    return repAnalysis.flexibility_assessment || '參與者展現了適度的妥協意願';
+                                    // 如果是字串，主動分段並處理換行
+                                    const text = (repAnalysis.flexibility_assessment || '參與者展現了適度的妥協意願')
+                                        .replace(/(\d+\.\s)/g, '<br>$1')
+                                        .replace(/^<br>/, '')
+                                        .replace(/\n/g, '<br>');
+                                    return `<p>${text}</p>`;
                                 }
                             })()}
                     </div>
