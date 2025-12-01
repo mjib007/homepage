@@ -663,7 +663,7 @@
                         <span>${response.name}</span>
                         <span class="status-badge status-completed">已完成</span>
                         <div style="font-size: 0.8rem; color: #666; margin-top: 4px;">
-                            彈性度: ${response.flexibility}/10 | 提交時間: ${new Date(response.submitTime).toLocaleString('zh-TW')}
+                            彈性度: ${response.flexibility}/10 | 提交時間: ${new Date(response.submitTime).toLocaleString('zh-TW', {timeZone: 'Asia/Taipei'})}
                         </div>
                     </div>
                 `;
@@ -812,7 +812,7 @@
                                 <p><strong>敏感性信號：</strong>${sensitivity.length > 50 ? sensitivity.substring(0, 50) + '...' : sensitivity}</p>
                                 <p><strong>底線限制：</strong>${constraints.length > 30 ? constraints.substring(0, 30) + '...' : constraints}</p>
                                 <p><strong>彈性度：</strong>${flexibility}/10</p>
-                                <p><strong>提交時間：</strong>${new Date().toLocaleString()}</p>
+                                <p><strong>提交時間：</strong>${new Date().toLocaleString('zh-TW', {timeZone: 'Asia/Taipei'})}</p>
                             </div>
                             <div style="color: #155724; background: #fff; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
                                 <strong>📢 接下來會發生什麼：</strong><br>
@@ -1255,7 +1255,7 @@
                     <h3>📋 會話概要</h3>
                     <p><strong>參與人數：</strong>${analysisData.participants_count || '未知'}</p>
                     <p><strong>問題：</strong>${analysisData.question || '群體決策協調'}</p>
-                    <p><strong>分析完成：</strong>${analysisData.analysis_time ? new Date(analysisData.analysis_time).toLocaleString('zh-TW') : '未知'}</p>
+                    <p><strong>分析完成：</strong>${analysisData.analysis_time ? new Date(analysisData.analysis_time).toLocaleString('zh-TW', {timeZone: 'Asia/Taipei'}) : '未知'}</p>
                 </div>
                 
                 <div class="status-card">
