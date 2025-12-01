@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REP智能協調平台介紹</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .header .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .intro-text {
+            font-size: 1.1rem;
+            text-align: justify;
+            margin-bottom: 40px;
+            color: #444;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+        
+        .feature-card {
+            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .feature-desc {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .process-flow {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+        
+        .process-title {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+        
+        .process-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .step {
+            flex: 1;
+            text-align: center;
+            min-width: 120px;
+        }
+        
+        .step-icon {
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 1.5rem;
+        }
+        
+        .step-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .arrow {
+            font-size: 1.5rem;
+            color: rgba(255,255,255,0.7);
+            margin: 0 10px;
+        }
+        
+        .cta-section {
+            text-align: center;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+        
+        .cta-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .cta-text {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            opacity: 0.9;
+        }
+        
+        .cta-button {
+            background: white;
+            color: #4facfe;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 25px;
+            }
+            
+            .process-steps {
+                flex-direction: column;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+                margin: 10px 0;
+            }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 1s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header animate-fade-in">
+            <h1>🤖 REP智能協調平台</h1>
+            <div class="subtitle">讓AI幫助群體做出更好的決策</div>
+        </div>
+        
+        <div class="main-content animate-fade-in">
+            <div class="intro-text">
+                <strong>REP（Ripple Effect Protocol）智能協調平台</strong>是一個革命性的群體決策支援系統，專為解決現代社會中複雜的<span class="highlight">多方協調問題</span>而設計。無論是家庭聚會的時間安排、企業會議的日程協調，還是團隊資源的分配決策，REP都能透過先進的AI分析技術，幫助所有參與者快速達成最佳共識。
+                
+                <br><br>
+                
+                傳統的群體決策往往陷入<span class="highlight">冗長的討論循環</span>，每個人都堅持自己的偏好，卻忽略了他人的需求變化。REP協定運用「波紋效應」理論，深入分析每個決策對其他參與者的連鎖影響，找出真正的共同利益交集。系統會評估每位參與者的<span class="highlight">彈性空間</span>和底線限制，運用AI智能運算提出能夠最大化整體滿意度的協調方案。
+                
+                <br><br>
+                
+                更重要的是，REP不只是一個決策工具，更是一個<span class="highlight">學習與成長的平台</span>。透過量化分析每個人的偏好模式和妥協意願，系統幫助參與者更好地理解彼此的需求，培養同理心和協作精神。這不僅能解決當下的問題，更能提升群體未來的協調效率，創造更和諧的人際關係。
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">精準需求分析</div>
+                    <div class="feature-desc">深度解析每位參與者的真實偏好、敏感性信號和彈性空間，提供客觀量化的需求評估</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🌊</div>
+                    <div class="feature-title">波紋效應預測</div>
+                    <div class="feature-desc">運用先進演算法分析決策的連鎖反應，預測每個選擇對所有參與者的潛在影響</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🤝</div>
+                    <div class="feature-title">智能協調建議</div>
+                    <div class="feature-desc">基於AI分析提供最佳化的群體決策方案，最大化整體滿意度並最小化衝突風險</div>
+                </div>
+                
+
+            </div>
+            
+            <div class="process-flow">
+                <div class="process-title">🚀 簡單三步驟，輕鬆達成群體共識</div>
+                <div class="process-steps">
+                    <div class="step">
+                        <div class="step-icon">1️⃣</div>
+                        <div class="step-text">創建會談<br>設定協調主題</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="step">
+                        <div class="step-icon">2️⃣</div>
+                        <div class="step-text">收集偏好<br>參與者填寫需求</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="step">
+                        <div class="step-icon">3️⃣</div>
+                        <div class="step-text">AI分析<br>生成最佳方案</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="cta-section animate-fade-in">
+            <div class="cta-title">準備體驗更智能的群體決策了嗎？</div>
+            <div class="cta-text">立即開始使用REP智能協調平台，讓AI幫助您的團隊快速達成最佳共識</div>
+            <a href="https://mjib007.github.io/homepage/rep_1.html" class="cta-button">🚀 開始使用</a>
+        </div>
+    </div>
+    
+    <script>
+        // 簡單的動畫效果
+        window.addEventListener('load', function() {
+            const cards = document.querySelectorAll('.feature-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.animation = 'fadeIn 0.6s ease-in';
+                }, index * 100);
+            });
+        });
+        
+        // 滾動動畫
+        window.addEventListener('scroll', function() {
+            const elements = document.querySelectorAll('.feature-card');
+            elements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementTop < window.innerHeight - elementVisible) {
+                    element.style.transform = 'translateY(0)';
+                    element.style.opacity = '1';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
