@@ -1299,7 +1299,27 @@
                         <h4>詳細REP分析：</h4>
                         <p><strong>波紋效應：</strong>${repAnalysis.ripple_effects || '參與者偏好的改變可能導致連鎖反應'}</p>
                         <p><strong>共同利益：</strong>${repAnalysis.common_interests || '所有參與者都希望找到最佳解決方案'}</p>
-                        <p><strong>彈性評估：</strong>${repAnalysis.flexibility_assessment || '參與者展現了適度的妥協意願'}</p>
+                        <p><strong>彈性評估：</strong></p>
+                        <div style="margin-left: 20px;">
+                            ${(() => {
+                                if (typeof repAnalysis.flexibility_assessment === 'object' && repAnalysis.flexibility_assessment !== null) {
+                                    // 如果是物件，格式化顯示
+                                    let result = '';
+                                    Object.keys(repAnalysis.flexibility_assessment).forEach(name => {
+                                        const assessment = repAnalysis.flexibility_assessment[name];
+                                        if (typeof assessment === 'object') {
+                                            result += `<p><strong>${name}：</strong>彈性度${assessment.彈性度評分 || assessment.flexibility_score || 'N/A'}/10<br>`;
+                                            result += `<span style="margin-left: 10px;">${assessment.妥協空間 || assessment.compromise_space || ''}</span></p>`;
+                                        } else {
+                                            result += `<p><strong>${name}：</strong>${assessment}</p>`;
+                                        }
+                                    });
+                                    return result;
+                                } else {
+                                    // 如果是字串，直接顯示
+                                    return repAnalysis.flexibility_assessment || '參與者展現了適度的妥協意願';
+                                }
+                            })()}
                     </div>
                 </div>
             `;
