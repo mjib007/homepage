@@ -763,10 +763,59 @@
             // 注意：不再清空表單，因為已經顯示成功確認畫面
         }
         
-        // 重新整理狀態
+        // 從Google Sheets讀取參與者資料
+        async function refreshParticipantsFromSheets() {
+            if (!currentSession) return;
+            
+            showAlert('info', '📡 正在從Google Sheets更新參與者資料...');
+            
+            try {
+                // 調用N8N來讀取Google Sheets資料
+                const response = await fetch('https://kf0630.zeabur.app/webhook/get-participants', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: currentSession,
+                        sheet_id: '1tIsurF3wPtHqmvw2BHB7gX1-LCVPR43SzhEwxxystRs',
+                        action: 'get_participants'
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('從Sheets讀取的參與者資料:', result);
+                    
+                    // 更新本地session資料
+                    if (!sessions[currentSession]) {
+                        sessions[currentSession] = { responses: [] };
+                    }
+                    
+                    sessions[currentSession].responses = result.participants || [];
+                    localStorage.setItem('rep_sessions', JSON.stringify(sessions));
+                    
+                    updateSessionStatus();
+                    showAlert('success', `✅ 已更新：發現${result.participants?.length || 0}位參與者的回應`);
+                    
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('讀取Google Sheets失敗:', error);
+                showAlert('warning', `⚠️ 無法從Google Sheets讀取資料: ${error.message}`);
+                showAlert('info', '💡 顯示的可能是本地儲存的資料');
+            }
+        }
+
+        // 修改重新整理狀態函數
         function refreshStatus() {
             updateSessionStatus();
-            showAlert('success', '✅ 狀態已更新');
+            // 如果有當前會話，從Google Sheets刷新參與者資料
+            if (currentSession) {
+                refreshParticipantsFromSheets();
+            } else {
+                showAlert('success', '✅ 狀態已更新');
+            }
         }
         
         // 清除所有資料
