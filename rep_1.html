@@ -824,13 +824,27 @@
 
         // 修改重新整理狀態函數
         function refreshStatus() {
+            console.log('=== 重新整理函數開始執行 ===');
+            console.log('currentSession:', currentSession);
+            console.log('sessions對象:', sessions);
+            
             updateSessionStatus();
+            
             // 如果有當前會話，從Google Sheets刷新參與者資料
             if (currentSession) {
+                console.log('有當前會話，開始刷新');
+                // 先顯示當前localStorage中的資料
+                showAlert('info', `當前會話: ${currentSession}，localStorage中的資料:`);
+                console.log('當前sessions:', sessions);
+                console.log('當前session資料:', sessions[currentSession]);
+                
                 refreshParticipantsFromSheets();
             } else {
-                showAlert('success', '✅ 狀態已更新');
+                console.log('沒有當前會話');
+                showAlert('warning', '⚠️ 沒有當前會話，請先建立或加入會話');
             }
+            
+            console.log('=== 重新整理函數執行完畢 ===');
         }
         
         // 清除所有資料
