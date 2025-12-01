@@ -364,7 +364,12 @@
                     <div class="status-card">
                         <h4>📋 會話資訊</h4>
                         <p><strong>會話ID：</strong><span id="currentSessionId"></span></p>
+                        <p><strong>協調問題：</strong><span id="currentSessionQuestion"></span></p>
                         <p><strong>分享給參與者：</strong>請將會話ID提供給所有參與者</p>
+                        
+                        <button class="btn" onclick="copySessionInfo()" style="background: #28a745; color: white; border-color: #28a745; margin-top: 10px;">
+                            📋 複製會話資訊
+                        </button>
                     </div>
                     
                     <div class="participant-list">
@@ -481,7 +486,9 @@
             const savedCurrentSession = localStorage.getItem('currentSession');
             if (savedCurrentSession && sessions[savedCurrentSession]) {
                 currentSession = savedCurrentSession;
+                const session = sessions[currentSession];
                 document.getElementById('currentSessionId').textContent = currentSession;
+                document.getElementById('currentSessionQuestion').textContent = session.question || '群體決策協調';
                 document.getElementById('sessionMonitor').classList.remove('hidden');
                 updateSessionStatus();
             }
@@ -591,6 +598,7 @@
             
             // 更新UI
             document.getElementById('currentSessionId').textContent = sessionId;
+            document.getElementById('currentSessionQuestion').textContent = question;
             document.getElementById('sessionMonitor').classList.remove('hidden');
             
             // 如果是恢復現有會話，立即刷新參與者資料
@@ -1300,6 +1308,50 @@
             displayDiv.classList.remove('hidden');
             
             showAlert('success', '✅ 已顯示來自Google Sheets的真實分析結果！');
+        }
+        
+        // 複製會話資訊
+        function copySessionInfo() {
+            const sessionId = document.getElementById('currentSessionId').textContent;
+            const sessionQuestion = document.getElementById('currentSessionQuestion').textContent;
+            
+            if (!sessionId || sessionId === '') {
+                showAlert('warning', '⚠️ 沒有可複製的會話資訊');
+                return;
+            }
+            
+            const copyText = `會話ID：${sessionId}\n協調問題：${sessionQuestion}\n分享給參與者：請將會話ID提供給所有參與者`;
+            
+            // 使用Clipboard API進行複製
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(copyText).then(() => {
+                    showAlert('success', '📋 會話資訊已複製到剪貼簿！');
+                }).catch(() => {
+                    fallbackCopy(copyText);
+                });
+            } else {
+                fallbackCopy(copyText);
+            }
+        }
+        
+        // 備用複製方法（適用於較舊的瀏覽器）
+        function fallbackCopy(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showAlert('success', '📋 會話資訊已複製到剪貼簿！');
+            } catch (err) {
+                showAlert('error', '❌ 複製失敗，請手動複製');
+            }
+            
+            document.body.removeChild(textArea);
         }
         
         // 顯示提示訊息
