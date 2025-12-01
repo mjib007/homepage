@@ -1320,22 +1320,40 @@
                 return;
             }
             
-            const copyText = `會話ID：${sessionId}\n協調問題：${sessionQuestion}\n分享給參與者：請將會話ID提供給所有參與者`;
+            // 只複製會話ID和協調問題，不包含分享說明
+            const copyText = `會話ID：${sessionId}\n協調問題：${sessionQuestion}`;
+            
+            // 按鈕視覺反饋 - 立即顯示複製中狀態
+            const copyBtn = event.target;
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '⏳ 複製中...';
+            copyBtn.disabled = true;
+            copyBtn.style.background = '#6c757d';
             
             // 使用Clipboard API進行複製
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(copyText).then(() => {
+                    // 成功反饋
+                    copyBtn.innerHTML = '✅ 已複製';
+                    copyBtn.style.background = '#198754';
                     showAlert('success', '📋 會話資訊已複製到剪貼簿！');
+                    
+                    // 1.5秒後恢復按鈕狀態
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                        copyBtn.style.background = '#28a745';
+                        copyBtn.disabled = false;
+                    }, 1500);
                 }).catch(() => {
-                    fallbackCopy(copyText);
+                    fallbackCopy(copyText, copyBtn, originalText);
                 });
             } else {
-                fallbackCopy(copyText);
+                fallbackCopy(copyText, copyBtn, originalText);
             }
         }
         
         // 備用複製方法（適用於較舊的瀏覽器）
-        function fallbackCopy(text) {
+        function fallbackCopy(text, copyBtn, originalText) {
             const textArea = document.createElement('textarea');
             textArea.value = text;
             textArea.style.position = 'fixed';
@@ -1346,12 +1364,25 @@
             
             try {
                 document.execCommand('copy');
+                // 成功反饋
+                copyBtn.innerHTML = '✅ 已複製';
+                copyBtn.style.background = '#198754';
                 showAlert('success', '📋 會話資訊已複製到剪貼簿！');
             } catch (err) {
+                // 失敗反饋
+                copyBtn.innerHTML = '❌ 複製失敗';
+                copyBtn.style.background = '#dc3545';
                 showAlert('error', '❌ 複製失敗，請手動複製');
             }
             
             document.body.removeChild(textArea);
+            
+            // 1.5秒後恢復按鈕狀態
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+                copyBtn.style.background = '#28a745';
+                copyBtn.disabled = false;
+            }, 1500);
         }
         
         // 顯示提示訊息
