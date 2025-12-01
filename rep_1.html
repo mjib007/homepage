@@ -1030,6 +1030,10 @@
                         session.n8nTimestamp = new Date().toISOString();
                         updateSessionStatus();
                         showAlert('success', '✅ 已提供模擬結果！真實N8N分析結果請查看Google Sheets或N8N日誌');
+                        
+                        // 自動切換到結果查看標籤
+                        showTab('results');
+                        showAlert('info', '🔍 已自動切換到「結果查看」標籤');
                     }, 5000);
                     
                 } else {
@@ -1047,6 +1051,10 @@
                     session.results = generateMockResults(session);
                     updateSessionStatus();
                     showAlert('success', '✅ 模擬分析完成！請到「結果查看」標籤查看協調結果');
+                    
+                    // 自動切換到結果查看標籤
+                    showTab('results');
+                    showAlert('info', '🔍 已自動切換到「結果查看」標籤');
                 }, 3000);
             }
         }
