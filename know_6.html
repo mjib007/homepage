@@ -672,10 +672,21 @@ function fallbackCopy(button, text) {
         }
 
         const result = await response.text();
-        
-        if (result && result.includes('成功儲存')) {
+
+        console.log('語音處理完整結果:', result);
+        console.log('HTTP 狀態:', response.status);
+
+        // 檢查 HTTP 狀態碼而不是文字內容
+        if (response.status >= 200 && response.status < 300) {
           showStatus('語音筆記已成功儲存！', 'success');
           recordingStatus.textContent = '完成！';
+          
+          // 可選：在狀態區域顯示摘要的前幾行
+          if (result.includes('AI 智能摘要')) {
+            const summaryStart = result.indexOf('=== AI 智能摘要 ===');
+            const summaryPreview = result.substring(summaryStart, summaryStart + 100) + '...';
+            showStatus('語音筆記已儲存！' + summaryPreview, 'success');
+          }
           
           setTimeout(() => {
             document.getElementById('noteTitle').value = '';
@@ -684,7 +695,7 @@ function fallbackCopy(button, text) {
           }, 2000);
           
         } else {
-          showStatus('語音處理失敗：未收到有效回應', 'error');
+          showStatus('語音處理失敗：HTTP ' + response.status, 'error');
           recordingStatus.textContent = '';
         }
 
