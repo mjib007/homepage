@@ -675,7 +675,12 @@ function fallbackCopy(button, text) {
 
         console.log('語音處理完整結果:', result);
         console.log('HTTP 狀態:', response.status);
-
+        document.getElementById("chatBox").innerHTML += `
+          <div class="chat-message ai">
+            <span class="message-content">${result}</span>
+            <button class="copy-btn" onclick="copyText(this, \`${result.replace(/`/g, '\\`')}\`)">📋</button>
+          </div>
+        `;
         // 檢查 HTTP 狀態碼而不是文字內容
         if (response.status >= 200 && response.status < 300) {
           showStatus('語音筆記已成功儲存！', 'success');
@@ -746,7 +751,12 @@ function fallbackCopy(button, text) {
 
         console.log('伺服器回應:', result);
         console.log('HTTP 狀態:', response.status);
-
+        document.getElementById("chatBox").innerHTML += `
+          <div class="chat-message ai">
+            <span class="message-content">${result}</span>
+            <button class="copy-btn" onclick="copyText(this, \`${result.replace(/`/g, '\\`')}\`)">📋</button>
+          </div>
+        `;
         // 優先檢查 HTTP 狀態碼
         if (response.status >= 200 && response.status < 300) {
           showStatus('筆記已成功儲存！', 'success');
