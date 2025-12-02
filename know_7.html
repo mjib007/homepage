@@ -435,7 +435,7 @@
 <body>
   <header class="page-header">
     <h1>📝 AI 瞬間筆記</h1>
-    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論v48</p>
+    <p>輸入學習內容，AI 幫你快速生成摘要、重點並進行互動討論7_1</p>
   </header>
 
   <div class="container">
@@ -462,7 +462,18 @@
         <button class="btn save-btn" id="saveBtn">💾 儲存並分析</button>
         <button type="button" class="btn voice-btn" id="voiceBtn">🔴 開始錄音</button>
       </div>
-
+        <!-- ⬇⬇⬇ 就加在這裡！ ⬇⬇⬇ -->
+        <div id="summaryBox" style="
+        margin-top: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        min-height: 80px;
+        white-space: pre-wrap;
+        display: none;
+        "></div>
+        <!-- ⬆⬆⬆ 就加在這裡！ ⬆⬆⬆ -->
       <h2 style="margin-top:30px;">搜尋筆記</h2>
       <div class="form-group">
         <input type="text" id="searchKeyword" placeholder="輸入關鍵字...">
@@ -671,15 +682,20 @@ function fallbackCopy(button, text) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
-        const result = await response.text();
+            const result = await response.text();
 
-        console.log('語音處理完整結果:', result);
-        console.log('HTTP 狀態:', response.status);
-        saveStatus.innerHTML = `
-        <div class="status-message status-success" style="text-align:left; white-space:pre-wrap;">
+            console.log('語音處理完整結果:', result);
+            console.log('HTTP 狀態:', response.status);
+
+            // 🔥 不要用 saveStatus（會被清空），改成 summaryBox
+            const summaryBox = document.getElementById("summaryBox");
+            summaryBox.style.display = "block";
+            summaryBox.innerHTML = `
+            <div style="white-space:pre-wrap; text-align:left;">
             ${result}
-        </div>
-        `;
+            </div>
+            `;
+
 
         // 檢查 HTTP 狀態碼而不是文字內容
         if (response.status >= 200 && response.status < 300) {
@@ -747,16 +763,21 @@ function fallbackCopy(button, text) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
-        const result = await response.text();
+            const result = await response.text();
 
-        console.log('伺服器回應:', result);
-        console.log('HTTP 狀態:', response.status);
-        document.getElementById("chatBox").innerHTML += `
-          <div class="chat-message ai">
-            <span class="message-content">${result}</span>
-            <button class="copy-btn" onclick="copyText(this, \`${result.replace(/`/g, '\\`')}\`)">📋</button>
-          </div>
-        `;
+            console.log('伺服器回應:', result);
+            console.log('HTTP 狀態:', response.status);
+
+            // 顯示到左側摘要區（summaryBox）
+            const summaryBox = document.getElementById("summaryBox");
+            summaryBox.style.display = "block";
+            summaryBox.innerHTML = `
+            <div style="white-space:pre-wrap; text-align:left;">
+            ${result}
+            </div>
+            `;
+
+
         // 優先檢查 HTTP 狀態碼
         if (response.status >= 200 && response.status < 300) {
           showStatus('筆記已成功儲存！', 'success');
