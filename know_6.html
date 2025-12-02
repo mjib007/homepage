@@ -957,14 +957,22 @@ ${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('\
         const result = await response.json();
         
 if (result.success) {
+  // 兼容後端不同可能的欄位格式
+  const answerText =
+    result.answer ||
+    result.data?.summary ||
+    result.data?.analysis ||
+    "（後端沒有提供可顯示的內容）";
+
   const aiDiv = document.createElement('div');
   aiDiv.className = 'chat-message ai';
   aiDiv.innerHTML = `
-    <span class="message-content">${result.answer}</span>
-    <button class="copy-btn" onclick="copyText(this, \`${result.answer.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`)">📋</button>
+    <span class="message-content">${answerText}</span>
+    <button class="copy-btn" onclick="copyText(this, \`${answerText.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`)">📋</button>
   `;
   chatBox.appendChild(aiDiv);
-} else {
+}
+ else {
   const aiDiv = document.createElement('div');
   aiDiv.className = 'chat-message ai';
   const errorMsg = '抱歉，我現在無法回答這個問題，請稍後再試。';
