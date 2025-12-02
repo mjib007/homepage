@@ -732,23 +732,39 @@ function fallbackCopy(button, text) {
         }
 
         const result = await response.text();
-        
-console.log('伺服器回應:', result); // 除錯用，查看實際回應
-console.log('HTTP 狀態:', response.status); // 除錯用
 
-// 優先檢查 HTTP 狀態碼
-if (response.status >= 200 && response.status < 300) {
-  showStatus('筆記已成功儲存！', 'success');
-  document.getElementById('noteTitle').value = '';
-  document.getElementById('fileContent').value = '';
-} else if (result && result.includes('成功儲存')) {
-  // 備用檢查：回應包含成功訊息
-  showStatus('筆記已成功儲存！', 'success');
-  document.getElementById('noteTitle').value = '';
-  document.getElementById('fileContent').value = '';
-} else {
-  showStatus('儲存失敗：' + (result || '未收到有效回應'), 'error');
-}
+        console.log('伺服器回應:', result);
+        console.log('HTTP 狀態:', response.status);
+
+        // 處理可能的 JSON 陣列回應
+        let resultData;
+        try {
+          const parsed = JSON.parse(result);
+          resultData = Array.isArray(parsed) ? parsed[0] : parsed;
+        } catch (error) {
+          // 如果不是 JSON，就當作純文字處理
+          resultData = { success: result && result.includes('成功儲存') };
+        }
+
+        // 優先檢查 HTTP 狀態碼
+        if (response.status >= 200 && response.status < 300) {
+          showStatus('筆記已成功儲存！', 'success');
+          document.getElementById('noteTitle').value = '';
+          document.getElementById('fileContent').value = '';
+          
+          // 如果有摘要資料，顯示在控制台或狀態中
+          if (resultData && resultData.data && resultData.data.summary) {
+            console.log('AI 摘要:', resultData.data.summary);
+            // 可以選擇性地顯示摘要
+            // showStatus('筆記已成功儲存並生成摘要！', 'success');
+          }
+        } else if (resultData && resultData.success) {
+          showStatus('筆記已成功儲存！', 'success');
+          document.getElementById('noteTitle').value = '';
+          document.getElementById('fileContent').value = '';
+        } else {
+          showStatus('儲存失敗：' + (result || '未收到有效回應'), 'error');
+        }
       } catch (error) {
         console.error('詳細錯誤:', error);
         if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
