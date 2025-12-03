@@ -480,9 +480,7 @@
       <h2>AI 討論</h2>
       <p id="selectedNote">選定的筆記：尚未選擇</p>
       <div class="chat-box" id="chatBox">
-        <div class="chat-message ai">
-          歡迎使用 AI 瞬間筆記！搜尋筆記後，請選擇筆記開始AI智能對話，或直接以文字或錄音創建新筆記。
-        </div>
+        <div class="chat-message ai">歡迎使用 AI 瞬間筆記！搜尋筆記後，請選擇筆記開始AI智能對話，或直接以文字或錄音創建新筆記。</div>
       </div>
       <div class="chat-input">
         <textarea id="chatInput" placeholder="輸入你想討論的問題..." disabled>摘要與抓重點</textarea>
@@ -915,8 +913,7 @@ function fallbackCopy(button, text) {
         sendBtn.disabled = false;
         
         chatBox.innerHTML = `
-          <div class="chat-message ai">
-已選定 ${count} 篇筆記：
+          <div class="chat-message ai">已選定 ${count} 篇筆記：
 ${selectedNotes.map(note => `• ${note.json?.FileName || '無標題'}`).join('\n')}
 
 現在你可以問我關於這些筆記的任何問題！
