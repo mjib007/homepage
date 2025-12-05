@@ -79,9 +79,9 @@
             background: #4285f4;
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 15px 40px;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -90,32 +90,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
+            box-shadow: 0 2px 10px rgba(66, 133, 244, 0.3);
         }
         
         .google-login-btn:hover {
             background: #3367d6;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(66, 133, 244, 0.4);
-        }
-        
-        .email-login-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            width: 100%;
-            margin: 5px 0;
-        }
-        
-        .email-login-btn:hover {
-            background: #218838;
-            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(66, 133, 244, 0.4);
         }
         
         .user-info {
@@ -392,25 +374,17 @@
         <div id="loginSection" class="login-section">
             <h2>👋 歡迎使用REP智能協調平台</h2>
             <div class="login-form">
-                <input type="email" id="loginEmail" placeholder="電子郵件" />
-                <input type="password" id="loginPassword" placeholder="密碼" />
-                
-                <button class="email-login-btn" onclick="emailLogin()">
-                    📧 Email登入
-                </button>
-                
-                <button class="email-login-btn" onclick="emailSignup()">
-                    ✍️ Email註冊
-                </button>
-                
-                <div style="margin: 20px 0; color: #666;">或者</div>
+                <div style="margin-bottom: 30px; color: #666; font-size: 1.1rem;">
+                    使用您的Google帳號登入以開始使用
+                </div>
                 
                 <button class="google-login-btn" onclick="googleLogin()">
                     <img src="data:image/svg+xml,%3Csvg width='18' height='18' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff'%3E%3Cpath d='M9 3.48c1.69 0 2.83.73 3.48 1.34l2.54-2.48C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.96l2.91 2.26C4.6 5.05 6.62 3.48 9 3.48z'/%3E%3Cpath d='M17.64 9.2c0-.74-.06-1.28-.19-1.84H9v3.34h4.96c-.1.83-.64 2.08-1.84 2.92l2.84 2.2c1.7-1.57 2.68-3.88 2.68-6.62z'/%3E%3Cpath d='M3.88 10.78A5.54 5.54 0 0 1 3.58 9c0-.62.11-1.22.29-1.78L.96 4.96A9.008 9.008 0 0 0 0 9s.32 1.67.96 4.04l2.92-2.26z'/%3E%3Cpath d='M9 18c2.43 0 4.47-.8 5.96-2.18l-2.84-2.2c-.76.53-1.78.9-3.12.9-2.38 0-4.4-1.57-5.12-3.74L.97 13.04C2.45 15.98 5.48 18 9 18z'/%3E%3C/g%3E%3C/svg%3E" alt="Google logo" style="width: 18px; height: 18px;">
-                    使用Google登入
+                    使用Google帳號登入
                 </button>
                 
-                <div style="margin-top: 20px; font-size: 0.9rem; color: #666;">
+                <div style="margin-top: 30px; font-size: 0.9rem; color: #666; line-height: 1.4;">
+                    🔒 安全、快速、便利<br>
                     登入後即可使用REP協定智能協調功能
                 </div>
             </div>
@@ -637,8 +611,6 @@
             getAuth, 
             GoogleAuthProvider, 
             signInWithPopup,
-            signInWithEmailAndPassword,
-            createUserWithEmailAndPassword,
             onAuthStateChanged,
             signOut
         } = await import("https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js");
@@ -660,52 +632,11 @@
                 showAlert('success', '✅ Google登入成功！歡迎 ' + user.displayName);
             } catch (error) {
                 console.error('Google登入失敗:', error);
-                showAlert('error', '❌ 登入失敗：' + error.message);
-            }
-        };
-
-        // Email登入函數
-        window.emailLogin = async function() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!email || !password) {
-                showAlert('warning', '⚠️ 請填寫電子郵件和密碼');
-                return;
-            }
-            
-            try {
-                const result = await signInWithEmailAndPassword(auth, email, password);
-                console.log('Email登入成功:', result.user);
-                showAlert('success', '✅ Email登入成功！');
-            } catch (error) {
-                console.error('Email登入失敗:', error);
-                showAlert('error', '❌ 登入失敗：' + error.message);
-            }
-        };
-
-        // Email註冊函數
-        window.emailSignup = async function() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!email || !password) {
-                showAlert('warning', '⚠️ 請填寫電子郵件和密碼');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showAlert('warning', '⚠️ 密碼至少需要6個字符');
-                return;
-            }
-            
-            try {
-                const result = await createUserWithEmailAndPassword(auth, email, password);
-                console.log('Email註冊成功:', result.user);
-                showAlert('success', '✅ 註冊成功！歡迎加入REP協調平台');
-            } catch (error) {
-                console.error('Email註冊失敗:', error);
-                showAlert('error', '❌ 註冊失敗：' + error.message);
+                if (error.code === 'auth/unauthorized-domain') {
+                    showAlert('error', '❌ 網域未授權，請確認Firebase設定中已添加此網域');
+                } else {
+                    showAlert('error', '❌ 登入失敗：' + error.message);
+                }
             }
         };
 
