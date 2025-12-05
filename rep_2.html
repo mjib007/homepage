@@ -654,6 +654,8 @@
 
         // 顯示用戶資訊
         function displayUserInfo(user) {
+            // 設定全域用戶變量
+            window.currentUser = user;
             currentUser = user;
             
             // 更新用戶資訊bar
@@ -668,17 +670,23 @@
             // 顯示主要內容，隱藏登入區域
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('mainContent').classList.remove('hidden');
+            
+            console.log('用戶登入成功，設定全域變量:', window.currentUser);
         }
 
         // 顯示登入區域
         function showLoginSection() {
             document.getElementById('loginSection').classList.remove('hidden');
             document.getElementById('mainContent').classList.add('hidden');
+            // 清除全域用戶變量
+            window.currentUser = null;
             currentUser = null;
+            console.log('用戶已登出，清除全域變量');
         }
 
         // 監聽認證狀態變化
         onAuthStateChanged(auth, (user) => {
+            console.log('認證狀態變化:', user ? '已登入' : '未登入', user);
             if (user) {
                 console.log('用戶已登入:', user);
                 displayUserInfo(user);
@@ -761,8 +769,10 @@
         // 創建或恢復會話
         function createSession() {
             // 檢查用戶是否已登入
+            console.log('檢查用戶登入狀態:', window.currentUser);
             if (!window.currentUser) {
                 showAlert('warning', '⚠️ 請先登入再創建會話');
+                console.log('用戶未登入，currentUser:', window.currentUser);
                 return;
             }
             
