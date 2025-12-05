@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REP協定智能協調平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* 登入區域樣式 */
+        .login-section {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .login-section h2 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .login-form input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .login-form input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .google-login-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .google-login-btn:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(66, 133, 244, 0.4);
+        }
+        
+        .email-login-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin: 5px 0;
+        }
+        
+        .email-login-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .user-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            object-fit: cover;
+        }
+        
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: #c82333;
+        }
+        
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 15px 15px 0 0;
+            overflow: hidden;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .tab.active {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .tab:hover {
+            background: #e9ecef;
+        }
+        
+        .tab-content {
+            background: white;
+            border-radius: 0 0 15px 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            min-height: 600px;
+        }
+        
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .status-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .metric-card {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .metric-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .metric-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .participant-list {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .participant-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .participant-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 REP協定智能協調平台</h1>
+            <p>讓AI幫助群體做出更好的決策</p>
+        </div>
+        
+        <!-- 登入區域 -->
+        <div id="loginSection" class="login-section">
+            <h2>👋 歡迎使用REP智能協調平台</h2>
+            <div class="login-form">
+                <input type="email" id="loginEmail" placeholder="電子郵件" />
+                <input type="password" id="loginPassword" placeholder="密碼" />
+                
+                <button class="email-login-btn" onclick="emailLogin()">
+                    📧 Email登入
+                </button>
+                
+                <button class="email-login-btn" onclick="emailSignup()">
+                    ✍️ Email註冊
+                </button>
+                
+                <div style="margin: 20px 0; color: #666;">或者</div>
+                
+                <button class="google-login-btn" onclick="googleLogin()">
+                    <img src="data:image/svg+xml,%3Csvg width='18' height='18' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff'%3E%3Cpath d='M9 3.48c1.69 0 2.83.73 3.48 1.34l2.54-2.48C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.96l2.91 2.26C4.6 5.05 6.62 3.48 9 3.48z'/%3E%3Cpath d='M17.64 9.2c0-.74-.06-1.28-.19-1.84H9v3.34h4.96c-.1.83-.64 2.08-1.84 2.92l2.84 2.2c1.7-1.57 2.68-3.88 2.68-6.62z'/%3E%3Cpath d='M3.88 10.78A5.54 5.54 0 0 1 3.58 9c0-.62.11-1.22.29-1.78L.96 4.96A9.008 9.008 0 0 0 0 9s.32 1.67.96 4.04l2.92-2.26z'/%3E%3Cpath d='M9 18c2.43 0 4.47-.8 5.96-2.18l-2.84-2.2c-.76.53-1.78.9-3.12.9-2.38 0-4.4-1.57-5.12-3.74L.97 13.04C2.45 15.98 5.48 18 9 18z'/%3E%3C/g%3E%3C/svg%3E" alt="Google logo" style="width: 18px; height: 18px;">
+                    使用Google登入
+                </button>
+                
+                <div style="margin-top: 20px; font-size: 0.9rem; color: #666;">
+                    登入後即可使用REP協定智能協調功能
+                </div>
+            </div>
+        </div>
+        
+        <!-- 用戶資訊和主要功能區域 -->
+        <div id="mainContent" class="hidden">
+            <!-- 用戶資訊bar -->
+            <div id="userInfoBar" class="user-info">
+                <img id="userAvatar" src="" alt="用戶頭像" class="user-avatar">
+                <div style="flex-grow: 1;">
+                    <div id="userName" style="font-weight: 600;"></div>
+                    <div id="userEmail" style="font-size: 0.9rem; color: #666;"></div>
+                </div>
+                <button class="logout-btn" onclick="logout()">登出</button>
+            </div>
+            
+            <!-- 使用提醒 -->
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 12px; margin: 10px 0; font-size: 0.9rem; color: #856404;">
+                <strong>💡 使用提醒：</strong>
+                • 參與者回應會自動同步到Google Sheets • 建議主持人先建立會話，再分享會話ID
+            </div>
+
+            <!-- 標籤頁 -->
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('host')">🎯 主持人界面</button>
+                <button class="tab" onclick="showTab('participant')">👥 參與者界面</button>
+                <button class="tab" onclick="showTab('results')">📊 結果查看</button>
+            </div>
+            
+            <div class="tab-content">
+                <!-- 主持人界面 -->
+                <div id="host" class="tab-panel active">
+                    <h2>🎯 主持人控制台</h2>
+                    
+                    <!-- 創建會話 -->
+                    <div class="status-card">
+                        <h3>➕ 創建新的協調會話</h3>
+                        <div class="two-columns">
+                            <div>
+                                <div class="form-group">
+                                    <label>主持人姓名</label>
+                                    <input type="text" id="hostName" value="主持人" />
+                                </div>
+                                <div class="form-group">
+                                    <label>會話標題</label>
+                                    <input type="text" id="sessionTitle" value="群體決策協調" />
+                                </div>
+                                <div class="form-group">
+                                    <label>會話模式</label>
+                                    <select id="sessionMode" onchange="toggleSessionMode()">
+                                        <option value="new">創建新會話</option>
+                                        <option value="existing">恢復現有會話</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" id="existingSessionGroup" style="display: none;">
+                                    <label>現有會話ID</label>
+                                    <input type="text" id="existingSessionId" placeholder="輸入要恢復的會話ID（如：GNSDST T0）" style="text-transform: uppercase;" />
+                                </div>
+                            </div>
+                            <div>
+                                <div class="form-group">
+                                    <label>問題模板</label>
+                                    <select id="questionTemplate" onchange="updateQuestion()">
+                                        <option value="聚會安排">聚會安排</option>
+                                        <option value="會議時間">會議時間</option>
+                                        <option value="項目資源">項目資源</option>
+                                        <option value="自定義">自定義</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>協調問題</label>
+                            <textarea id="sessionQuestion" rows="3">我們要安排一次聚會活動，請說明您的時間、地點、預算偏好，以及如果其他條件改變您會如何調整？</textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="createSession()">🚀 創建會話</button>
+                    </div>
+                    
+                    <!-- 會話監控 -->
+                    <div id="sessionMonitor" class="hidden">
+                        <h3>📊 會話監控</h3>
+                        <div class="status-grid">
+                            <div class="metric-card">
+                                <div class="metric-number" id="totalParticipants">0</div>
+                                <div class="metric-label">總參與者</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-number" id="completedResponses">0</div>
+                                <div class="metric-label">已完成回應</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-number" id="pendingResponses">0</div>
+                                <div class="metric-label">待回應</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-number" id="sessionStatus">等待中</div>
+                                <div class="metric-label">會話狀態</div>
+                            </div>
+                        </div>
+                        
+                        <div class="status-card">
+                            <h4>📋 會話資訊</h4>
+                            <p><strong>會話ID：</strong><span id="currentSessionId"></span></p>
+                            <p><strong>協調問題：</strong><span id="currentSessionQuestion"></span></p>
+                            <p><strong>分享給參與者：</strong>請將會話ID提供給所有參與者</p>
+                            
+                            <button class="btn" onclick="copySessionInfo()" style="background: #28a745; color: white; border-color: #28a745; margin-top: 10px;">
+                                📋 複製會話資訊
+                            </button>
+                        </div>
+                        
+                        <div class="participant-list">
+                            <h4>👥 參與者狀態</h4>
+                            <div id="participantsList">
+                                <p>還沒有參與者加入...</p>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-success" id="analyzeBtn" onclick="startAnalysis()" disabled>🤖 開始REP協定分析</button>
+                            <button class="btn btn-warning" onclick="refreshStatus()" style="margin-left: 10px;">🔄 重新整理</button>
+                            <button class="btn" onclick="clearAllData()" style="margin-left: 10px; background: #dc3545; color: white; border-color: #dc3545;">🗑️ 清除資料</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 參與者界面 -->
+                <div id="participant" class="tab-panel">
+                    <h2>👥 參與者界面</h2>
+                    
+                    <!-- 加入會話 -->
+                    <div class="status-card">
+                        <h3>🚀 加入協調會話</h3>
+                        <div class="two-columns">
+                            <div class="form-group">
+                                <label>會話ID</label>
+                                <input type="text" id="joinSessionId" placeholder="輸入主持人提供的會話ID" />
+                            </div>
+                            <div class="form-group">
+                                <label>您的姓名</label>
+                                <input type="text" id="participantName" placeholder="請輸入您的姓名" />
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="joinSession()">🔍 加入會話</button>
+                        <button class="btn" onclick="clearAllData()" style="margin-left: 10px; background: #6c757d; color: white; border-color: #6c757d; font-size: 0.9rem;">🗑️ 清除本地資料</button>
+                    </div>
+                    
+                    <!-- 回應表單 -->
+                    <div id="responseForm" class="hidden">
+                        <div class="status-card">
+                            <h3 id="sessionQuestionDisplay"></h3>
+                            
+                            <div class="form-group">
+                                <label>🎯 您的理想偏好</label>
+                                <textarea id="userPreference" rows="3" placeholder="請描述您希望的理想安排..."></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>📄 敏感性信號</label>
+                                <textarea id="userSensitivity" rows="4" placeholder="如果其他條件改變(時間/預算/地點等)，您會如何調整？請用「如果...那麼...」的方式描述"></textarea>
+                            </div>
+                            
+                            <div class="two-columns">
+                                <div class="form-group">
+                                    <label>🚫 絕對底線</label>
+                                    <input type="text" id="userConstraints" placeholder="什麼是您絕對不能接受的？" />
+                                </div>
+                                <div class="form-group">
+                                    <label>🤹 彈性度 (1-10)</label>
+                                    <input type="range" id="userFlexibility" min="1" max="10" value="5" oninput="updateFlexibilityDisplay()" />
+                                    <div style="text-align: center; margin-top: 5px;">
+                                        <span id="flexibilityDisplay">5</span> - <span id="flexibilityLabel">中等彈性</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>💭 額外備註</label>
+                                <input type="text" id="userNotes" placeholder="其他想說的話..." />
+                            </div>
+                            
+                            <button class="btn btn-primary" onclick="submitResponse()">📤 提交回應</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 結果查看 -->
+                <div id="results" class="tab-panel">
+                    <h2>📊 協調結果</h2>
+                    
+                    <div class="status-card">
+                        <div class="form-group">
+                            <label>輸入會話ID查看結果</label>
+                            <input type="text" id="resultSessionId" placeholder="輸入會話ID" />
+                        </div>
+                        <button class="btn btn-primary" onclick="viewResults()">🔍 查看結果</button>
+                    </div>
+                    
+                    <div id="resultsDisplay" class="hidden">
+                        <!-- 結果將在這裡顯示 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Firebase配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVIJEIGWvwcRNRhWHu-dnG_wW0y1sO33I",
+            authDomain: "rep-platform.firebaseapp.com",
+            projectId: "rep-platform",
+            storageBucket: "rep-platform.firebasestorage.app",
+            messagingSenderId: "752867225856",
+            appId: "1:752867225856:web:c8174716e3ded845f583e5",
+            measurementId: "G-VM0D82LVNK"
+        };
+
+        // 動態導入Firebase模組
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js");
+        const { 
+            getAuth, 
+            GoogleAuthProvider, 
+            signInWithPopup,
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword,
+            onAuthStateChanged,
+            signOut
+        } = await import("https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js");
+
+        // 初始化Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        // 全域變量
+        let currentUser = null;
+
+        // Google登入函數
+        window.googleLogin = async function() {
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                const user = result.user;
+                console.log('Google登入成功:', user);
+                showAlert('success', '✅ Google登入成功！歡迎 ' + user.displayName);
+            } catch (error) {
+                console.error('Google登入失敗:', error);
+                showAlert('error', '❌ 登入失敗：' + error.message);
+            }
+        };
+
+        // Email登入函數
+        window.emailLogin = async function() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showAlert('warning', '⚠️ 請填寫電子郵件和密碼');
+                return;
+            }
+            
+            try {
+                const result = await signInWithEmailAndPassword(auth, email, password);
+                console.log('Email登入成功:', result.user);
+                showAlert('success', '✅ Email登入成功！');
+            } catch (error) {
+                console.error('Email登入失敗:', error);
+                showAlert('error', '❌ 登入失敗：' + error.message);
+            }
+        };
+
+        // Email註冊函數
+        window.emailSignup = async function() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showAlert('warning', '⚠️ 請填寫電子郵件和密碼');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showAlert('warning', '⚠️ 密碼至少需要6個字符');
+                return;
+            }
+            
+            try {
+                const result = await createUserWithEmailAndPassword(auth, email, password);
+                console.log('Email註冊成功:', result.user);
+                showAlert('success', '✅ 註冊成功！歡迎加入REP協調平台');
+            } catch (error) {
+                console.error('Email註冊失敗:', error);
+                showAlert('error', '❌ 註冊失敗：' + error.message);
+            }
+        };
+
+        // 登出函數
+        window.logout = async function() {
+            try {
+                await signOut(auth);
+                console.log('登出成功');
+                showAlert('success', '✅ 已安全登出');
+            } catch (error) {
+                console.error('登出失敗:', error);
+                showAlert('error', '❌ 登出失敗：' + error.message);
+            }
+        };
+
+        // 顯示用戶資訊
+        function displayUserInfo(user) {
+            currentUser = user;
+            
+            // 更新用戶資訊bar
+            document.getElementById('userAvatar').src = user.photoURL || 'https://via.placeholder.com/50/667eea/ffffff?text=' + encodeURIComponent(user.displayName?.charAt(0) || user.email.charAt(0).toUpperCase());
+            document.getElementById('userName').textContent = user.displayName || '用戶';
+            document.getElementById('userEmail').textContent = user.email;
+            
+            // 自動填入用戶資訊
+            document.getElementById('hostName').value = user.displayName || user.email.split('@')[0];
+            document.getElementById('participantName').value = user.displayName || user.email.split('@')[0];
+            
+            // 顯示主要內容，隱藏登入區域
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+        }
+
+        // 顯示登入區域
+        function showLoginSection() {
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('mainContent').classList.add('hidden');
+            currentUser = null;
+        }
+
+        // 監聽認證狀態變化
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log('用戶已登入:', user);
+                displayUserInfo(user);
+            } else {
+                console.log('用戶未登入');
+                showLoginSection();
+            }
+        });
+
+    </script>
+    
+    <script>
+        // N8N Webhook URL
+        const N8N_WEBHOOK_URL = 'https://kf0630.zeabur.app/webhook/rep-coordination';
+        
+        // 本地資料儲存
+        let sessions = JSON.parse(localStorage.getItem('rep_sessions') || '{}');
+        let currentSession = null;
+        
+        // 頁面載入時恢復資料
+        window.onload = function() {
+            // 恢復會話資料
+            const savedSessions = localStorage.getItem('rep_sessions');
+            if (savedSessions) {
+                sessions = JSON.parse(savedSessions);
+            }
+            
+            // 恢復當前會話
+            const savedCurrentSession = localStorage.getItem('currentSession');
+            if (savedCurrentSession && sessions[savedCurrentSession]) {
+                currentSession = savedCurrentSession;
+                const session = sessions[currentSession];
+                document.getElementById('currentSessionId').textContent = currentSession;
+                document.getElementById('currentSessionQuestion').textContent = session.question || '群體決策協調';
+                document.getElementById('sessionMonitor').classList.remove('hidden');
+                updateSessionStatus();
+            }
+        };
+        
+        // 標籤頁切換
+        function showTab(tabName) {
+            // 隱藏所有標籤頁
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 顯示選定的標籤頁
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // 更新問題模板
+        function updateQuestion() {
+            const templates = {
+                '聚會安排': '我們要安排一次聚會活動，請說明您的時間、地點、預算偏好，以及如果其他條件改變您會如何調整？',
+                '會議時間': '我們需要安排重要會議時間，請說明您的可用時間和限制條件，以及您的彈性空間？',
+                '項目資源': '項目資源分配決策，請說明您認為的優先順序和資源需求，以及可接受的調整範圍？',
+                '自定義': ''
+            };
+            
+            const selected = document.getElementById('questionTemplate').value;
+            document.getElementById('sessionQuestion').value = templates[selected] || '';
+        }
+        
+        // 切換會話模式
+        function toggleSessionMode() {
+            const mode = document.getElementById('sessionMode').value;
+            const existingGroup = document.getElementById('existingSessionGroup');
+            
+            if (mode === 'existing') {
+                existingGroup.style.display = 'block';
+            } else {
+                existingGroup.style.display = 'none';
+            }
+        }
+        
+        // 創建或恢復會話
+        function createSession() {
+            // 檢查用戶是否已登入
+            if (!window.currentUser) {
+                showAlert('warning', '⚠️ 請先登入再創建會話');
+                return;
+            }
+            
+            const hostName = document.getElementById('hostName').value;
+            const title = document.getElementById('sessionTitle').value;
+            const question = document.getElementById('sessionQuestion').value;
+            const sessionMode = document.getElementById('sessionMode').value;
+            
+            if (!hostName || !title || !question) {
+                showAlert('warning', '⚠️ 請填寫所有必要資訊');
+                return;
+            }
+            
+            let sessionId;
+            
+            if (sessionMode === 'existing') {
+                // 恢復現有會話
+                sessionId = document.getElementById('existingSessionId').value.trim().toUpperCase();
+                if (!sessionId) {
+                    showAlert('warning', '⚠️ 請輸入要恢復的會話ID');
+                    return;
+                }
+                
+                // 檢查是否已存在此會話
+                if (sessions[sessionId]) {
+                    showAlert('info', `恢復會話 ${sessionId}`);
+                } else {
+                    // 創建會話結構
+                    sessions[sessionId] = {
+                        hostName,
+                        title,
+                        question,
+                        createdTime: new Date().toISOString(),
+                        participants: {},
+                        responses: [],
+                        status: 'collecting',
+                        hostUser: {
+                            uid: window.currentUser.uid,
+                            email: window.currentUser.email,
+                            name: window.currentUser.displayName
+                        }
+                    };
+                    showAlert('success', `會話 ${sessionId} 已恢復，正在從Google Sheets載入參與者資料`);
+                }
+            } else {
+                // 創建新會話
+                sessionId = Math.random().toString(36).substr(2, 8).toUpperCase();
+                
+                // 創建會話資料
+                sessions[sessionId] = {
+                    hostName,
+                    title,
+                    question,
+                    createdTime: new Date().toISOString(),
+                    participants: {},
+                    responses: [],
+                    status: 'collecting',
+                    hostUser: {
+                        uid: window.currentUser.uid,
+                        email: window.currentUser.email,
+                        name: window.currentUser.displayName
+                    }
+                };
+                
+                showAlert('success', `✅ 會話創建成功！會話ID：${sessionId}`);
+            }
+            
+            currentSession = sessionId;
+            
+            // 儲存到localStorage
+            localStorage.setItem('rep_sessions', JSON.stringify(sessions));
+            localStorage.setItem('currentSession', sessionId);
+            
+            // 更新UI
+            document.getElementById('currentSessionId').textContent = sessionId;
+            document.getElementById('currentSessionQuestion').textContent = question;
+            document.getElementById('sessionMonitor').classList.remove('hidden');
+            
+            // 如果是恢復現有會話，立即刷新參與者資料
+            if (sessionMode === 'existing') {
+                refreshParticipantsFromSheets();
+            } else {
+                updateSessionStatus();
+            }
+        }
+        
+        // 更新會話狀態
+        function updateSessionStatus() {
+            if (!currentSession || !sessions[currentSession]) return;
+            
+            const session = sessions[currentSession];
+            
+            // 修正：使用回應資料來計算參與者人數
+            const responseCount = session.responses ? session.responses.length : 0;
+            const participantCount = responseCount; // 有回應的就是參與者
+            const pendingCount = Math.max(0, participantCount - responseCount); // 確保不會是負數
+            
+            console.log('更新會話狀態:', {
+                currentSession,
+                participantCount,
+                responseCount,
+                pendingCount,
+                responses: session.responses
+            });
+            
+            document.getElementById('totalParticipants').textContent = participantCount;
+            document.getElementById('completedResponses').textContent = responseCount;
+            document.getElementById('pendingResponses').textContent = pendingCount;
+            document.getElementById('sessionStatus').textContent = session.status === 'collecting' ? '收集中' : session.status;
+            
+            // 更新參與者列表
+            updateParticipantsList();
+            
+            // 更新分析按鈕
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            if (analyzeBtn) {
+                analyzeBtn.disabled = responseCount === 0;
+            }
+        }
+        
+        // 更新參與者列表
+        function updateParticipantsList() {
+            if (!currentSession || !sessions[currentSession]) return;
+            
+            const session = sessions[currentSession];
+            const listDiv = document.getElementById('participantsList');
+            
+            // 修正：使用responses來顯示參與者，而不是participants
+            if (!session.responses || session.responses.length === 0) {
+                listDiv.innerHTML = '<p>還沒有參與者加入...</p>';
+                return;
+            }
+            
+            let html = '';
+            session.responses.forEach(response => {
+                html += `
+                    <div class="participant-item">
+                        <span>${response.name}</span>
+                        <span class="status-badge status-completed">已完成</span>
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 4px;">
+                            彈性度: ${response.flexibility}/10 | 提交時間: ${new Date(response.submitTime).toLocaleString('zh-TW', {timeZone: 'Asia/Taipei'})}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            listDiv.innerHTML = html;
+        }
+        
+        // 加入會話
+        function joinSession() {
+            // 檢查用戶是否已登入
+            if (!window.currentUser) {
+                showAlert('warning', '⚠️ 請先登入再加入會話');
+                return;
+            }
+            
+            const sessionId = document.getElementById('joinSessionId').value.trim().toUpperCase();
+            const participantName = document.getElementById('participantName').value.trim();
+            
+            if (!sessionId || !participantName) {
+                showAlert('warning', '⚠️ 請輸入會話ID和您的姓名');
+                return;
+            }
+            
+            // 移除會話存在檢查，因為跨瀏覽器時localStorage不共享
+            // 參與者可以加入任何會話ID，由後端N8N和Google Sheets處理驗證
+            
+            // 創建或更新本地會話資料（用於界面顯示）
+            if (!sessions[sessionId]) {
+                sessions[sessionId] = {
+                    id: sessionId,
+                    title: '協調會話',
+                    question: '群體決策協調',
+                    participants: {},
+                    responses: [],
+                    status: 'collecting',
+                    createdTime: new Date().toISOString()
+                };
+            }
+            
+            // 加入參與者
+            sessions[sessionId].participants[participantName] = {
+                joinedTime: new Date().toISOString(),
+                user: {
+                    uid: window.currentUser.uid,
+                    email: window.currentUser.email,
+                    name: window.currentUser.displayName
+                }
+            };
+            
+            // 儲存到localStorage（僅用於界面顯示）
+            localStorage.setItem('rep_sessions', JSON.stringify(sessions));
+            
+            // 顯示回應表單
+            document.getElementById('sessionQuestionDisplay').textContent = `🔍 ${sessions[sessionId].title}`;
+            document.getElementById('sessionQuestionDisplay').innerHTML += `<br><small style="color: #666;">問題：${sessions[sessionId].question}</small>`;
+            document.getElementById('responseForm').classList.remove('hidden');
+            
+            // 儲存當前參與資訊
+            sessionStorage.setItem('currentParticipantSession', sessionId);
+            sessionStorage.setItem('currentParticipantName', participantName);
+            
+            showAlert('success', `✅ 成功加入會話 ${sessionId}！請填寫您的想法`);
+            showAlert('info', '💡 您的回應將直接儲存到雲端系統');
+        }
+        
+        // 更新彈性度顯示
+        function updateFlexibilityDisplay() {
+            const value = document.getElementById('userFlexibility').value;
+            document.getElementById('flexibilityDisplay').textContent = value;
+            
+            const labels = {
+                1: '完全不妥協', 2: '很少妥協', 3: '較少妥協', 4: '有點妥協',
+                5: '中等彈性', 6: '較有彈性', 7: '很有彈性', 8: '高度彈性',
+                9: '極度彈性', 10: '完全彈性'
+            };
+            
+            document.getElementById('flexibilityLabel').textContent = labels[value];
+        }
+        
+        // 提交回應 - 直接寫入Google Sheets
+        async function submitResponse() {
+            // 檢查用戶是否已登入
+            if (!window.currentUser) {
+                showAlert('warning', '⚠️ 請先登入再提交回應');
+                return;
+            }
+            
+            const sessionId = sessionStorage.getItem('currentParticipantSession');
+            const participantName = sessionStorage.getItem('currentParticipantName');
+            
+            const preference = document.getElementById('userPreference').value.trim();
+            const sensitivity = document.getElementById('userSensitivity').value.trim();
+            const constraints = document.getElementById('userConstraints').value.trim();
+            const flexibility = document.getElementById('userFlexibility').value;
+            const notes = document.getElementById('userNotes').value.trim();
+            
+            if (!preference || !sensitivity || !constraints) {
+                showAlert('warning', '⚠️ 請填寫所有必要欄位');
+                return;
+            }
+            
+            showAlert('warning', '📤 正在提交回應到Google Sheets...');
+            
+            try {
+                // 準備要寫入Google Sheets的資料，包含用戶資訊
+                const sheetData = {
+                    session_id: sessionId,
+                    action: 'submit_response',
+                    participant_data: {
+                        會話ID: sessionId,
+                        姓名: participantName,
+                        偏好描述: preference,
+                        敏感性信號: sensitivity,
+                        底線限制: constraints,
+                        '彈性度(1-10)': parseInt(flexibility),
+                        備註: notes,
+                        提交時間: new Date().toISOString(),
+                        // 新增用戶資訊
+                        用戶ID: window.currentUser.uid,
+                        用戶Email: window.currentUser.email,
+                        登入方式: window.currentUser.providerId || 'firebase'
+                    },
+                    sheet_id: '1tIsurF3wPtHqmvw2BHB7gX1-LCVPR43SzhEwxxystRs'
+                };
+                
+                // 調用資料收集端點（不是分析端點）
+                const response = await fetch('https://kf0630.zeabur.app/webhook/submit-response', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(sheetData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('資料收集回應:', result);
+                    
+                    showAlert('success', `✅ ${participantName}，您的回應已成功提交！`);
+                    showAlert('info', '📋 您的偏好已儲存到系統，主持人將可以看到您的回應');
+                    
+                    // 本地也儲存一份（用於界面顯示）
+                    const sessionData = sessions[sessionId] || { responses: [] };
+                    sessionData.responses = sessionData.responses.filter(r => r.name !== participantName);
+                    sessionData.responses.push({
+                        name: participantName,
+                        preference,
+                        sensitivity,
+                        constraints,
+                        flexibility: parseInt(flexibility),
+                        notes,
+                        submitTime: new Date().toISOString(),
+                        submitted: true,
+                        userInfo: {
+                            uid: window.currentUser.uid,
+                            email: window.currentUser.email,
+                            name: window.currentUser.displayName
+                        }
+                    });
+                    sessions[sessionId] = sessionData;
+                    localStorage.setItem('rep_sessions', JSON.stringify(sessions));
+                    
+                    // 顯示提交成功狀態（不清空表單）
+                    document.getElementById('responseForm').innerHTML = `
+                        <div style="text-align: center; padding: 40px; background: #d4edda; border: 2px solid #c3e6cb; border-radius: 12px;">
+                            <h3 style="color: #155724; margin-bottom: 20px;">✅ 提交成功！</h3>
+                            <p style="color: #155724; font-size: 1.1rem; margin-bottom: 15px;">
+                                <strong>${participantName}</strong>，您的回應已成功儲存到系統
+                            </p>
+                            <div style="background: white; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: left;">
+                                <h4 style="color: #155724;">📋 您的回應摘要：</h4>
+                                <p><strong>偏好描述：</strong>${preference.length > 50 ? preference.substring(0, 50) + '...' : preference}</p>
+                                <p><strong>敏感性信號：</strong>${sensitivity.length > 50 ? sensitivity.substring(0, 50) + '...' : sensitivity}</p>
+                                <p><strong>底線限制：</strong>${constraints.length > 30 ? constraints.substring(0, 30) + '...' : constraints}</p>
+                                <p><strong>彈性度：</strong>${flexibility}/10</p>
+                                <p><strong>提交時間：</strong>${new Date().toLocaleString('zh-TW', {timeZone: 'Asia/Taipei'})}</p>
+                                <p><strong>登入用戶：</strong>${window.currentUser.email}</p>
+                            </div>
+                            <div style="color: #155724; background: #fff; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+                                <strong>📢 接下來會發生什麼：</strong><br>
+                                • 您的回應已儲存到Google Sheets<br>
+                                • 主持人可以即時看到您的回應<br>
+                                • 等待所有參與者完成後，主持人將開始REP協定分析<br>
+                                • 分析完成後會有通知
+                            </div>
+                            <button class="btn btn-primary" onclick="location.reload()" style="margin-right: 10px;">
+                                🔄 重新載入頁面
+                            </button>
+                            <button class="btn btn-secondary" onclick="showTab('results')">
+                                📊 查看結果頁面
+                            </button>
+                        </div>
+                    `;
+                    
+                } else {
+                    throw new Error(`伺服器錯誤: HTTP ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('提交回應失敗:', error);
+                showAlert('error', `❌ 提交失敗: ${error.message}`);
+                showAlert('warning', '🔄 改為本地儲存，請確保主持人使用相同瀏覽器查看');
+                
+                // 降級到本地儲存
+                const sessionData = sessions[sessionId] || { responses: [] };
+                sessionData.responses = sessionData.responses.filter(r => r.name !== participantName);
+                sessionData.responses.push({
+                    name: participantName,
+                    preference,
+                    sensitivity,
+                    constraints,
+                    flexibility: parseInt(flexibility),
+                    notes,
+                    submitTime: new Date().toISOString(),
+                    userInfo: {
+                        uid: window.currentUser.uid,
+                        email: window.currentUser.email,
+                        name: window.currentUser.displayName
+                    }
+                });
+                sessions[sessionId] = sessionData;
+                localStorage.setItem('rep_sessions', JSON.stringify(sessions));
+                showAlert('success', '✅ 回應已本地儲存');
+            }
+            // 注意：不再清空表單，因為已經顯示成功確認畫面
+        }
+        
+        // 從Google Sheets讀取參與者資料
+        async function refreshParticipantsFromSheets() {
+            if (!currentSession) return;
+            
+            console.log('=== 開始從Google Sheets刷新參與者 ===');
+            console.log('當前會話ID:', currentSession);
+            
+            showAlert('info', '📡 正在從Google Sheets更新參與者資料...');
+            
+            try {
+                const requestBody = {
+                    session_id: currentSession,
+                    sheet_id: '1tIsurF3wPtHqmvw2BHB7gX1-LCVPR43SzhEwxxystRs',
+                    action: 'get_participants'
+                };
+                
+                console.log('發送的請求體:', requestBody);
+                
+                // 調用N8N來讀取Google Sheets資料
+                const response = await fetch('https://kf0630.zeabur.app/webhook/get-participants', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                console.log('N8N回應狀態:', response.status, response.statusText);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('從Sheets讀取的完整回應:', result);
+                    console.log('參與者資料:', result.participants);
+                    
+                    // 更新本地session資料
+                    if (!sessions[currentSession]) {
+                        sessions[currentSession] = { responses: [] };
+                    }
+                    
+                    sessions[currentSession].responses = result.participants || [];
+                    localStorage.setItem('rep_sessions', JSON.stringify(sessions));
+                    
+                    console.log('更新後的sessions:', sessions);
+                    
+                    updateSessionStatus();
+                    showAlert('success', `✅ 已更新：發現${result.participants?.length || 0}位參與者的回應`);
+                    
+                } else {
+                    const errorText = await response.text();
+                    console.error('N8N回應錯誤:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+            } catch (error) {
+                console.error('讀取Google Sheets失敗:', error);
+                showAlert('warning', `⚠️ 無法從Google Sheets讀取資料: ${error.message}`);
+                showAlert('info', '💡 顯示的可能是本地儲存的資料');
+            }
+            
+            console.log('=== 刷新參與者完成 ===');
+        }
+
+        // 修改重新整理狀態函數
+        function refreshStatus() {
+            console.log('=== 重新整理函數開始執行 ===');
+            console.log('currentSession:', currentSession);
+            console.log('sessions對象:', sessions);
+            
+            updateSessionStatus();
+            
+            // 如果有當前會話，從Google Sheets刷新參與者資料
+            if (currentSession) {
+                console.log('有當前會話，開始刷新');
+                // 先顯示當前localStorage中的資料
+                showAlert('info', `當前會話: ${currentSession}，localStorage中的資料:`);
+                console.log('當前sessions:', sessions);
+                console.log('當前session資料:', sessions[currentSession]);
+                
+                refreshParticipantsFromSheets();
+            } else {
+                console.log('沒有當前會話');
+                showAlert('warning', '⚠️ 沒有當前會話，請先建立或加入會話');
+            }
+            
+            console.log('=== 重新整理函數執行完畢 ===');
+        }
+        
+        // 清除所有資料
+        function clearAllData() {
+            if (confirm('⚠️ 確定要清除所有本地資料嗎？這將刪除所有會話和回應資料！')) {
+                // 清除localStorage
+                localStorage.removeItem('rep_sessions');
+                localStorage.removeItem('currentSession');
+                
+                // 清除sessionStorage
+                sessionStorage.clear();
+                
+                // 重設全域變數
+                sessions = {};
+                currentSession = null;
+                
+                // 重設UI
+                document.getElementById('currentSessionId').textContent = '';
+                document.getElementById('sessionMonitor').classList.add('hidden');
+                document.getElementById('responseForm').classList.add('hidden');
+                document.getElementById('resultsDisplay').classList.add('hidden');
+                
+                // 清空表單
+                document.getElementById('hostName').value = '';
+                document.getElementById('sessionTitle').value = '';
+                document.getElementById('sessionQuestion').value = '';
+                document.getElementById('joinSessionId').value = '';
+                document.getElementById('participantName').value = '';
+                document.getElementById('resultSessionId').value = '';
+                
+                showAlert('success', '✅ 所有資料已清除，可以重新開始');
+                
+                // 刷新頁面以完全重設
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            }
+        }
+        
+        // 開始分析 - 連接到N8N後端
+        async function startAnalysis() {
+            if (!currentSession || !sessions[currentSession]) return;
+            
+            // 檢查用戶權限
+            if (!window.currentUser || sessions[currentSession].hostUser?.uid !== window.currentUser.uid) {
+                showAlert('error', '❌ 只有會話主持人可以開始分析');
+                return;
+            }
+            
+            const session = sessions[currentSession];
+            if (session.responses.length === 0) {
+                showAlert('warning', '⚠️ 還沒有任何回應，無法進行分析');
+                return;
+            }
+            
+            // 更新狀態
+            session.status = 'analyzing';
+            updateSessionStatus();
+            
+            showAlert('warning', '🤖 正在發送資料到N8N進行REP協定分析...');
+            
+            try {
+                // 準備發送給N8N的資料格式
+                const requestData = {
+                    session_id: currentSession,
+                    sheet_id: '1tIsurF3wPtHqmvw2BHB7gX1-LCVPR43SzhEwxxystRs', // 您的實際Google Sheets ID
+                    question: session.question,
+                    participants_data: session.responses.map(response => ({
+                        姓名: response.name,
+                        偏好描述: response.preference,
+                        敏感性信號: response.sensitivity,
+                        底線限制: response.constraints,
+                        '彈性度(1-10)': response.flexibility,
+                        備註: response.notes
+                    })),
+                    hostUser: session.hostUser
+                };
+                
+                showAlert('info', '📡 正在調用N8N API：https://kf0630.zeabur.app/webhook/rep-coordination');
+                
+                // 呼叫您的N8N Webhook
+                const response = await fetch('https://kf0630.zeabur.app/webhook/rep-coordination', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.text();
+                    console.log('N8N回應:', result);
+                    
+                    showAlert('success', '✅ REP分析請求已成功發送到N8N！');
+                    showAlert('info', '⏳ N8N正在處理分析，這需要2-3分鐘時間...');
+                    
+                    // 等待一段時間後提供模擬結果（因為N8N是異步處理）
+                    setTimeout(() => {
+                        showAlert('warning', '💡 N8N正在後台處理真實分析，這裡先提供模擬結果預覽');
+                        session.status = 'completed';
+                        session.results = generateMockResults(session);
+                        session.n8nProcessed = true;
+                        session.n8nTimestamp = new Date().toISOString();
+                        updateSessionStatus();
+                        showAlert('success', '✅ 已提供模擬結果！真實N8N分析結果請查看Google Sheets或N8N日誌');
+                        
+                        // 自動切換到結果查看標籤
+                        showTab('results');
+                        showAlert('info', '🔍 已自動切換到「結果查看」標籤');
+                    }, 5000);
+                    
+                } else {
+                    throw new Error(`N8N回應錯誤: HTTP ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('N8N API調用失敗:', error);
+                showAlert('error', `❌ N8N連接失敗: ${error.message}`);
+                
+                // 降級到模擬分析
+                showAlert('warning', '🔄 改用本地模擬分析模式...');
+                setTimeout(() => {
+                    session.status = 'completed';
+                    session.results = generateMockResults(session);
+                    updateSessionStatus();
+                    showAlert('success', '✅ 模擬分析完成！請到「結果查看」標籤查看協調結果');
+                    
+                    // 自動切換到結果查看標籤
+                    showTab('results');
+                    showAlert('info', '🔍 已自動切換到「結果查看」標籤');
+                }, 3000);
+            }
+        }
+        
+        // 生成模擬結果
+        function generateMockResults(session) {
+            return {
+                sessionSummary: {
+                    question: session.question,
+                    totalParticipants: session.responses.length,
+                    analysisTime: new Date().toISOString()
+                },
+                recommendedSolution: {
+                    finalDecision: "週六下午2-5點聚會，預算控制在每人400元以內，選擇市中心交通便利的餐廳",
+                    rationale: "根據多數決分析，這個安排能滿足70%參與者的主要需求，並將不便降到最低",
+                    implementationSteps: [
+                        "確認最終參與人數",
+                        "預訂符合預算的餐廳", 
+                        "通知所有人最終安排",
+                        "建立群組持續溝通"
+                    ]
+                },
+                satisfactionReport: {
+                    highSatisfaction: session.responses.slice(0, Math.ceil(session.responses.length * 0.7)).map(r => r.name),
+                    mediumSatisfaction: session.responses.slice(Math.ceil(session.responses.length * 0.7), Math.ceil(session.responses.length * 0.9)).map(r => r.name),
+                    requiresCompromise: session.responses.slice(Math.ceil(session.responses.length * 0.9)).map(r => ({
+                        name: r.name,
+                        compromiseDetails: "時間安排需要調整個人計劃",
+                        severity: "medium"
+                    }))
+                },
+                repInsights: {
+                    coordinationEffectiveness: "高效 - 避免了冗長討論，快速達成共識",
+                    keyTradeOffs: "時間 vs 預算的平衡，個人便利 vs 群體最佳",
+                    alternativeSolutions: "如果預算可以提高到500元，則有更多時間選擇"
+                }
+            };
+        }
+        
+        // 查看結果
+        async function viewResults() {
+            const sessionId = document.getElementById('resultSessionId').value.trim().toUpperCase();
+            
+            if (!sessionId) {
+                showAlert('warning', '⚠️ 請輸入會話ID');
+                return;
+            }
+            
+            showAlert('info', '📡 正在從Google Sheets讀取分析結果...');
+            
+            try {
+                // 調用N8N第四個工作流程來讀取真實分析結果
+                const response = await fetch('https://kf0630.zeabur.app/webhook/get-analysis-results', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        sheet_id: '1tIsurF3wPtHqmvw2BHB7gX1-LCVPR43SzhEwxxystRs'
+                    })
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('N8N回應的完整結果:', result);
+                    console.log('result.success:', result.success);
+                    console.log('result.data:', result.data);
+                    
+                    if (result.success && result.data) {
+                        showAlert('success', `✅ 成功讀取會話 ${sessionId} 的分析結果！`);
+                        console.log('準備調用displayRealResults...');
+                        displayRealResults(result.data);
+                        console.log('displayRealResults調用完成');
+                    } else {
+                        console.log('沒有成功或沒有data，result:', result);
+                        showAlert('warning', result.message || '未找到分析結果');
+                        if (result.available_sessions && result.available_sessions.length > 0) {
+                            showAlert('info', `💡 可用的會話ID: ${result.available_sessions.join(', ')}`);
+                        }
+                    }
+                } else {
+                    const errorText = await response.text();
+                    console.log('HTTP錯誤，回應內容:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+            } catch (error) {
+                console.error('讀取分析結果失敗:', error);
+                showAlert('error', `❌ 讀取分析結果失敗: ${error.message}`);
+                
+                // 降級到本地資料
+                showAlert('warning', '🔄 嘗試讀取本地儲存的資料...');
+                
+                if (sessions[sessionId] && sessions[sessionId].results) {
+                    showAlert('info', '💡 顯示本地模擬結果');
+                    displayResults(sessions[sessionId].results);
+                } else {
+                    showAlert('error', '本地也沒有找到該會話的資料');
+                }
+            }
+        }
+        
+        // 顯示結果
+        function displayResults(results) {
+            const displayDiv = document.getElementById('resultsDisplay');
+            
+            const html = `
+                <div class="status-card">
+                    <h3>📋 會話概要</h3>
+                    <p><strong>參與人數：</strong>${results.sessionSummary.totalParticipants}</p>
+                    <p><strong>問題：</strong>${results.sessionSummary.question}</p>
+                    <p><strong>分析完成：</strong>${new Date(results.sessionSummary.analysisTime).toLocaleString()}</p>
+                </div>
+                
+                <div class="status-card">
+                    <h3>🎯 最終協調方案</h3>
+                    <div class="alert alert-success">
+                        <strong>決定：</strong>${results.recommendedSolution.finalDecision}
+                    </div>
+                    <p><strong>理由：</strong>${results.recommendedSolution.rationale}</p>
+                    
+                    <h4>📋 實施步驟：</h4>
+                    <ol>
+                        ${results.recommendedSolution.implementationSteps.map(step => `<li>${step}</li>`).join('')}
+                    </ol>
+                </div>
+                
+                <div class="status-card">
+                    <h3>📈 滿足度分析</h3>
+                    <div class="two-columns">
+                        <div>
+                            <h4>😊 高滿意度</h4>
+                            <ul>
+                                ${results.satisfactionReport.highSatisfaction.map(name => `<li>${name}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>😞 需要妥協</h4>
+                            <ul>
+                                ${results.satisfactionReport.requiresCompromise.map(person => 
+                                    `<li>${person.name}: ${person.compromiseDetails}</li>`
+                                ).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="status-card">
+                    <h3>🤖 REP協定分析</h3>
+                    <p><strong>協調效果：</strong>${results.repInsights.coordinationEffectiveness}</p>
+                    <p><strong>主要權衡：</strong>${results.repInsights.keyTradeOffs}</p>
+                    <p><strong>備選方案：</strong>${results.repInsights.alternativeSolutions}</p>
+                </div>
+            `;
+            
+            displayDiv.innerHTML = html;
+            displayDiv.classList.remove('hidden');
+            
+            showAlert('success', '✅ 結果載入完成');
+        }
+        
+        // 顯示真實的N8N分析結果
+        function displayRealResults(analysisData) {
+            console.log('displayRealResults被調用，接收到的資料:', analysisData);
+            
+            const displayDiv = document.getElementById('resultsDisplay');
+            console.log('找到的displayDiv:', displayDiv);
+            
+            if (!displayDiv) {
+                console.error('找不到resultsDisplay元素！');
+                showAlert('error', '❌ 前端顯示元素錯誤');
+                return;
+            }
+            
+            const repAnalysis = analysisData.rep_analysis || {};
+            console.log('repAnalysis:', repAnalysis);
+            
+            const implementationSteps = Array.isArray(repAnalysis.implementation_steps) ? 
+                repAnalysis.implementation_steps : 
+                (typeof repAnalysis.implementation_steps === 'string' ? 
+                    [repAnalysis.implementation_steps] : []);
+            
+            console.log('implementationSteps:', implementationSteps);
+            
+            const html = `
+                <div class="status-card">
+                    <h3>📋 會話概要</h3>
+                    <p><strong>參與人數：</strong>${analysisData.participants_count || '未知'}</p>
+                    <p><strong>問題：</strong>${analysisData.question || '群體決策協調'}</p>
+                    <p><strong>分析完成：</strong>${analysisData.analysis_time ? new Date(analysisData.analysis_time).toLocaleString('zh-TW', {timeZone: 'Asia/Taipei'}) : '未知'}</p>
+                </div>
+                
+                <div class="status-card">
+                    <h3>🎯 最終協調方案</h3>
+                    <div class="alert alert-success">
+                        <strong>理由：</strong>${repAnalysis.analysis_summary || '根據多數決分析，這個安排能滿足70%參與者的主要需求，並將不便降到最低'}
+                    </div>
+                    
+                    <h4>📋 實施步驟：</h4>
+                    <ol>
+                        ${implementationSteps.map(step => {
+                            // 移除步驟前的數字編號（如果存在）
+                            const cleanStep = step.replace(/^\d+\.\s*/, '').trim();
+                            return `<li>${cleanStep}</li>`;
+                        }).join('')}
+                    </ol>
+                </div>
+                
+                <div class="status-card">
+                    <h3>📈 滿足度分析</h3>
+                    <div class="two-columns">
+                        <div>
+                            <h4>😊 參與者回饋</h4>
+                            <ul>
+                                <li>分析基於參與者偏好和彈性度評估</li>
+                                <li>考量個別需求與共同利益平衡</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>📊 整體預測</h4>
+                            <ul>
+                                <li><strong>滿意度預測：</strong>${repAnalysis.satisfaction_prediction || '整體滿意度預計可達到85%以上'}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="status-card">
+                    <h3>🤖 REP協定分析</h3>
+                    <p><strong>協調效果：</strong>高效 - 避免了冗長討論，快速達成共識</p>
+                    <p><strong>主要權衡：</strong>時間 vs 預算的平衡，個人便利 vs 群體最佳</p>
+                    <p><strong>備選方案：</strong>${repAnalysis.recommended_solution || '如果預算可以提高到500元，則有更多時間選擇'}</p>
+                    
+                    <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                        <h4>詳細REP分析：</h4>
+                        <p><strong>波紋效應：</strong><br>${(repAnalysis.ripple_effects || '參與者偏好的改變可能導致連鎖反應').replace(/(\d+\.\s)/g, '<br>$1').replace(/^<br>/, '').replace(/\n/g, '<br>')}</p>
+                        <p><strong>共同利益：</strong><br>${(repAnalysis.common_interests || '所有參與者都希望找到最佳解決方案').replace(/(\d+\.\s)/g, '<br>$1').replace(/^<br>/, '').replace(/\n/g, '<br>')}</p>
+                        <p><strong>彈性評估：</strong></p>
+                        <div style="margin-left: 20px;">
+                            ${(() => {
+                                if (typeof repAnalysis.flexibility_assessment === 'object' && repAnalysis.flexibility_assessment !== null) {
+                                    // 如果是物件，格式化顯示
+                                    let result = '';
+                                    Object.keys(repAnalysis.flexibility_assessment).forEach(name => {
+                                        const assessment = repAnalysis.flexibility_assessment[name];
+                                        if (typeof assessment === 'object') {
+                                            result += `<p><strong>${name}：</strong>彈性度${assessment.彈性度評分 || assessment.flexibility_score || 'N/A'}/10<br>`;
+                                            result += `<span style="margin-left: 10px;">${assessment.妥協空間 || assessment.compromise_space || ''}</span></p>`;
+                                        } else {
+                                            result += `<p><strong>${name}：</strong>${assessment}</p>`;
+                                        }
+                                    });
+                                    return result;
+                                } else {
+                                    // 如果是字串，主動分段並處理換行
+                                    const text = (repAnalysis.flexibility_assessment || '參與者展現了適度的妥協意願')
+                                        .replace(/(\d+\.\s)/g, '<br>$1')
+                                        .replace(/^<br>/, '')
+                                        .replace(/\n/g, '<br>');
+                                    return `<p>${text}</p>`;
+                                }
+                            })()}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            displayDiv.innerHTML = html;
+            displayDiv.classList.remove('hidden');
+            
+            showAlert('success', '✅ 已顯示來自Google Sheets的真實分析結果！');
+        }
+        
+        // 複製會話資訊
+        function copySessionInfo() {
+            const sessionId = document.getElementById('currentSessionId').textContent;
+            const sessionQuestion = document.getElementById('currentSessionQuestion').textContent;
+            
+            if (!sessionId || sessionId === '') {
+                showAlert('warning', '⚠️ 沒有可複製的會話資訊');
+                return;
+            }
+            
+            // 只複製會話ID、協調問題和網站連結
+            const copyText = `會話ID：${sessionId}\n協調問題：${sessionQuestion}\nhttps://mjib007.github.io/homepage/rep_1.html`;
+            
+            // 按鈕視覺回饋 - 立即顯示複製中狀態
+            const copyBtn = event.target;
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '⏳ 複製中...';
+            copyBtn.disabled = true;
+            copyBtn.style.background = '#6c757d';
+            
+            // 使用Clipboard API進行複製
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(copyText).then(() => {
+                    // 成功回饋
+                    copyBtn.innerHTML = '✅ 已複製';
+                    copyBtn.style.background = '#198754';
+                    showAlert('success', '📋 會話資訊已複製到剪貼簿！');
+                    
+                    // 1.5秒後恢復按鈕狀態
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                        copyBtn.style.background = '#28a745';
+                        copyBtn.disabled = false;
+                    }, 1500);
+                }).catch(() => {
+                    fallbackCopy(copyText, copyBtn, originalText);
+                });
+            } else {
+                fallbackCopy(copyText, copyBtn, originalText);
+            }
+        }
+        
+        // 備用複製方法（適用於較舊的瀏覽器）
+        function fallbackCopy(text, copyBtn, originalText) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                // 成功回饋
+                copyBtn.innerHTML = '✅ 已複製';
+                copyBtn.style.background = '#198754';
+                showAlert('success', '📋 會話資訊已複製到剪貼簿！');
+            } catch (err) {
+                // 失敗回饋
+                copyBtn.innerHTML = '❌ 複製失敗';
+                copyBtn.style.background = '#dc3545';
+                showAlert('error', '❌ 複製失敗，請手動複製');
+            }
+            
+            document.body.removeChild(textArea);
+            
+            // 1.5秒後恢復按鈕狀態
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+                copyBtn.style.background = '#28a745';
+                copyBtn.disabled = false;
+            }, 1500);
+        }
+        
+        // 顯示提示訊息
+        function showAlert(type, message) {
+            // 移除舊的alert
+            const existingAlert = document.querySelector('.alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            // 創建新的alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            // 插入到container頂部
+            const container = document.querySelector('.container');
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            // 3秒後自動移除
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateFlexibilityDisplay();
+        });
+    </script>
+</body>
+</html>
