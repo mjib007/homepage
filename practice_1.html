@@ -436,6 +436,24 @@
 
         function initializeApp() {
             setupEventListeners();
+            initializeSpeechSynthesis();
+        }
+
+        function initializeSpeechSynthesis() {
+            // 初始化語音合成
+            if ('speechSynthesis' in window) {
+                // 載入語音列表（可能需要時間）
+                speechSynthesis.getVoices();
+                
+                // 監聽語音列表載入完成
+                if (speechSynthesis.onvoiceschanged !== undefined) {
+                    speechSynthesis.onvoiceschanged = () => {
+                        console.log('語音列表已載入，可用語音數量:', speechSynthesis.getVoices().length);
+                    };
+                }
+            } else {
+                console.warn('此瀏覽器不支援語音合成功能');
+            }
         }
 
         function checkN8nConnection() {
@@ -659,11 +677,44 @@
 
             conversationArea.appendChild(messageDiv);
             conversationArea.scrollTop = conversationArea.scrollHeight;
+
+            // AI回應時自動播放語音
+            if (type === 'ai') {
+                speakText(content);
+            }
         }
 
         function updateStatus(type, message) {
             // 狀態欄已移除，只在console記錄
             console.log('Status:', type, message);
+        }
+
+        // 文字轉語音功能
+        function speakText(text) {
+            // 停止當前播放
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // 設定語音參數
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9;
+            utterance.pitch = 1.0;
+            utterance.volume = 0.8;
+
+            // 嘗試選擇英文語音
+            const voices = speechSynthesis.getVoices();
+            const englishVoice = voices.find(voice => 
+                voice.lang.startsWith('en') && voice.name.includes('Female')
+            ) || voices.find(voice => voice.lang.startsWith('en'));
+            
+            if (englishVoice) {
+                utterance.voice = englishVoice;
+            }
+
+            speechSynthesis.speak(utterance);
         }
 
         function clearConversation() {
