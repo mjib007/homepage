@@ -287,7 +287,7 @@
         .controls {
             display: flex;
             justify-content: center;
-            gap: 1rem;
+            gap: 2rem;
             margin-top: 2rem;
         }
 
@@ -409,7 +409,6 @@
 
         <div class="controls">
             <button class="control-button" id="clearButton">清除對話</button>
-            <button class="control-button" id="testButton">測試連接</button>
             <button class="control-button" id="reportButton">產生學習報告</button>
         </div>
 
@@ -439,7 +438,6 @@
         const voiceButton = document.getElementById('voiceButton');
         const textInput = document.getElementById('textInput');
         const sendButton = document.getElementById('sendButton');
-        const testButton = document.getElementById('testButton');
         const clearButton = document.getElementById('clearButton');
         const reportButton = document.getElementById('reportButton');
 
@@ -491,7 +489,6 @@
 
             // 控制按鈕
             clearButton.addEventListener('click', clearConversation);
-            testButton.addEventListener('click', testConnection);
             reportButton.addEventListener('click', generateReport);
         }
 
@@ -660,53 +657,6 @@
         function updateStatus(type, message) {
             statusText.textContent = message;
             statusDot.className = `status-dot ${type}`;
-        }
-
-        async function testConnection() {
-            updateStatus('processing', '測試連接中...');
-            
-            // 測試文字對話端點
-            try {
-                console.log('測試文字對話連接...');
-                const testMessage = "Hello, this is a connection test.";
-                
-                const response = await fetch(N8N_WEBHOOKS.chat, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        message: testMessage
-                    })
-                });
-                
-                console.log('測試回應狀態:', response.status);
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('測試回應:', result);
-                    
-                    updateStatus('connected', '連接測試成功！');
-                    addMessage('✅ n8n 連接測試成功', 'ai');
-                    
-                    // 測試語音端點
-                    console.log('測試語音端點可達性...');
-                    const speechResponse = await fetch(N8N_WEBHOOKS.speechToText, {
-                        method: 'OPTIONS'
-                    });
-                    
-                    if (speechResponse.ok || speechResponse.status === 404) {
-                        addMessage('✅ 語音端點也可以連接', 'ai');
-                    }
-                } else {
-                    throw new Error(`測試失敗: ${response.status}`);
-                }
-                
-            } catch (error) {
-                console.error('連接測試失敗:', error);
-                updateStatus('error', '連接測試失敗');
-                addMessage(`❌ 連接測試失敗: ${error.message}`, 'ai');
-            }
         }
 
         function clearConversation() {
