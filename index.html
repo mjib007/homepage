@@ -1,215 +1,744 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>員林市智慧交通整合計畫</title>
-  <style>
-    /* 基本樣式 */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      margin: 0;
-      padding: 0;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI English Practice Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-accent: #64748b;
+            --border: #334155;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
 
-    .container {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 20px;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    .text-center {
-      text-align: center;
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-    h1 {
-      font-size: 2em;
-      color: #333;
-    }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
 
-    p {
-      color: #666;
-    }
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
 
-    .card {
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      padding: 20px;
-    }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            border-radius: 50%;
+            opacity: 0.1;
+            z-index: -1;
+        }
 
-    .tabs-list {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
+        .main-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
 
-    .tab-trigger {
-      flex: 1;
-      padding: 10px 20px;
-      text-align: center;
-      background: #eaeaea;
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
 
-    .tab-trigger.active {
-      background-color: #007bff;
-      color: #fff;
-      font-weight: bold;
-    }
+        .chat-container {
+            background: var(--bg-tertiary);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
 
-    .tabs-content {
-      display: none;
-    }
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
 
-    .tabs-content.active {
-      display: block;
-    }
-  </style>
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--error);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .status-dot.connected {
+            background: var(--success);
+        }
+
+        .status-dot.processing {
+            background: var(--warning);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .conversation-area {
+            min-height: 400px;
+            background: var(--bg-primary);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-user {
+            text-align: right;
+        }
+
+        .message-ai {
+            text-align: left;
+        }
+
+        .message-bubble {
+            display: inline-block;
+            max-width: 80%;
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .message-user .message-bubble {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .message-ai .message-bubble {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .message-content {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .message-translation {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-style: italic;
+        }
+
+        .correction-badge {
+            display: inline-block;
+            background: var(--warning);
+            color: var(--bg-primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin: 0.5rem 0;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .voice-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
+        }
+
+        .voice-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 40px rgba(99, 102, 241, 0.4);
+        }
+
+        .voice-button.recording {
+            background: linear-gradient(135deg, var(--error), #dc2626);
+            animation: recordingPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes recordingPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .text-input-area {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .text-input {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 60px;
+            transition: all 0.3s ease;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .send-button {
+            padding: 0 2rem;
+            height: 60px;
+            border-radius: 16px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .send-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .control-button {
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .control-button:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--primary);
+        }
+
+        .report-section {
+            margin-top: 3rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .report-section.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .loading-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .loading-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .loading-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: loadingBounce 1.4s ease-in-out infinite;
+        }
+
+        .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes loadingBounce {
+            0%, 80%, 100% { transform: scale(1); opacity: 0.5; }
+            40% { transform: scale(1.5); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2.5rem;
+            }
+            
+            .input-area {
+                flex-direction: column;
+            }
+            
+            .voice-button {
+                align-self: center;
+            }
+        }
+    </style>
 </head>
-<link rel="stylesheet" href="styles.css">
 <body>
-  <div class="container">
-    <!-- 頁面標題 -->
-    <div class="header text-center">
-      <h1>員林市智慧交通整合暨銀髮宜居社區發展計畫</h1>
-      <p>打造中彰投地區最具代表性的智慧樂齡示範區</p>
+    <div class="container">
+        <header class="header">
+            <h1 class="main-title">AI English Practice Hub</h1>
+            <p class="subtitle">與AI進行智能英文對話練習，即時糾錯與雙語學習</p>
+        </header>
+
+        <div class="chat-container">
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">準備就緒</span>
+                </div>
+                <div class="status-indicator">
+                    <span id="n8nStatus">n8n: 未連接</span>
+                </div>
+            </div>
+
+            <div class="conversation-area" id="conversationArea">
+                <div class="message message-ai">
+                    <div class="message-bubble">
+                        <div class="message-content">
+                            Hi! I'm your AI English practice partner. Feel free to start a conversation with me by speaking or typing!
+                        </div>
+                        <div class="message-translation">
+                            你好！我是你的AI英文練習夥伴。請隨時用語音或打字與我開始對話！
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <button class="voice-button" id="voiceButton" title="按住說話">
+                    🎤
+                </button>
+                <div class="text-input-area">
+                    <textarea class="text-input" id="textInput" placeholder="或者在這裡輸入英文文字..."></textarea>
+                    <button class="send-button" id="sendButton">發送</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-button" id="clearButton">清除對話</button>
+            <button class="control-button" id="settingsButton">設定</button>
+            <button class="control-button" id="reportButton">產生學習報告</button>
+        </div>
+
+        <div class="report-section" id="reportSection">
+            <!-- 學習報告將在這裡顯示 -->
+        </div>
     </div>
 
-    <!-- 分頁按鈕 -->
-    <div class="tabs-list">
-      <button class="tab-trigger active" data-tab="background">現況分析</button>
-      <button class="tab-trigger" data-tab="plan">計畫內容</button>
-      <button class="tab-trigger" data-tab="benefits">預期效益</button>
-      <button class="tab-trigger" data-tab="innovation">創新特色</button>
-    </div>
+    <script>
+        // n8n Webhook URLs (請替換為實際的URL)
+        const N8N_WEBHOOKS = {
+            speechToText: 'https://kf0630.zeabur.app/webhook/speech-to-text',
+            chat: 'https://kf0630.zeabur.app/webhook/chat-fixed',
+            generateReport: 'https://kf0630.zeabur.app/webhook/generate-report'
+        };
 
-    <!-- 現況分析內容 -->
-    <div class="tabs-content active" id="background">
-      <div class="card">
-        <h3>現況分析</h3>
-        <h4>區域發展困境</h4>
-        <ul>
-          <li>學生人數銳減：從 17,000 人降至 3,500 人，減少 79%</li>
-          <li>房地產衝擊：套房空置率 75%，房價下跌 40%</li>
-        </ul>
-        <h4>交通瓶頸問題</h4>
-        <ul>
-          <li>尖峰時段延誤 15-20 分鐘</li>
-          <li>碳排放每年增加 76.8 噸</li>
-          <li>救護車需繞行 3.2 公里</li>
-          <li>重型車輛穿越住宅區，噪音污染加劇</li>
-        </ul>
-        <h4>老年住宅需求分析</h4>
-        <ul>
-          <li>65 歲以上人口：28,000 人</li>
-          <li>住宅需求人數：6,160 人</li>
-          <li>現有供給率：僅 2%（120 單位）</li>
-        </ul>
-      </div>
-    </div>
+        // 全域變數
+        let isRecording = false;
+        let mediaRecorder;
+        let audioChunks = [];
+        let conversationHistory = [];
 
-    <!-- 計畫內容 -->
-    <div class="tabs-content" id="plan">
-      <div class="card">
-        <h3>計畫內容</h3>
-        <h4>預算編列與財務規劃</h4>
-        <ul>
-          <li>道路工程預算：總計 4.8 億元</li>
-          <li>社區改造預算：總計 2.4 億元</li>
-          <li>總投資金額：7.2 億元，預期回收期 7.7 年</li>
-        </ul>
-        <h4>道路系統優化</h4>
-        <ul>
-          <li>總長度：1.2 公里</li>
-          <li>路寬規格：20 米</li>
-        </ul>
-        <h4>銀髮社區規劃</h4>
-        <ul>
-          <li>200 戶優質住宅</li>
-          <li>完整照護體系</li>
-          <li>社區活動中心</li>
-        </ul>
-      </div>
-    </div>
+        // DOM 元素
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const n8nStatus = document.getElementById('n8nStatus');
+        const conversationArea = document.getElementById('conversationArea');
+        const voiceButton = document.getElementById('voiceButton');
+        const textInput = document.getElementById('textInput');
+        const sendButton = document.getElementById('sendButton');
+        const clearButton = document.getElementById('clearButton');
+        const reportButton = document.getElementById('reportButton');
 
-    <!-- 預期效益 -->
-    <div class="tabs-content" id="benefits">
-      <div class="card">
-        <h3>預期效益</h3>
-        <h4>交通效益</h4>
-        <ul>
-          <li>年省油效益：2,160 萬元</li>
-          <li>碳排放減少：76.8 噸/年</li>
-        </ul>
-        <h4>經濟效益</h4>
-        <ul>
-          <li>創造 150 個工作機會</li>
-          <li>年增營業額：2.4 億元</li>
-        </ul>
-        <h4>社會效益</h4>
-        <ul>
-          <li>提供 200 戶銀髮住宅</li>
-          <li>改善社區治安與活力</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- 創新特色 -->
-    <div class="tabs-content" id="innovation">
-      <div class="card">
-        <h3>創新特色</h3>
-        <h4>市場競爭優勢</h4>
-        <ul>
-          <li>較私人養老院便宜 35%</li>
-          <li>較都會區住宅便宜 45%</li>
-          <li>月費上限 25,000 元</li>
-        </ul>
-        <h4>資源整合</h4>
-        <ul>
-          <li>大葉大學護理系資源：專業實習與照護支援</li>
-          <li>完整醫療網絡：與地區醫院策略聯盟</li>
-        </ul>
-        <h4>永續發展策略</h4>
-        <ul>
-          <li>閒置建築再利用</li>
-          <li>降低開發成本 40%</li>
-          <li>加速建置時程</li>
-        </ul>
-        <h4>計畫創新亮點</h4>
-        <ul>
-          <li>首創大學城轉型銀髮宜居社區</li>
-          <li>結合教育、醫療、照護資源</li>
-          <li>打造低碳、便捷運輸網絡</li>
-          <li>創造多元收入、自給自足</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    document.querySelectorAll('.tab-trigger').forEach(button => {
-      button.addEventListener('click', () => {
-        // 移除所有按鈕的 active 狀態
-        document.querySelectorAll('.tab-trigger').forEach(trigger => {
-          trigger.classList.remove('active');
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
         });
 
-        // 隱藏所有分頁內容
-        document.querySelectorAll('.tabs-content').forEach(tab => {
-          tab.classList.remove('active');
-        });
+        function initializeApp() {
+            checkN8nConnection();
+            setupEventListeners();
+            updateStatus('ready', '準備就緒');
+        }
 
-        // 顯示點擊的分頁內容
-        const tabId = button.getAttribute('data-tab');
-        document.getElementById(tabId).classList.add('active');
-        button.classList.add('active');
-      });
-    });
-  </script>
+        function checkN8nConnection() {
+            // 簡單的連接檢查
+            fetch(N8N_WEBHOOKS.chat.replace('/chat', '/health'))
+                .then(() => {
+                    n8nStatus.textContent = 'n8n: 已連接';
+                    n8nStatus.style.color = 'var(--success)';
+                })
+                .catch(() => {
+                    n8nStatus.textContent = 'n8n: 連接失敗';
+                    n8nStatus.style.color = 'var(--error)';
+                });
+        }
+
+        function setupEventListeners() {
+            // 語音按鈕
+            voiceButton.addEventListener('mousedown', startRecording);
+            voiceButton.addEventListener('mouseup', stopRecording);
+            voiceButton.addEventListener('mouseleave', stopRecording);
+
+            // 文字輸入
+            sendButton.addEventListener('click', sendTextMessage);
+            textInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendTextMessage();
+                }
+            });
+
+            // 控制按鈕
+            clearButton.addEventListener('click', clearConversation);
+            reportButton.addEventListener('click', generateReport);
+        }
+
+        async function startRecording() {
+            if (isRecording) return;
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    sendAudioToN8n(audioBlob);
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                voiceButton.classList.add('recording');
+                updateStatus('recording', '錄音中...');
+
+            } catch (error) {
+                console.error('無法存取麥克風:', error);
+                updateStatus('error', '麥克風存取失敗');
+            }
+        }
+
+        function stopRecording() {
+            if (!isRecording || !mediaRecorder) return;
+
+            mediaRecorder.stop();
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            isRecording = false;
+            voiceButton.classList.remove('recording');
+            updateStatus('processing', '處理中...');
+        }
+
+        async function sendAudioToN8n(audioBlob) {
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.wav');
+
+            try {
+                updateStatus('processing', '語音轉換中...');
+                
+                const response = await fetch(N8N_WEBHOOKS.speechToText, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    const userMessage = result.text;
+                    addMessage(userMessage, 'user');
+                    await sendToAI(userMessage);
+                } else {
+                    updateStatus('error', '語音轉換失敗');
+                }
+
+            } catch (error) {
+                console.error('語音處理錯誤:', error);
+                updateStatus('error', '語音處理失敗');
+            }
+        }
+
+        async function sendTextMessage() {
+            const message = textInput.value.trim();
+            if (!message) return;
+
+            addMessage(message, 'user');
+            textInput.value = '';
+            await sendToAI(message);
+        }
+
+        async function sendToAI(message) {
+            try {
+                updateStatus('processing', 'AI 思考中...');
+
+                const response = await fetch(N8N_WEBHOOKS.chat, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        context: 'casual',
+                        conversationHistory: conversationHistory
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    addMessage(result.englishResponse, 'ai', result.chineseTranslation, result.corrections);
+                    conversationHistory.push({
+                        user: message,
+                        ai: result.englishResponse,
+                        timestamp: new Date().toISOString()
+                    });
+                } else {
+                    updateStatus('error', 'AI 回應失敗');
+                }
+
+                updateStatus('ready', '準備就緒');
+
+            } catch (error) {
+                console.error('AI 處理錯誤:', error);
+                updateStatus('error', 'AI 處理失敗');
+            }
+        }
+
+        function addMessage(content, type, translation = null, corrections = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-${type}`;
+
+            let correctionHtml = '';
+            if (corrections && corrections.length > 0) {
+                correctionHtml = corrections.map(correction => 
+                    `<span class="correction-badge">建議: ${correction}</span>`
+                ).join('');
+            }
+
+            const translationHtml = translation ? 
+                `<div class="message-translation">${translation}</div>` : '';
+
+            messageDiv.innerHTML = `
+                <div class="message-bubble">
+                    <div class="message-content">${content}</div>
+                    ${translationHtml}
+                    ${correctionHtml}
+                </div>
+            `;
+
+            conversationArea.appendChild(messageDiv);
+            conversationArea.scrollTop = conversationArea.scrollHeight;
+        }
+
+        function updateStatus(type, message) {
+            statusText.textContent = message;
+            statusDot.className = `status-dot ${type}`;
+        }
+
+        function clearConversation() {
+            conversationArea.innerHTML = `
+                <div class="message message-ai">
+                    <div class="message-bubble">
+                        <div class="message-content">
+                            Conversation cleared. Ready for a new practice session!
+                        </div>
+                        <div class="message-translation">
+                            對話已清除。準備開始新的練習！
+                        </div>
+                    </div>
+                </div>
+            `;
+            conversationHistory = [];
+            updateStatus('ready', '準備就緒');
+        }
+
+        async function generateReport() {
+            if (conversationHistory.length === 0) {
+                alert('請先進行對話練習');
+                return;
+            }
+
+            try {
+                updateStatus('processing', '產生學習報告中...');
+
+                const response = await fetch(N8N_WEBHOOKS.generateReport, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        conversationHistory: conversationHistory
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayReport(result.report);
+                } else {
+                    updateStatus('error', '報告產生失敗');
+                }
+
+                updateStatus('ready', '準備就緒');
+
+            } catch (error) {
+                console.error('報告產生錯誤:', error);
+                updateStatus('error', '報告產生失敗');
+            }
+        }
+
+        function displayReport(reportData) {
+            const reportSection = document.getElementById('reportSection');
+            reportSection.innerHTML = `
+                <div class="chat-container">
+                    <h2 style="margin-bottom: 2rem; color: var(--primary);">📊 學習報告 Learning Report</h2>
+                    
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--accent); margin-bottom: 1rem;">🗣️ 對話摘要 Conversation Summary</h3>
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
+                            <div style="margin-bottom: 1rem;"><strong>English:</strong> ${reportData.summary.english}</div>
+                            <div><strong>中文:</strong> ${reportData.summary.chinese}</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--warning); margin-bottom: 1rem;">❌ 錯誤分析 Error Analysis</h3>
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
+                            <div style="margin-bottom: 1rem;"><strong>English:</strong> ${reportData.errors.english}</div>
+                            <div><strong>中文:</strong> ${reportData.errors.chinese}</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--success); margin-bottom: 1rem;">💡 學習建議 Learning Suggestions</h3>
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
+                            <div style="margin-bottom: 1rem;"><strong>English:</strong> ${reportData.suggestions.english}</div>
+                            <div><strong>中文:</strong> ${reportData.suggestions.chinese}</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 style="color: var(--primary); margin-bottom: 1rem;">📚 延伸學習 Extended Learning</h3>
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
+                            <div style="margin-bottom: 1rem;"><strong>English:</strong> ${reportData.extended.english}</div>
+                            <div><strong>中文:</strong> ${reportData.extended.chinese}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            reportSection.classList.add('show');
+        }
+
+        // 載入指示器
+        function showLoading(message) {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading-indicator';
+            loadingDiv.innerHTML = `
+                <span>${message}</span>
+                <div class="loading-dots">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            `;
+            conversationArea.appendChild(loadingDiv);
+            return loadingDiv;
+        }
+    </script>
 </body>
 </html>
