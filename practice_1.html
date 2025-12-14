@@ -836,7 +836,7 @@
             }
 
             try {
-                updateStatus('processing', '產生學習報告中...');
+                console.log('發送對話歷史:', conversationHistory);
 
                 const response = await fetch(N8N_WEBHOOKS.generateReport, {
                     method: 'POST',
@@ -848,62 +848,127 @@
                     })
                 });
 
-                const result = await response.json();
-                
-                if (result.success) {
-                    displayReport(result.report);
-                } else {
-                    updateStatus('error', '報告產生失敗');
+                console.log('報告生成回應狀態:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                updateStatus('connected', '報告生成完成');
+                const result = await response.json();
+                console.log('報告生成完整回應:', result);
+                
+                if (result.success && result.choices && result.choices[0]) {
+                    // OpenAI API 回應格式：choices[0].text 包含 JSON
+                    displayReport(result.choices[0].text);
+                } else if (result.text) {
+                    // 直接的 text 回應
+                    displayReport(result.text);
+                } else if (result.success) {
+                    // 簡化的成功回應
+                    displayReport(result.report || result);
+                } else {
+                    console.error('報告生成失敗:', result);
+                    alert('報告生成失敗：' + (result.error || '未知錯誤'));
+                }
 
             } catch (error) {
                 console.error('報告產生錯誤:', error);
-                updateStatus('error', '報告產生失敗');
+                alert('報告產生失敗：' + error.message);
             }
         }
 
         function displayReport(reportData) {
-            const reportSection = document.getElementById('reportSection');
+            // 解析 ChatGPT 的回應文字
+            let parsedData;
+            try {
+                // 如果 reportData 是字串，嘗試解析
+                if (typeof reportData === 'string') {
+                    parsedData = JSON.parse(reportData);
+                } else if (reportData.text) {
+                    // 如果是 OpenAI 的回應格式，取出 text 部分
+                    parsedData = JSON.parse(reportData.text.trim());
+                } else {
+                    parsedData = reportData;
+                }
+            } catch (error) {
+                console.error('解析報告資料失敗:', error);
+                alert('報告格式錯誤');
+                return;
+            }
+
+            const reportSection = document.getElementById('reportSection') || createReportSection();
             reportSection.innerHTML = `
                 <div class="chat-container">
                     <h2 style="margin-bottom: 2rem; color: var(--primary);">📊 學習報告 Learning Report</h2>
                     
                     <div style="margin-bottom: 2rem;">
-                        <h3 style="color: var(--accent); margin-bottom: 1rem;">🗣️ 對話摘要 Conversation Summary</h3>
+                        <h3 style="color: var(--accent); margin-bottom: 1rem;">📈 整體程度 Overall Level</h3>
                         <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
-                            <div style="margin-bottom: 1rem;"><strong>English:</strong> ${reportData.summary.english}</div>
-                            <div><strong>中文:</strong> ${reportData.summary.chinese}</div>
+                            <div style="font-size: 1.2rem; font-weight: bold; color: var(--primary);">${parsedData.overallLevel}</div>
                         </div>
                     </div>
 
                     <div style="margin-bottom: 2rem;">
-                        <h3 style="color: var(--warning); margin-bottom: 1rem;">❌ 錯誤分析 Error Analysis</h3>
+                        <h3 style="color: var(--success); margin-bottom: 1rem;">✅ 優勢 Strengths</h3>
                         <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
-                            <div style="margin-bottom: 1rem;"><strong>English:</strong> ${reportData.errors.english}</div>
-                            <div><strong>中文:</strong> ${reportData.errors.chinese}</div>
+                            ${parsedData.strengths.map(strength => `<div style="margin-bottom: 0.5rem;">• ${strength}</div>`).join('')}
                         </div>
                     </div>
 
                     <div style="margin-bottom: 2rem;">
-                        <h3 style="color: var(--success); margin-bottom: 1rem;">💡 學習建議 Learning Suggestions</h3>
+                        <h3 style="color: var(--warning); margin-bottom: 1rem;">📝 需改進 Areas for Improvement</h3>
                         <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
-                            <div style="margin-bottom: 1rem;"><strong>English:</strong> ${reportData.suggestions.english}</div>
-                            <div><strong>中文:</strong> ${reportData.suggestions.chinese}</div>
+                            ${parsedData.weaknesses.map(weakness => `<div style="margin-bottom: 0.5rem;">• ${weakness}</div>`).join('')}
                         </div>
                     </div>
 
-                    <div>
-                        <h3 style="color: var(--primary); margin-bottom: 1rem;">📚 延伸學習 Extended Learning</h3>
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--error); margin-bottom: 1rem;">❌ 常見錯誤 Common Errors</h3>
                         <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
-                            <div style="margin-bottom: 1rem;"><strong>English:</strong> ${reportData.extended.english}</div>
-                            <div><strong>中文:</strong> ${reportData.extended.chinese}</div>
+                            ${parsedData.commonErrors.map(error => `<div style="margin-bottom: 0.5rem;">• ${error}</div>`).join('')}
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--accent); margin-bottom: 1rem;">📚 詞彙水平 Vocabulary Level</h3>
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
+                            <div>${parsedData.vocabularyLevel}</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--primary); margin-bottom: 1rem;">💡 學習建議 Recommendations</h3>
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
+                            ${parsedData.recommendations.map(rec => `<div style="margin-bottom: 0.5rem;">• ${rec}</div>`).join('')}
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--success); margin-bottom: 1rem;">🎯 建議練習領域 Practice Areas</h3>
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
+                            ${parsedData.practiceAreas.map(area => `<div style="margin-bottom: 0.5rem;">• ${area}</div>`).join('')}
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="color: var(--success); margin-bottom: 1rem;">🌟 鼓勵的話 Encouragement</h3>
+                        <div style="background: linear-gradient(135deg, var(--primary), var(--accent)); padding: 1.5rem; border-radius: 12px; color: white;">
+                            <div style="font-style: italic;">${parsedData.encouragement}</div>
                         </div>
                     </div>
                 </div>
             `;
-            reportSection.classList.add('show');
+            reportSection.style.display = 'block';
+            reportSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function createReportSection() {
+            const section = document.createElement('div');
+            section.id = 'reportSection';
+            section.style.display = 'none';
+            section.style.marginTop = '2rem';
+            document.querySelector('.container').appendChild(section);
+            return section;
         }
 
         // 載入指示器
