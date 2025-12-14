@@ -422,8 +422,6 @@
         let conversationHistory = [];
 
         // DOM 元素
-        const statusDot = document.getElementById('statusDot');
-        const statusText = document.getElementById('statusText');
         const conversationArea = document.getElementById('conversationArea');
         const voiceButton = document.getElementById('voiceButton');
         const textInput = document.getElementById('textInput');
@@ -438,7 +436,6 @@
 
         function initializeApp() {
             setupEventListeners();
-            updateStatus('connected', '已就緒');
         }
 
         function checkN8nConnection() {
@@ -664,8 +661,8 @@
         }
 
         function updateStatus(type, message) {
-            statusText.textContent = message;
-            statusDot.className = `status-dot ${type}`;
+            // 狀態欄已移除，只在console記錄
+            console.log('Status:', type, message);
         }
 
         function clearConversation() {
