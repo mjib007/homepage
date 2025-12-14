@@ -463,10 +463,8 @@
         }
 
         function setupEventListeners() {
-            // 語音按鈕
-            voiceButton.addEventListener('mousedown', startRecording);
-            voiceButton.addEventListener('mouseup', stopRecording);
-            voiceButton.addEventListener('mouseleave', stopRecording);
+            // 語音按鈕 - 改為點擊模式
+            voiceButton.addEventListener('click', toggleRecording);
 
             // 文字輸入
             sendButton.addEventListener('click', sendTextMessage);
@@ -480,6 +478,14 @@
             // 控制按鈕
             clearButton.addEventListener('click', clearConversation);
             reportButton.addEventListener('click', generateReport);
+        }
+
+        function toggleRecording() {
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
+            }
         }
 
         async function startRecording() {
@@ -502,7 +508,8 @@
                 mediaRecorder.start();
                 isRecording = true;
                 voiceButton.classList.add('recording');
-                updateStatus('recording', '錄音中...');
+                voiceButton.innerHTML = '⏹️';
+                updateStatus('recording', '錄音中... 再次點擊停止');
 
             } catch (error) {
                 console.error('無法存取麥克風:', error);
@@ -517,13 +524,23 @@
             mediaRecorder.stream.getTracks().forEach(track => track.stop());
             isRecording = false;
             voiceButton.classList.remove('recording');
+            voiceButton.innerHTML = '🎤';
             updateStatus('processing', '處理中...');
         }
 
         async function sendAudioToN8n(audioBlob) {
             console.log('準備發送音訊到 n8n...');
+            console.log('音訊檔案大小:', audioBlob.size, 'bytes');
+            console.log('音訊檔案類型:', audioBlob.type);
+
             const formData = new FormData();
+            // 確保欄位名稱與n8n設定一致
             formData.append('audio', audioBlob, 'recording.wav');
+            
+            // 除錯：顯示FormData內容
+            for (let [key, value] of formData.entries()) {
+                console.log('FormData:', key, value);
+            }
 
             try {
                 updateStatus('processing', '語音轉換中...');
@@ -535,9 +552,12 @@
                 });
 
                 console.log('回應狀態:', response.status);
+                console.log('回應標頭:', response.headers);
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text();
+                    console.error('HTTP錯誤:', response.status, errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
                 }
 
                 const result = await response.json();
@@ -551,13 +571,12 @@
                 } else {
                     console.error('語音轉文字失敗:', result);
                     updateStatus('error', result.error || '語音轉換失敗');
-                    addMessage('⚠️ 語音轉換失敗，請重試', 'user');
                 }
 
             } catch (error) {
                 console.error('語音處理錯誤:', error);
                 updateStatus('error', '語音處理失敗: ' + error.message);
-                addMessage('❌ 語音處理失敗，請檢查網路連接', 'user');
+                addMessage('❌ 語音處理失敗: ' + error.message, 'user');
             }
         }
 
