@@ -154,7 +154,7 @@
         }
 
         .message-user {
-            text-align: right;
+            text-align: left;
         }
 
         .message-ai {
@@ -183,6 +183,7 @@
         .message-content {
             font-size: 1rem;
             line-height: 1.5;
+            text-align: left;
         }
 
         .message-translation {
@@ -412,7 +413,8 @@
         const N8N_WEBHOOKS = {
             speechToText: 'https://kf0630.zeabur.app/webhook/speech-to-text',
             chat: 'https://kf0630.zeabur.app/webhook/chat-fixed',
-            generateReport: 'https://kf0630.zeabur.app/webhook/generate-report'
+            generateReport: 'https://kf0630.zeabur.app/webhook/generate-report',
+            tts: 'https://kf0630.zeabur.app/webhook/tts' // 新增 TTS 端點
         };
 
         // 全域變數
@@ -689,62 +691,49 @@
             console.log('Status:', type, message);
         }
 
-        // 文字轉語音功能
-        function speakText(text) {
-            // 停止當前播放
-            if (speechSynthesis.speaking) {
-                speechSynthesis.cancel();
-            }
+        // 使用 n8n TTS 端點播放語音
+        async function speakText(text) {
+            try {
+                console.log('使用 n8n TTS 播放:', text);
+                
+                const response = await fetch(N8N_WEBHOOKS.tts, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: text
+                    })
+                });
 
+                if (!response.ok) {
+                    throw new Error(`TTS API error: ${response.status}`);
+                }
+
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                
+                audio.onended = () => {
+                    URL.revokeObjectURL(audioUrl); // 清理記憶體
+                };
+                
+                await audio.play();
+                console.log('TTS 播放完成');
+                
+            } catch (error) {
+                console.error('TTS 播放失敗:', error);
+                // 降級到瀏覽器 TTS
+                fallbackToSpeechSynthesis(text);
+            }
+        }
+
+        // 備用的瀏覽器 TTS
+        function fallbackToSpeechSynthesis(text) {
             const utterance = new SpeechSynthesisUtterance(text);
-            
-            // 設定語音參數 - 更有活力的設定
             utterance.lang = 'en-US';
-            utterance.rate = 1.1;  // 稍快一點
-            utterance.pitch = 1.2; // 更高音調
-            utterance.volume = 0.9;
-
-            // 優先選擇更自然的語音
-            const voices = speechSynthesis.getVoices();
-            
-            // 按優先級尋找語音
-            const preferredVoices = [
-                'Google US English', 
-                'Microsoft Aria Online',
-                'Samantha',
-                'Alex',
-                'Victoria'
-            ];
-            
-            let selectedVoice = null;
-            
-            // 先嘗試找到偏好的語音
-            for (const voiceName of preferredVoices) {
-                selectedVoice = voices.find(voice => 
-                    voice.name.includes(voiceName) && voice.lang.startsWith('en')
-                );
-                if (selectedVoice) break;
-            }
-            
-            // 如果沒找到，選擇第一個英文女聲
-            if (!selectedVoice) {
-                selectedVoice = voices.find(voice => 
-                    voice.lang.startsWith('en') && 
-                    (voice.name.toLowerCase().includes('female') || 
-                     voice.name.toLowerCase().includes('woman'))
-                );
-            }
-            
-            // 最後選擇任何英文語音
-            if (!selectedVoice) {
-                selectedVoice = voices.find(voice => voice.lang.startsWith('en'));
-            }
-            
-            if (selectedVoice) {
-                utterance.voice = selectedVoice;
-                console.log('使用語音:', selectedVoice.name);
-            }
-
+            utterance.rate = 1.1;
+            utterance.pitch = 1.2;
             speechSynthesis.speak(utterance);
         }
 
