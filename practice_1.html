@@ -379,7 +379,7 @@
                     <span id="statusText">準備就緒</span>
                 </div>
                 <div class="status-indicator">
-                    <span id="n8nStatus">n8n: 未連接</span>
+                    <span>點擊"測試連接"檢查狀態</span>
                 </div>
             </div>
 
@@ -435,7 +435,6 @@
         // DOM 元素
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
-        const n8nStatus = document.getElementById('n8nStatus');
         const conversationArea = document.getElementById('conversationArea');
         const voiceButton = document.getElementById('voiceButton');
         const textInput = document.getElementById('textInput');
@@ -450,21 +449,28 @@
         });
 
         function initializeApp() {
-            checkN8nConnection();
             setupEventListeners();
             updateStatus('ready', '準備就緒');
         }
 
         function checkN8nConnection() {
-            // 簡單的連接檢查
-            fetch(N8N_WEBHOOKS.chat.replace('/chat', '/health'))
-                .then(() => {
-                    n8nStatus.textContent = 'n8n: 已連接';
-                    n8nStatus.style.color = 'var(--success)';
+            // 直接嘗試連接實際的 webhook 端點
+            fetch(N8N_WEBHOOKS.chat, {
+                method: 'OPTIONS'  // 使用 OPTIONS 請求測試連通性
+            })
+                .then((response) => {
+                    // 即使是 404 也表示端點可達
+                    if (response.status === 404 || response.status === 200 || response.status === 405) {
+                        n8nStatus.textContent = 'n8n: 已連接';
+                        n8nStatus.style.color = 'var(--success)';
+                    } else {
+                        throw new Error(`狀態碼: ${response.status}`);
+                    }
                 })
-                .catch(() => {
-                    n8nStatus.textContent = 'n8n: 連接失敗';
-                    n8nStatus.style.color = 'var(--error)';
+                .catch((error) => {
+                    console.log('n8n 連接測試詳情:', error);
+                    n8nStatus.textContent = 'n8n: 連接測試失敗';
+                    n8nStatus.style.color = 'var(--warning)';
                 });
         }
 
