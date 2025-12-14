@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI English Practice Hub</title>
+    <title>English Buddy - AI英文練習夥伴</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -444,8 +444,8 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1 class="main-title">AI English Practice Hub</h1>
-            <p class="subtitle">與AI進行智能英文對話練習，即時糾錯與雙語學習</p>
+            <h1 class="main-title">English Buddy</h1>
+            <p class="subtitle">你的AI英文練習夥伴，隨時對話學習</p>
         </header>
 
         <div class="chat-container">
@@ -854,25 +854,30 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                const result = await response.json();
-                console.log('報告生成完整回應:', result);
-                
-                // 保存到全域變數供除錯
-                window.lastResult = result;
-                
-                if (result.success && result.choices && result.choices[0] && result.choices[0].text) {
-                    console.log('使用 choices[0].text 格式');
-                    console.log('HTML 長度:', result.choices[0].text.length);
-                    displayReport(result.choices[0].text);
-                } else if (result.html) {
-                    console.log('使用 result.html 格式');
-                    displayReport(result.html);
-                } else if (result.text) {
-                    console.log('使用 result.text 格式');
-                    displayReport(result.text);
+                // 檢查回應的 Content-Type
+                const contentType = response.headers.get('Content-Type');
+                console.log('回應 Content-Type:', contentType);
+
+                let result;
+                if (contentType && contentType.includes('application/json')) {
+                    // JSON 格式回應
+                    result = await response.json();
+                    console.log('JSON 回應:', result);
+                    
+                    if (result.success && result.choices && result.choices[0] && result.choices[0].text) {
+                        displayReport(result.choices[0].text);
+                    } else if (result.html) {
+                        displayReport(result.html);
+                    } else {
+                        console.error('JSON 格式錯誤:', result);
+                        alert('報告格式錯誤');
+                    }
                 } else {
-                    console.error('找不到 HTML 內容:', result);
-                    alert('報告格式錯誤：找不到 HTML 內容');
+                    // HTML 格式回應
+                    const htmlContent = await response.text();
+                    console.log('HTML 回應長度:', htmlContent.length);
+                    console.log('HTML 前100字符:', htmlContent.substring(0, 100));
+                    displayReport(htmlContent);
                 }
 
             } catch (error) {
