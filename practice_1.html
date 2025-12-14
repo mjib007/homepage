@@ -888,101 +888,15 @@
         function displayReport(reportData) {
             console.log('displayReport 被調用，資料:', reportData);
             
-            // 解析 ChatGPT 的回應文字
-            let parsedData;
-            try {
-                // 如果 reportData 是字串，嘗試解析
-                if (typeof reportData === 'string') {
-                    console.log('解析字串格式的 JSON');
-                    parsedData = JSON.parse(reportData);
-                } else if (reportData.text) {
-                    // 如果是 OpenAI 的回應格式，取出 text 部分
-                    console.log('從 text 欄位解析 JSON');
-                    parsedData = JSON.parse(reportData.text.trim());
-                } else {
-                    console.log('使用原始物件');
-                    parsedData = reportData;
-                }
-                console.log('解析後的資料:', parsedData);
-            } catch (error) {
-                console.error('解析報告資料失敗:', error);
-                alert('報告格式錯誤');
-                return;
-            }
-
             let reportSection = document.getElementById('reportSection');
             if (!reportSection) {
-                console.log('reportSection 不存在，正在創建...');
+                console.log('創建 reportSection');
                 reportSection = createReportSection();
             }
-            console.log('reportSection:', reportSection);
 
-            const reportHTML = `
-                <div class="chat-container" style="background: var(--bg-primary); padding: 2rem; border-radius: 16px; margin-top: 2rem;">
-                    <h2 style="margin-bottom: 2rem; color: var(--primary); text-align: center;">📊 學習報告 Learning Report</h2>
-                    
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="color: var(--accent); margin-bottom: 1rem;">📈 整體程度 Overall Level</h3>
-                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
-                            <div style="font-size: 1.2rem; font-weight: bold; color: var(--primary);">${parsedData.overallLevel}</div>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="color: var(--success); margin-bottom: 1rem;">✅ 優勢 Strengths</h3>
-                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
-                            ${parsedData.strengths.map(strength => `<div style="margin-bottom: 0.5rem;">• ${strength}</div>`).join('')}
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="color: var(--warning); margin-bottom: 1rem;">📝 需改進 Areas for Improvement</h3>
-                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
-                            ${parsedData.weaknesses.map(weakness => `<div style="margin-bottom: 0.5rem;">• ${weakness}</div>`).join('')}
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="color: var(--error); margin-bottom: 1rem;">❌ 常見錯誤 Common Errors</h3>
-                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
-                            ${parsedData.commonErrors.map(error => `<div style="margin-bottom: 0.5rem;">• ${error}</div>`).join('')}
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="color: var(--accent); margin-bottom: 1rem;">📚 詞彙水平 Vocabulary Level</h3>
-                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
-                            <div>${parsedData.vocabularyLevel}</div>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="color: var(--primary); margin-bottom: 1rem;">💡 學習建議 Recommendations</h3>
-                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
-                            ${parsedData.recommendations.map(rec => `<div style="margin-bottom: 0.5rem;">• ${rec}</div>`).join('')}
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="color: var(--success); margin-bottom: 1rem;">🎯 建議練習領域 Practice Areas</h3>
-                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
-                            ${parsedData.practiceAreas.map(area => `<div style="margin-bottom: 0.5rem;">• ${area}</div>`).join('')}
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="color: var(--success); margin-bottom: 1rem;">🌟 鼓勵的話 Encouragement</h3>
-                        <div style="background: linear-gradient(135deg, var(--primary), var(--accent)); padding: 1.5rem; border-radius: 12px; color: white;">
-                            <div style="font-style: italic;">${parsedData.encouragement}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            console.log('設定 HTML 內容');
-            reportSection.innerHTML = reportHTML;
+            // 直接插入 HTML 內容
+            reportSection.innerHTML = reportData;
             reportSection.style.display = 'block';
-            console.log('顯示 reportSection，當前樣式:', reportSection.style.display);
             
             // 滾動到報告位置
             setTimeout(() => {
