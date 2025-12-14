@@ -860,23 +860,19 @@
                 // 保存到全域變數供除錯
                 window.lastResult = result;
                 
-                if (result.success && result.choices && result.choices[0]) {
+                if (result.success && result.choices && result.choices[0] && result.choices[0].text) {
                     console.log('使用 choices[0].text 格式');
-                    console.log('choices[0].text:', result.choices[0].text);
+                    console.log('HTML 長度:', result.choices[0].text.length);
                     displayReport(result.choices[0].text);
-                } else if (result.report) {
-                    console.log('使用 result.report 格式');
-                    console.log('result.report:', result.report);
-                    displayReport(result.report);
+                } else if (result.html) {
+                    console.log('使用 result.html 格式');
+                    displayReport(result.html);
                 } else if (result.text) {
                     console.log('使用 result.text 格式');
                     displayReport(result.text);
-                } else if (result.success) {
-                    console.log('使用 result 格式');
-                    displayReport(result);
                 } else {
-                    console.error('報告生成失敗:', result);
-                    alert('報告生成失敗：' + (result.error || '未知錯誤'));
+                    console.error('找不到 HTML 內容:', result);
+                    alert('報告格式錯誤：找不到 HTML 內容');
                 }
 
             } catch (error) {
@@ -885,23 +881,60 @@
             }
         }
 
-        function displayReport(reportData) {
-            console.log('displayReport 被調用，資料:', reportData);
+        function displayReport(htmlContent) {
+            console.log('=== displayReport 開始 ===');
+            console.log('HTML 內容長度:', htmlContent?.length);
+            console.log('HTML 前100字符:', htmlContent?.substring(0, 100));
             
-            let reportSection = document.getElementById('reportSection');
-            if (!reportSection) {
-                console.log('創建 reportSection');
-                reportSection = createReportSection();
+            if (!htmlContent || htmlContent.length === 0) {
+                console.error('HTML 內容為空');
+                alert('報告內容為空');
+                return;
             }
 
-            // 直接插入 HTML 內容
-            reportSection.innerHTML = reportData;
+            let reportSection = document.getElementById('reportSection');
+            if (!reportSection) {
+                console.log('創建新的 reportSection');
+                reportSection = document.createElement('div');
+                reportSection.id = 'reportSection';
+                reportSection.style.width = '100%';
+                reportSection.style.marginTop = '2rem';
+                
+                const container = document.querySelector('.container');
+                if (!container) {
+                    console.error('找不到 .container 元素');
+                    alert('頁面結構錯誤');
+                    return;
+                }
+                container.appendChild(reportSection);
+                console.log('reportSection 已創建並添加到 DOM');
+            }
+
+            console.log('設定 HTML 內容...');
+            reportSection.innerHTML = htmlContent;
+            
+            // 強制顯示
             reportSection.style.display = 'block';
+            reportSection.style.visibility = 'visible';
+            reportSection.style.opacity = '1';
+            
+            console.log('reportSection 樣式:', {
+                display: reportSection.style.display,
+                visibility: reportSection.style.visibility,
+                opacity: reportSection.style.opacity
+            });
+            
+            console.log('reportSection DOM 狀態:', {
+                存在: !!reportSection,
+                父元素: reportSection.parentElement?.tagName,
+                子元素數量: reportSection.children.length
+            });
             
             // 滾動到報告位置
             setTimeout(() => {
                 reportSection.scrollIntoView({ behavior: 'smooth' });
-                console.log('滾動到報告位置');
+                console.log('已滾動到報告位置');
+                console.log('=== displayReport 完成 ===');
             }, 100);
         }
 
