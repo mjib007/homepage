@@ -857,15 +857,23 @@
                 const result = await response.json();
                 console.log('報告生成完整回應:', result);
                 
+                // 保存到全域變數供除錯
+                window.lastResult = result;
+                
                 if (result.success && result.choices && result.choices[0]) {
-                    // OpenAI API 回應格式：choices[0].text 包含 JSON
+                    console.log('使用 choices[0].text 格式');
+                    console.log('choices[0].text:', result.choices[0].text);
                     displayReport(result.choices[0].text);
+                } else if (result.report) {
+                    console.log('使用 result.report 格式');
+                    console.log('result.report:', result.report);
+                    displayReport(result.report);
                 } else if (result.text) {
-                    // 直接的 text 回應
+                    console.log('使用 result.text 格式');
                     displayReport(result.text);
                 } else if (result.success) {
-                    // 簡化的成功回應
-                    displayReport(result.report || result);
+                    console.log('使用 result 格式');
+                    displayReport(result);
                 } else {
                     console.error('報告生成失敗:', result);
                     alert('報告生成失敗：' + (result.error || '未知錯誤'));
