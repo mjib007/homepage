@@ -531,48 +531,44 @@
             console.log('音訊檔案類型:', audioBlob.type);
 
             const formData = new FormData();
-            // 確保欄位名稱與n8n設定一致
             formData.append('audio', audioBlob, 'recording.wav');
-            
-            // 除錯：顯示FormData內容
-            for (let [key, value] of formData.entries()) {
-                console.log('FormData:', key, value);
-            }
 
             try {
-                updateStatus('processing', '語音轉換中...');
-                
                 console.log('發送請求到:', N8N_WEBHOOKS.speechToText);
                 const response = await fetch(N8N_WEBHOOKS.speechToText, {
                     method: 'POST',
                     body: formData
                 });
 
-                console.log('回應狀態:', response.status);
-                console.log('回應標頭:', response.headers);
+                console.log('語音轉文字回應狀態:', response.status);
                 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('HTTP錯誤:', response.status, errorText);
-                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                    console.error('語音轉文字HTTP錯誤:', response.status, errorText);
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const result = await response.json();
-                console.log('n8n 回應:', result);
+                console.log('語音轉文字結果:', result);
                 
                 if (result.success && result.text) {
                     const userMessage = result.text;
                     console.log('語音轉文字成功:', userMessage);
+                    
+                    // 先顯示用戶的語音轉錄文字
                     addMessage(userMessage, 'user');
+                    
+                    // 然後發送到AI處理
+                    console.log('準備發送到AI...');
                     await sendToAI(userMessage);
+                    
                 } else {
                     console.error('語音轉文字失敗:', result);
-                    updateStatus('error', result.error || '語音轉換失敗');
+                    addMessage('❌ 語音轉換失敗', 'user');
                 }
 
             } catch (error) {
                 console.error('語音處理錯誤:', error);
-                updateStatus('error', '語音處理失敗: ' + error.message);
                 addMessage('❌ 語音處理失敗: ' + error.message, 'user');
             }
         }
@@ -588,7 +584,6 @@
 
         async function sendToAI(message) {
             try {
-                updateStatus('processing', 'AI 思考中...');
                 console.log('發送訊息到 AI:', message);
 
                 const response = await fetch(N8N_WEBHOOKS.chat, {
@@ -597,40 +592,46 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        message: message,
-                        context: 'casual',
-                        conversationHistory: conversationHistory
+                        message: message
                     })
                 });
 
                 console.log('AI 回應狀態:', response.status);
 
                 if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('AI HTTP錯誤:', response.status, errorText);
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const result = await response.json();
-                console.log('AI 回應:', result);
+                console.log('AI 完整回應:', result);
                 
-                if (result.success) {
-                    addMessage(result.englishResponse, 'ai', result.chineseTranslation, result.corrections);
+                if (result.success && result.englishResponse) {
+                    console.log('AI 回應處理成功');
+                    addMessage(
+                        result.englishResponse, 
+                        'ai', 
+                        result.chineseTranslation, 
+                        result.corrections
+                    );
+                    
                     conversationHistory.push({
                         user: message,
                         ai: result.englishResponse,
                         timestamp: new Date().toISOString()
                     });
+                    
+                    console.log('AI對話已添加到介面');
+                    
                 } else {
-                    console.error('AI 回應失敗:', result);
-                    updateStatus('error', 'AI 回應失敗');
-                    addMessage('❌ AI 回應失敗，請重試', 'ai');
+                    console.error('AI 回應格式錯誤:', result);
+                    addMessage('❌ AI 回應格式錯誤', 'ai');
                 }
-
-                updateStatus('connected', '處理完成');
 
             } catch (error) {
                 console.error('AI 處理錯誤:', error);
-                updateStatus('error', 'AI 處理失敗: ' + error.message);
-                addMessage('❌ 無法連接到 AI 服務，請檢查網路連接', 'ai');
+                addMessage('❌ 無法連接到 AI 服務: ' + error.message, 'ai');
             }
         }
 
