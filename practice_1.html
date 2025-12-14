@@ -698,20 +698,51 @@
 
             const utterance = new SpeechSynthesisUtterance(text);
             
-            // 設定語音參數
+            // 設定語音參數 - 更有活力的設定
             utterance.lang = 'en-US';
-            utterance.rate = 0.9;
-            utterance.pitch = 1.0;
-            utterance.volume = 0.8;
+            utterance.rate = 1.1;  // 稍快一點
+            utterance.pitch = 1.2; // 更高音調
+            utterance.volume = 0.9;
 
-            // 嘗試選擇英文語音
+            // 優先選擇更自然的語音
             const voices = speechSynthesis.getVoices();
-            const englishVoice = voices.find(voice => 
-                voice.lang.startsWith('en') && voice.name.includes('Female')
-            ) || voices.find(voice => voice.lang.startsWith('en'));
             
-            if (englishVoice) {
-                utterance.voice = englishVoice;
+            // 按優先級尋找語音
+            const preferredVoices = [
+                'Google US English', 
+                'Microsoft Aria Online',
+                'Samantha',
+                'Alex',
+                'Victoria'
+            ];
+            
+            let selectedVoice = null;
+            
+            // 先嘗試找到偏好的語音
+            for (const voiceName of preferredVoices) {
+                selectedVoice = voices.find(voice => 
+                    voice.name.includes(voiceName) && voice.lang.startsWith('en')
+                );
+                if (selectedVoice) break;
+            }
+            
+            // 如果沒找到，選擇第一個英文女聲
+            if (!selectedVoice) {
+                selectedVoice = voices.find(voice => 
+                    voice.lang.startsWith('en') && 
+                    (voice.name.toLowerCase().includes('female') || 
+                     voice.name.toLowerCase().includes('woman'))
+                );
+            }
+            
+            // 最後選擇任何英文語音
+            if (!selectedVoice) {
+                selectedVoice = voices.find(voice => voice.lang.startsWith('en'));
+            }
+            
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+                console.log('使用語音:', selectedVoice.name);
             }
 
             speechSynthesis.speak(utterance);
