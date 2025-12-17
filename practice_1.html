@@ -195,6 +195,28 @@
             font-style: italic;
         }
 
+        .replay-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.2s ease;
+            display: inline-block;
+        }
+
+        .replay-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .replay-button:active {
+            transform: translateY(0);
+        }
+
         .correction-badge {
             display: inline-block;
             background: var(--warning);
@@ -744,11 +766,16 @@
             const translationHtml = translation ? 
                 `<div class="message-translation">${translation}</div>` : '';
 
+            // 為AI訊息加入重新播放按鈕
+            const replayButtonHtml = type === 'ai' ? 
+                `<button class="replay-button" onclick="replayMessage(\`${content.replace(/`/g, '\\`')}\`)">🔊 重播</button>` : '';
+
             messageDiv.innerHTML = `
                 <div class="message-bubble">
                     <div class="message-content">${content}</div>
                     ${translationHtml}
                     ${correctionHtml}
+                    ${replayButtonHtml}
                 </div>
             `;
 
@@ -810,6 +837,12 @@
             utterance.rate = 1.1;
             utterance.pitch = 1.2;
             speechSynthesis.speak(utterance);
+        }
+
+        // 重新播放訊息
+        function replayMessage(text) {
+            console.log('重新播放:', text);
+            speakText(text);
         }
 
         function clearConversation() {
