@@ -835,7 +835,17 @@
                 return;
             }
 
+            // 取得按鈕元素（使用正確的ID）
+            const reportButton = document.getElementById('reportButton');
+            const originalText = reportButton.textContent;
+            
             try {
+                // 設定載入狀態
+                reportButton.disabled = true;
+                reportButton.textContent = '📊 生成中...';
+                reportButton.style.opacity = '0.7';
+                reportButton.style.cursor = 'not-allowed';
+                
                 console.log('發送對話歷史:', conversationHistory);
 
                 const response = await fetch(N8N_WEBHOOKS.generateReport, {
@@ -880,9 +890,35 @@
                     displayReport(htmlContent);
                 }
 
+                // 成功後顯示完成狀態
+                reportButton.textContent = '✅ 報告完成';
+                reportButton.style.backgroundColor = '#10b981';
+                
+                // 2秒後恢復原狀
+                setTimeout(() => {
+                    reportButton.disabled = false;
+                    reportButton.textContent = originalText;
+                    reportButton.style.opacity = '1';
+                    reportButton.style.cursor = 'pointer';
+                    reportButton.style.backgroundColor = '';
+                }, 2000);
+
             } catch (error) {
                 console.error('報告產生錯誤:', error);
                 alert('報告產生失敗：' + error.message);
+                
+                // 錯誤狀態
+                reportButton.textContent = '❌ 生成失敗';
+                reportButton.style.backgroundColor = '#ef4444';
+                
+                // 3秒後恢復原狀
+                setTimeout(() => {
+                    reportButton.disabled = false;
+                    reportButton.textContent = originalText;
+                    reportButton.style.opacity = '1';
+                    reportButton.style.cursor = 'pointer';
+                    reportButton.style.backgroundColor = '';
+                }, 3000);
             }
         }
 
