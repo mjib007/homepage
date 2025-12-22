@@ -750,7 +750,7 @@ function fallbackCopy(button, text) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'text/plain'
           },
           body: JSON.stringify({
             userId: userId,
@@ -779,24 +779,14 @@ function fallbackCopy(button, text) {
             `;
 
 
-        // 優先檢查 HTTP 狀態碼
-        if (response.status >= 200 && response.status < 300) {
-          showStatus('筆記已成功儲存！', 'success');
-          document.getElementById('noteTitle').value = '';
-          document.getElementById('fileContent').value = '';
-          
-          // 顯示完整的回應內容（包含 AI 摘要）
-          console.log('完整回應:', result);
-          
-          // 可選：在狀態區域顯示摘要的前幾行
-          if (result.includes('AI 智能摘要')) {
-            const summaryStart = result.indexOf('=== AI 智能摘要 ===');
-            const summaryPreview = result.substring(summaryStart, summaryStart + 100) + '...';
-            showStatus('筆記已儲存！' + summaryPreview, 'success');
-          }
-        } else {
-          showStatus('儲存失敗：' + result, 'error');
-        }
+      // 優先檢查 HTTP 狀態碼
+      if (response.status >= 200 && response.status < 300) {
+        showStatus('筆記已成功儲存！', 'success');
+        document.getElementById('noteTitle').value = '';
+        document.getElementById('fileContent').value = '';
+      } else {
+        showStatus('儲存失敗：HTTP ' + response.status, 'error');
+      }
       } catch (error) {
         console.error('詳細錯誤:', error);
         if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
