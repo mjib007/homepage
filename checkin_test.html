@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 報到系統測試版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Microsoft JhengHei", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+        }
+        
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .test-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        #testInput {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            color: #333;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-align: center;
+        }
+        
+        #testInput:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+        
+        .test-btn {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #667eea;
+            color: white;
+        }
+        
+        .test-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        
+        .test-btn:active {
+            transform: translateY(0);
+        }
+        
+        .result-area {
+            margin-top: 30px;
+            min-height: 100px;
+        }
+        
+        .result {
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+            text-align: left;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .result.info {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+        
+        .result-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .result-detail {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        
+        .test-examples {
+            background: #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .example-title {
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        
+        .example-codes {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .example-code {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .example-code:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .api-test {
+            background: #fff3cd;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .status-online { background: #28a745; }
+        .status-offline { background: #dc3545; }
+        .status-testing { background: #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 報到系統測試</h1>
+        <p class="subtitle">測試基本功能和 API 連線</p>
+        
+        <!-- API 連線測試 -->
+        <div class="api-test">
+            <div class="api-status">
+                <div class="status-dot status-testing" id="statusDot"></div>
+                <span id="statusText">正在檢測 API 連線...</span>
+            </div>
+            <div style="font-size: 0.9rem; color: #856404;" id="apiUrl">
+                測試 URL: https://kf0630.zeabur.app/webhook/checkin
+            </div>
+        </div>
+        
+        <!-- 手動輸入測試 -->
+        <div class="test-section">
+            <h3 class="test-title">📝 手動輸入測試</h3>
+            
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="testInput" 
+                    placeholder="A001" 
+                    maxlength="4"
+                >
+                <button class="test-btn" onclick="testManualInput()">
+                    測試報到
+                </button>
+            </div>
+            
+            <div class="test-examples">
+                <div class="example-title">點擊快速測試：</div>
+                <div class="example-codes">
+                    <span class="example-code" onclick="fillInput('A001')">A001</span>
+                    <span class="example-code" onclick="fillInput('A002')">A002</span>
+                    <span class="example-code" onclick="fillInput('B001')">B001</span>
+                    <span class="example-code" onclick="fillInput('C001')">C001</span>
+                    <span class="example-code" onclick="fillInput('TEST')">TEST</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 結果顯示區 -->
+        <div class="result-area" id="resultArea">
+            <div class="result info">
+                <div class="result-title">🔍 系統狀態</div>
+                <div class="result-detail">等待測試輸入...</div>
+            </div>
+        </div>
+        
+        <!-- 偵錯資訊 -->
+        <div class="debug-info" id="debugInfo">
+            <strong>偵錯日誌：</strong><br>
+            [系統] 測試版本已載入
+        </div>
+    </div>
+
+    <script>
+        // 測試用的 API URL
+        const TEST_API_URL = 'https://kf0630.zeabur.app/webhook/checkin';
+        
+        // 偵錯日誌函數
+        function addDebugLog(message) {
+            const debugInfo = document.getElementById('debugInfo');
+            const timestamp = new Date().toLocaleTimeString('zh-TW');
+            debugInfo.innerHTML += `<br>[${timestamp}] ${message}`;
+            debugInfo.scrollTop = debugInfo.scrollHeight;
+        }
+        
+        // 填入測試資料
+        function fillInput(value) {
+            document.getElementById('testInput').value = value;
+            addDebugLog(`填入測試資料: ${value}`);
+        }
+        
+        // 驗證編號格式
+        function validateInput(input) {
+            if (!input || input.length === 0) {
+                return { valid: false, message: '請輸入編號' };
+            }
+            
+            if (input.length < 4) {
+                return { valid: false, message: '編號長度不足' };
+            }
+            
+            const pattern = /^[A-Z][0-9]{3}$/;
+            if (!pattern.test(input)) {
+                return { valid: false, message: '格式錯誤，應為 A001 格式' };
+            }
+            
+            return { valid: true, message: '格式正確' };
+        }
+        
+        // 測試手動輸入
+        async function testManualInput() {
+            const input = document.getElementById('testInput').value.trim().toUpperCase();
+            const resultArea = document.getElementById('resultArea');
+            
+            addDebugLog(`開始測試輸入: "${input}"`);
+            
+            // 驗證格式
+            const validation = validateInput(input);
+            if (!validation.valid) {
+                showResult('error', '❌ 輸入驗證失敗', validation.message);
+                addDebugLog(`驗證失敗: ${validation.message}`);
+                return;
+            }
+            
+            addDebugLog('格式驗證通過，準備發送請求');
+            
+            // 顯示載入狀態
+            showResult('info', '⏳ 處理中...', '正在發送請求到 API');
+            
+            try {
+                const requestData = {
+                    編號: input,
+                    timestamp: new Date().toISOString(),
+                    source: 'test-page'
+                };
+                
+                addDebugLog(`請求資料: ${JSON.stringify(requestData)}`);
+                
+                const startTime = Date.now();
+                
+                const response = await fetch(TEST_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData),
+                    signal: AbortSignal.timeout(15000) // 15秒超時
+                });
+                
+                const responseTime = Date.now() - startTime;
+                addDebugLog(`請求完成，耗時: ${responseTime}ms`);
+                addDebugLog(`HTTP 狀態: ${response.status} ${response.statusText}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    addDebugLog(`錯誤回應: ${errorText}`);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+                const result = await response.json();
+                addDebugLog(`API 回應: ${JSON.stringify(result, null, 2)}`);
+                
+                // 處理回應
+                if (result.status === 'success') {
+                    showResult('success', '✅ 報到成功！', 
+                        `編號：${result.編號}\n` +
+                        `姓名：${result.姓名 || '未提供'}\n` +
+                        `桌次：${result.桌次 || '未提供'}桌\n` +
+                        `時間：${result.報到時間 || '未記錄'}`
+                    );
+                } else if (result.status === 'duplicate') {
+                    showResult('info', '⚠️ 重複報到', 
+                        `編號：${result.編號}\n` +
+                        `姓名：${result.姓名 || '未提供'}\n` +
+                        `上次報到：${result.報到時間 || '未記錄'}`
+                    );
+                } else {
+                    showResult('error', '❌ 報到失敗', 
+                        result.message || '查無此編號資料'
+                    );
+                }
+                
+                updateApiStatus(true);
+                
+            } catch (error) {
+                addDebugLog(`請求失敗: ${error.message}`);
+                
+                let errorMessage = '未知錯誤';
+                if (error.name === 'TimeoutError') {
+                    errorMessage = '請求超時（15秒），請檢查網路連線';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = '無法連接到伺服器，請檢查 API 是否運行';
+                } else {
+                    errorMessage = error.message;
+                }
+                
+                showResult('error', '🔌 連線錯誤', errorMessage);
+                updateApiStatus(false);
+            }
+        }
+        
+        // 顯示結果
+        function showResult(type, title, detail) {
+            const resultArea = document.getElementById('resultArea');
+            resultArea.innerHTML = `
+                <div class="result ${type}">
+                    <div class="result-title">${title}</div>
+                    <div class="result-detail">${detail.replace(/\n/g, '<br>')}</div>
+                </div>
+            `;
+        }
+        
+        // 更新 API 狀態
+        function updateApiStatus(isOnline) {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            if (isOnline) {
+                statusDot.className = 'status-dot status-online';
+                statusText.textContent = 'API 連線正常';
+            } else {
+                statusDot.className = 'status-dot status-offline';
+                statusText.textContent = 'API 連線異常';
+            }
+        }
+        
+        // 測試 API 連線
+        async function testApiConnection() {
+            addDebugLog('開始測試 API 連線');
+            
+            try {
+                const response = await fetch(TEST_API_URL.replace('/checkin', '/health'), {
+                    method: 'GET',
+                    signal: AbortSignal.timeout(5000)
+                });
+                
+                updateApiStatus(true);
+                addDebugLog('API 連線測試成功');
+                
+            } catch (error) {
+                updateApiStatus(false);
+                addDebugLog(`API 連線測試失敗: ${error.message}`);
+            }
+        }
+        
+        // 輸入格式化
+        document.getElementById('testInput').addEventListener('input', function(e) {
+            let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            
+            // 限制格式：第一個字符必須是字母，後三個是數字
+            if (value.length > 0) {
+                const firstChar = value.charAt(0);
+                const restChars = value.slice(1).replace(/[^0-9]/g, '');
+                value = firstChar + restChars;
+            }
+            
+            if (value.length > 4) {
+                value = value.slice(0, 4);
+            }
+            
+            e.target.value = value;
+            
+            // 即時驗證
+            if (value.length > 0) {
+                const validation = validateInput(value);
+                if (validation.valid) {
+                    e.target.style.borderColor = '#28a745';
+                } else {
+                    e.target.style.borderColor = '#dc3545';
+                }
+            } else {
+                e.target.style.borderColor = '#ddd';
+            }
+        });
+        
+        // Enter 鍵測試
+        document.getElementById('testInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                testManualInput();
+            }
+        });
+        
+        // 頁面載入時初始化
+        window.addEventListener('load', function() {
+            addDebugLog('測試頁面載入完成');
+            testApiConnection();
+            
+            // 自動填入範例
+            setTimeout(() => {
+                fillInput('A001');
+            }, 1000);
+        });
+        
+        // 每30秒測試一次連線
+        setInterval(testApiConnection, 30000);
+    </script>
+</body>
+</html>
