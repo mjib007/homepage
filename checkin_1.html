@@ -127,6 +127,26 @@
             font-weight: 300;
         }
 
+        /* 立即結果顯示區域 */
+        .immediate-result {
+            margin: 20px 0;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .immediate-result .result {
+            transform: scale(1.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .immediate-result .loading {
+            margin: 0;
+        }
+
         /* QR掃描器 - 大幅優化 */
         #qr-reader {
             position: relative;
@@ -521,6 +541,16 @@
 
             <div id="qr-reader"></div>
 
+            <!-- 立即結果顯示區域 - 放在掃描器後面 -->
+            <div class="immediate-result">
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>處理中，請稍候...</p>
+                </div>
+                
+                <div id="result" class="result"></div>
+            </div>
+
             <div class="controls">
                 <button class="btn btn-primary" id="startBtn" onclick="startScanning()">
                     📷 開始掃描
@@ -544,15 +574,6 @@
                         ✅ 手動報到
                     </button>
                 </div>
-            </div>
-
-            <div id="loading" class="loading">
-                <div class="spinner"></div>
-                <p>處理中，請稍候...</p>
-            </div>
-
-            <div class="result-section">
-                <div id="result" class="result"></div>
             </div>
         </div>
 
