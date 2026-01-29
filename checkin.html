@@ -378,9 +378,11 @@
         }
 
         .result.success {
-            background: rgba(39, 174, 96, 0.1);
+            background: rgba(39, 174, 96, 0.15);
             border-color: var(--success);
             color: var(--success);
+            border-width: 3px;
+            box-shadow: 0 4px 20px rgba(39, 174, 96, 0.3);
         }
 
         .result.error {
@@ -862,11 +864,36 @@
             `;
             resultDiv.style.display = 'block';
 
-            // 自動隱藏成功結果
+            // 自動隱藏成功結果（延長顯示時間）
             if (type === 'success' || type === 'duplicate') {
-                setTimeout(() => {
+                // 添加手動關閉按鈕
+                const closeBtn = document.createElement('button');
+                closeBtn.innerHTML = '✕ 關閉';
+                closeBtn.style.cssText = `
+                    position: absolute;
+                    top: 10px;
+                    right: 15px;
+                    background: rgba(0,0,0,0.1);
+                    border: none;
+                    padding: 5px 10px;
+                    border-radius: 15px;
+                    cursor: pointer;
+                    font-size: 0.8rem;
+                    color: inherit;
+                `;
+                closeBtn.onclick = () => {
                     resultDiv.style.display = 'none';
-                }, 5000);
+                };
+                
+                resultDiv.style.position = 'relative';
+                resultDiv.appendChild(closeBtn);
+                
+                // 延長自動隱藏時間到 15 秒
+                setTimeout(() => {
+                    if (resultDiv.style.display !== 'none') {
+                        resultDiv.style.display = 'none';
+                    }
+                }, 15000);
             }
         }
 
