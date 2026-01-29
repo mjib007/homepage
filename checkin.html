@@ -625,11 +625,11 @@
             `;
         }
 
-        // 改進的掃描啟動函數 - 採用簡化設定
+        // 改進的掃描啟動函數 - 增大掃描框
         function startScanning() {
             const config = {
                 fps: 10,
-                qrbox: { width: 250, height: 250 },
+                qrbox: { width: 350, height: 350 }, // 增大到 350x350
                 aspectRatio: 1.0
             };
 
