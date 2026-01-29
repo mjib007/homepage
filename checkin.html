@@ -625,23 +625,12 @@
             `;
         }
 
-        // 改進的掃描啟動函數
+        // 改進的掃描啟動函數 - 採用簡化設定
         function startScanning() {
             const config = {
-                fps: 15, // 提高幀率
-                qrbox: function(viewfinderWidth, viewfinderHeight) {
-                    // 動態計算掃描框大小，確保足夠大
-                    const minEdgePercentage = 0.7; // 70% 的視窗大小
-                    const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-                    const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
-                    return {
-                        width: qrboxSize,
-                        height: qrboxSize
-                    };
-                },
-                aspectRatio: 1.0,
-                rememberLastUsedCamera: true,
-                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA] // 只使用相機掃描
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
             };
 
             html5QrCode = new Html5Qrcode("qr-reader");
@@ -649,16 +638,8 @@
             document.getElementById('startBtn').disabled = true;
             updateStatus('processing', '正在啟動相機...');
             
-            // 優先使用後置相機
-            const constraints = { 
-                facingMode: { ideal: "environment" },
-                focusMode: { ideal: "continuous" }, // 連續對焦
-                exposureMode: { ideal: "continuous" }, // 自動曝光
-                whiteBalanceMode: { ideal: "continuous" } // 自動白平衡
-            };
-            
             html5QrCode.start(
-                constraints,
+                { facingMode: "environment" },
                 config,
                 onScanSuccess,
                 onScanError
