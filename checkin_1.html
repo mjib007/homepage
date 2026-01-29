@@ -74,7 +74,7 @@
             display: grid;
             grid-template-columns: 1fr 400px;
             gap: 30px;
-            padding: 30px;
+            padding: 20px; /* 從 30px 減少到 20px */
             max-width: 1600px;
             margin: 0 auto;
             min-height: 100vh;
@@ -107,22 +107,22 @@
             position: relative;
             z-index: 1;
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 20px; /* 從 40px 縮小到 20px */
         }
 
         .scan-title {
-            font-size: 2.5rem;
+            font-size: 2rem; /* 從 2.5rem 縮小到 2rem */
             font-weight: 900;
             background: var(--scan-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 10px;
+            margin-bottom: 8px; /* 從 10px 縮小到 8px */
             line-height: 1.2;
         }
 
         .scan-subtitle {
-            font-size: 1.1rem;
+            font-size: 0.95rem; /* 從 1.1rem 縮小到 0.95rem */
             color: var(--text-muted);
             font-weight: 300;
         }
@@ -180,7 +180,7 @@
         /* 掃描狀態指示器 */
         .scan-status {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 15px; /* 從 30px 縮小到 15px */
         }
 
         .status-indicator {
