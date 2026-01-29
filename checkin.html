@@ -272,13 +272,16 @@
             flex: 1;
             padding: 16px 20px;
             font-size: 1rem;
-            background: var(--surface);
-            border: 2px solid var(--border);
+            background: #ffffff !important;
+            border: 2px solid #ddd !important;
             border-radius: 12px;
-            color: var(--text);
+            color: #333333 !important;
             font-family: 'JetBrains Mono', monospace;
             letter-spacing: 1px;
             text-transform: uppercase;
+            position: relative;
+            z-index: 10;
+            pointer-events: auto;
         }
 
         .manual-input input:focus {
@@ -288,7 +291,7 @@
         }
 
         .manual-input input::placeholder {
-            color: var(--text-muted);
+            color: #999999 !important;
             text-transform: none;
             letter-spacing: normal;
         }
