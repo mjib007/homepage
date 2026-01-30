@@ -563,7 +563,7 @@
 
     <script>
         // 設定值
-        const API_BASE_URL = 'https://mjib007.zeabur.app/webhook';
+        const WEBHOOK_URL = 'https://mjib007.zeabur.app/webhook/get-all-attendees';
         const REFRESH_INTERVAL = 10000; // 10秒自動重新整理
         
         let vipData = [];
@@ -583,7 +583,7 @@
             showLoading(true);
             
             try {
-                const response = await fetch(`${API_BASE_URL}/get-all-attendees`, {
+                const response = await fetch(WEBHOOK_URL, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
