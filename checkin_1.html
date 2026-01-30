@@ -763,12 +763,15 @@
         // 處理報到結果
         function handleCheckInResult(result) {
             
+            // 調試：檢查收到的result物件
+            console.log('收到的完整result:', result);
+            console.log('職稱欄位值:', result.職稱);
+            
             if (result.status === 'success') {
                 showResult('success', '✅ 報到成功！', 
                     `編號：${result.編號}\n` +
                     `姓名：${result.姓名}\n` +
-                    `職稱：${result.職稱 || '未提供'}\n` +
-                    `桌次：${result.桌次}桌\n` +
+                    `職稱：${result.職稱 || result['職稱'] || '未提供'}\n` +
                     `單位：${result.單位}\n` +
                     `時間：${result.報到時間}`
                 );
@@ -779,8 +782,8 @@
                 showResult('duplicate', '⚠️ 重複報到', 
                     `編號：${result.編號}\n` +
                     `姓名：${result.姓名}\n` +
-                    `職稱：${result.職稱 || '未提供'}\n` +
-                    `桌次：${result.桌次}桌\n` +
+                    `職稱：${result.職稱 || result['職稱'] || '未提供'}\n` +
+                    `單位：${result.單位}\n` +
                     `首次報到：${result.報到時間}`
                 );
                 playSound('duplicate');
