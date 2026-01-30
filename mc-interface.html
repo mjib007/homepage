@@ -724,7 +724,7 @@
             const recentList = document.getElementById('recentList');
             
             // 獲取最近報到的貴賓 (最近15分鐘內)
-            const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+            const fifteenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
             const recentCheckins = vipData
                 .filter(vip => {
                     if (!vip.報到時間) return false;
