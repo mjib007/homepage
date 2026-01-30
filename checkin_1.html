@@ -316,6 +316,31 @@
             letter-spacing: normal;
         }
 
+        /* 快捷功能按鈕區域 */
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .quick-actions .btn {
+            flex: 1;
+            min-width: 140px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .quick-actions {
+                flex-direction: column;
+            }
+            
+            .quick-actions .btn {
+                width: 100%;
+            }
+        }
+
         /* 立即結果顯示區域 */
 
         /* 結果顯示 */
@@ -512,6 +537,19 @@
                         ✅ 手動報到
                     </button>
                 </div>
+            </div>
+
+            <!-- 快捷功能按鈕區域 -->
+            <div class="quick-actions">
+                <button class="btn btn-secondary" onclick="openMCInterface()">
+                    🎤 司儀介面
+                </button>
+                <button class="btn btn-secondary" onclick="openTableInterface()">
+                    🗂️ 桌次查詢
+                </button>
+                <button class="btn btn-secondary" onclick="openStatsInterface()">
+                    📈 詳細統計
+                </button>
             </div>
         </div>
     </div>
