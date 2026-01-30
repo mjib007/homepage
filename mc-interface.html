@@ -583,7 +583,7 @@
             showLoading(true);
             
             try {
-                const response = await fetch(`${API_BASE_URL}/get-vip-list`, {
+                const response = await fetch(`${API_BASE_URL}/get-all-attendees`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -595,7 +595,12 @@
                 }
 
                 const data = await response.json();
-                vipData = data.vips || [];
+                
+                // 從所有參與者中篩選出VIP
+                const allAttendees = data.attendees || [];
+                vipData = allAttendees.filter(attendee => attendee.貴賓名單 === true);
+                
+                console.log('載入VIP資料:', vipData.length, '位貴賓');
                 
                 // 檢查是否有新報到
                 const currentCheckinCount = vipData.filter(vip => vip.報到狀態 === 'OK').length;
