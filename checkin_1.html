@@ -556,7 +556,7 @@
 
     <script>
         // 設定值
-        const WEBHOOK_URL = 'https://mjib007.zeabur.app/webhook/checkin';
+        const WEBHOOK_URL = 'https://kf0630.zeabur.app/webhook/checkin';
         
         let html5QrCode;
         let isScanning = false;
@@ -767,6 +767,7 @@
                 showResult('success', '✅ 報到成功！', 
                     `編號：${result.編號}\n` +
                     `姓名：${result.姓名}\n` +
+                    `職稱：${result.職稱 || '未提供'}\n` +
                     `桌次：${result.桌次}桌\n` +
                     `單位：${result.單位}\n` +
                     `時間：${result.報到時間}`
@@ -778,6 +779,7 @@
                 showResult('duplicate', '⚠️ 重複報到', 
                     `編號：${result.編號}\n` +
                     `姓名：${result.姓名}\n` +
+                    `職稱：${result.職稱 || '未提供'}\n` +
                     `桌次：${result.桌次}桌\n` +
                     `首次報到：${result.報到時間}`
                 );
