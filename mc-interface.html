@@ -728,11 +728,34 @@
 function updateRecentCheckins() {
     const recentList = document.getElementById('recentList');
     
-    // 改良：不設定時間限制，直接抓取「已報到」且「有報到時間」的人
+    // 輔助函數：解析含有「上午/下午」的日期字串
+    function parseChineseDateTime(dateStr) {
+        if (!dateStr) return null;
+        try {
+            // 處理「下午」：將小時數 + 12
+            let isPM = dateStr.includes('下午');
+            let cleanStr = dateStr.replace('下午', '').replace('上午', '').trim();
+            let d = new Date(cleanStr);
+            
+            if (isPM && d.getHours() < 12) {
+                d.setHours(d.getHours() + 12);
+            }
+            return d;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // 1. 取得資料並轉換時間格式
     const recentCheckins = vipData
-        .filter(vip => vip.報到狀態 === 'OK' && vip.報到時間) 
-        .sort((a, b) => new Date(b.報到時間) - new Date(a.報到時間))
-        .slice(0, 10); // 始終維持顯示最後報到的 10 位貴賓
+        .filter(vip => vip.報到狀態 === 'OK' && vip.報到時間)
+        .map(vip => ({
+            ...vip,
+            parsedTime: parseChineseDateTime(vip.報到時間)
+        }))
+        // 2. 排序（由新到舊）
+        .sort((a, b) => (b.parsedTime || 0) - (a.parsedTime || 0))
+        .slice(0, 10);
 
     if (recentCheckins.length === 0) {
         recentList.innerHTML = `
@@ -741,12 +764,26 @@ function updateRecentCheckins() {
             </div>
         `;
     } else {
-        recentList.innerHTML = recentCheckins.map(vip => `
-            <div class="recent-item">
-                <div class="recent-name">${vip.姓名} (${vip.桌次}桌)</div>
-                <div class="recent-time">${new Date(vip.報到時間).toLocaleTimeString('zh-TW', {hour: '2-digit', minute:'2-digit'})}</div>
-            </div>
-        `).join('');
+        recentList.innerHTML = recentCheckins.map(vip => {
+            let timeDisplay = "";
+            if (vip.parsedTime && !isNaN(vip.parsedTime.getTime())) {
+                timeDisplay = vip.parsedTime.toLocaleTimeString('zh-TW', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false 
+                });
+            } else {
+                // 如果解析還是失敗，顯示原始字串中的時間部分
+                timeDisplay = vip.報到時間.split(' ')[2] || vip.報到時間;
+            }
+
+            return `
+                <div class="recent-item">
+                    <div class="recent-name">${vip.姓名} (${vip.桌次}桌)</div>
+                    <div class="recent-time">${timeDisplay}</div>
+                </div>
+            `;
+        }).join('');
     }
 }
 
