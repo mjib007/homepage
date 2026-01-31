@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎤 司儀專用 - 桌次查詢與統計分析</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --primary-light: #34495e;
+            --accent: #3498db;
+            --accent-light: #5dade2;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --error: #e74c3c;
+            --info: #17a2b8;
+            --surface: #ecf0f1;
+            --surface-dark: #d5dbdb;
+            --text: #2c3e50;
+            --text-muted: #7f8c8d;
+            --border: #bdc3c7;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--surface);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* 頭部區域 */
+        .header {
+            background: white;
+            padding: 30px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-light);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--accent);
+            border: 2px solid var(--accent);
+        }
+
+        .btn-outline:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* 主要容器 */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        /* 統計卡片網格 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--accent);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .stat-card.success { border-left-color: var(--success); }
+        .stat-card.warning { border-left-color: var(--warning); }
+        .stat-card.error { border-left-color: var(--error); }
+        .stat-card.info { border-left-color: var(--info); }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.7;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 5px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-number.success { color: var(--success); }
+        .stat-number.warning { color: var(--warning); }
+        .stat-number.error { color: var(--error); }
+        .stat-number.info { color: var(--info); }
+        .stat-number.primary { color: var(--accent); }
+
+        .stat-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .stat-change {
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 12px;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        .stat-change.positive {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--error);
+        }
+
+        /* 圖表區域 */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .chart-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* 桌次分析 */
+        .table-analysis {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+        }
+
+        .table-grid-analysis {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .table-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .table-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .table-card.full {
+            border-color: var(--success);
+            background: rgba(39, 174, 96, 0.1);
+        }
+
+        .table-card.partial {
+            border-color: var(--warning);
+            background: rgba(243, 156, 18, 0.1);
+        }
+
+        .table-card.empty {
+            border-color: var(--error);
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .table-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .table-occupancy {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .table-percentage {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        .table-percentage.full { color: var(--success); }
+        .table-percentage.partial { color: var(--warning); }
+        .table-percentage.empty { color: var(--error); }
+
+        /* 桌次詳細展示面板（投影螢幕專用） */
+        .table-detail-panel {
+            background: white;
+            border-radius: 16px;
+            margin: 30px 0;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+            overflow: hidden;
+            border: 3px solid var(--accent);
+        }
+
+        .table-detail-header {
+            background: var(--accent);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-detail-header h2 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .table-detail-stats {
+            display: flex;
+            padding: 30px;
+            gap: 40px;
+            background: var(--surface);
+            border-bottom: 2px solid #eee;
+        }
+
+        .detail-stat {
+            text-align: center;
+            flex: 1;
+        }
+
+        .detail-stat .stat-number {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .detail-stat .stat-label {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .table-detail-list {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .member-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-left: 5px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .member-card.present {
+            border-left-color: var(--success);
+            background: rgba(39, 174, 96, 0.05);
+        }
+
+        .member-card.absent {
+            border-left-color: var(--error);
+            background: rgba(231, 76, 60, 0.05);
+        }
+
+        .member-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .member-status.present {
+            background: var(--success);
+        }
+
+        .member-status.absent {
+            background: var(--error);
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .member-details {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .member-checkin-time {
+            font-size: 0.8rem;
+            color: var(--success);
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 4px;
+        }
+
+        /* 時間線分析 */
+        .timeline-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+        }
+
+        .timeline-container {
+            position: relative;
+            height: 200px;
+            margin-top: 20px;
+        }
+
+        /* 貴賓統計 */
+        .vip-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .vip-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .vip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--surface);
+        }
+
+        .vip-list {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .vip-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--surface);
+        }
+
+        .vip-item:last-child {
+            border-bottom: none;
+        }
+
+        .vip-name {
+            font-weight: 600;
+        }
+
+        .vip-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .vip-status.present {
+            background: var(--success);
+            color: white;
+        }
+
+        .vip-status.absent {
+            background: var(--border);
+            color: var(--text-muted);
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 15px;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .stat-card {
+                padding: 20px;
+            }
+            
+            .chart-card {
+                padding: 20px;
+            }
+            
+            .table-grid-analysis {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+        }
+
+        /* 打印樣式 */
+        @media print {
+            .header-controls, .btn {
+                display: none;
+            }
+            
+            .chart-card, .stat-card {
+                break-inside: avoid;
+            }
+        }
+
+        /* 載入動畫 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <header class="header">
+        <div class="header-content">
+            <h1 class="header-title">🎤 司儀專用 - 桌次查詢與統計</h1>
+            <div class="header-controls">
+                <span id="lastUpdate" style="color: var(--text-muted); font-size: 0.9rem;"></span>
+                <button class="btn btn-outline" onclick="exportData()">
+                    📊 匯出資料
+                </button>
+                <button class="btn btn-primary" onclick="refreshAllData()">
+                    🔄 重新整理
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- 統計卡片 -->
+        <div class="stats-grid">
+            <div class="stat-card success">
+                <div class="stat-header">
+                    <div class="stat-icon">✅</div>
+                </div>
+                <div class="stat-number success" id="totalCheckedIn">0</div>
+                <div class="stat-label">總報到人數</div>
+                <div class="stat-change positive" id="checkedInChange">+0</div>
+            </div>
+
+            <div class="stat-card info">
+                <div class="stat-header">
+                    <div class="stat-icon">👥</div>
+                </div>
+                <div class="stat-number primary" id="totalAttendees">0</div>
+                <div class="stat-label">總參與人數</div>
+            </div>
+
+            <div class="stat-card warning">
+                <div class="stat-header">
+                    <div class="stat-icon">⏳</div>
+                </div>
+                <div class="stat-number warning" id="pendingCount">0</div>
+                <div class="stat-label">未報到人數</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">📊</div>
+                </div>
+                <div class="stat-number primary" id="attendanceRate">0%</div>
+                <div class="stat-label">整體出席率</div>
+            </div>
+
+            <div class="stat-card info">
+                <div class="stat-header">
+                    <div class="stat-icon">👑</div>
+                </div>
+                <div class="stat-number primary" id="vipPresent">0</div>
+                <div class="stat-label">貴賓已報到</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">🏓</div>
+                </div>
+                <div class="stat-number primary" id="activeTableCount">0</div>
+                <div class="stat-label">使用桌次</div>
+            </div>
+        </div>
+
+        <!-- 圖表區域 -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-title">
+                    📈 報到趨勢圖
+                </div>
+                <div class="chart-container">
+                    <canvas id="checkinTrendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">
+                    🥧 出席狀況分佈
+                </div>
+                <div class="chart-container">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 桌次分析 -->
+        <div class="table-analysis">
+            <div class="chart-title">
+                🗂️ 各桌出席分析
+            </div>
+            <div class="table-grid-analysis" id="tableAnalysisGrid">
+                <!-- 動態生成桌次分析 -->
+            </div>
+        </div>
+
+        <!-- 桌次詳細展示區域（投影螢幕專用） -->
+        <div class="table-detail-panel" id="tableDetailPanel" style="display: none;">
+            <div class="table-detail-header">
+                <h2 id="tableDetailTitle">C 桌詳細名單</h2>
+                <button class="close-btn" onclick="closeTableDetails()">✕ 關閉</button>
+            </div>
+            <div class="table-detail-stats" id="tableDetailStats">
+                <div class="detail-stat">
+                    <span class="stat-number" id="tableDetailPresent">0</span>
+                    <span class="stat-label">已報到</span>
+                </div>
+                <div class="detail-stat">
+                    <span class="stat-number" id="tableDetailTotal">0</span>
+                    <span class="stat-label">總人數</span>
+                </div>
+                <div class="detail-stat">
+                    <span class="stat-number" id="tableDetailPercent">0%</span>
+                    <span class="stat-label">出席率</span>
+                </div>
+            </div>
+            <div class="table-detail-list" id="tableDetailList">
+                <!-- 動態生成該桌次的詳細成員名單 -->
+            </div>
+        </div>
+
+        <!-- 時間線分析 -->
+        <div class="timeline-card">
+            <div class="chart-title">
+                ⏰ 報到時間分佈
+            </div>
+            <div class="chart-container">
+                <canvas id="timelineChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 貴賓統計 -->
+        <div class="vip-stats">
+            <div class="vip-card">
+                <div class="vip-header">
+                    <div class="chart-title">👑 已報到貴賓</div>
+                    <span id="vipPresentCount" style="background: var(--success); color: white; padding: 6px 12px; border-radius: 12px; font-size: 0.9rem;"></span>
+                </div>
+                <div class="vip-list" id="vipPresentList">
+                    <!-- 動態生成 -->
+                </div>
+            </div>
+
+            <div class="vip-card">
+                <div class="vip-header">
+                    <div class="chart-title">⏳ 未報到貴賓</div>
+                    <span id="vipAbsentCount" style="background: var(--error); color: white; padding: 6px 12px; border-radius: 12px; font-size: 0.9rem;"></span>
+                </div>
+                <div class="vip-list" id="vipAbsentList">
+                    <!-- 動態生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 設定值
+        const API_BASE_URL = 'https://kf0630.zeabur.app/webhook';
+        const REFRESH_INTERVAL = 15000; // 15秒自動重新整理
+        
+        let allData = [];
+        let chartInstances = {};
+        let refreshTimer;
+        let lastDataCount = 0;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshAllData();
+            startAutoRefresh();
+        });
+
+        // 重新整理所有資料
+        async function refreshAllData() {
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/get-statistics`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                allData = data.attendees || [];
+                
+                updateAllStats();
+                updateCharts();
+                updateTableAnalysis();
+                updateVipLists();
+                
+                // 更新最後更新時間
+                document.getElementById('lastUpdate').textContent = 
+                    `最後更新：${new Date().toLocaleTimeString('zh-TW')}`;
+                
+            } catch (error) {
+                console.error('載入統計資料失敗:', error);
+                alert('載入統計資料失敗，請檢查網路連線');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 顯示/隱藏載入動畫
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = show ? 'flex' : 'none';
+        }
+
+        // 更新所有統計數據
+        function updateAllStats() {
+            const total = allData.length;
+            const checkedIn = allData.filter(p => p.報到狀態 === 'OK').length;
+            const pending = total - checkedIn;
+            const attendanceRate = total > 0 ? Math.round((checkedIn / total) * 100) : 0;
+            
+            const vipData = allData.filter(p => p.貴賓名單 === 'TRUE');
+            const vipPresent = vipData.filter(p => p.報到狀態 === 'OK').length;
+            
+            const activeTables = new Set(allData.map(p => p.桌次)).size;
+            
+            // 更新統計卡片
+            document.getElementById('totalCheckedIn').textContent = checkedIn;
+            document.getElementById('totalAttendees').textContent = total;
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('attendanceRate').textContent = `${attendanceRate}%`;
+            document.getElementById('vipPresent').textContent = vipPresent;
+            document.getElementById('activeTableCount').textContent = activeTables;
+            
+            // 更新變化量
+            const change = checkedIn - lastDataCount;
+            const changeElement = document.getElementById('checkedInChange');
+            if (change > 0) {
+                changeElement.textContent = `+${change}`;
+                changeElement.className = 'stat-change positive';
+            } else if (change < 0) {
+                changeElement.textContent = change;
+                changeElement.className = 'stat-change negative';
+            } else {
+                changeElement.textContent = '無變化';
+                changeElement.className = 'stat-change';
+            }
+            
+            lastDataCount = checkedIn;
+        }
+
+        // 更新圖表
+        function updateCharts() {
+            updateCheckinTrendChart();
+            updateAttendanceChart();
+            updateTimelineChart();
+        }
+
+        // 更新報到趨勢圖
+        function updateCheckinTrendChart() {
+            const ctx = document.getElementById('checkinTrendChart').getContext('2d');
+            
+            // 清除舊圖表
+            if (chartInstances.trend) {
+                chartInstances.trend.destroy();
+            }
+            
+            // 按小時分組統計報到數據
+            const hourlyData = {};
+            const now = new Date();
+            
+            // 初始化24小時數據
+            for (let i = 0; i < 24; i++) {
+                hourlyData[i] = 0;
+            }
+            
+            allData.forEach(person => {
+                if (person.報到時間) {
+                    const checkinTime = new Date(person.報到時間);
+                    const hour = checkinTime.getHours();
+                    hourlyData[hour]++;
+                }
+            });
+            
+            const labels = Object.keys(hourlyData).map(h => `${h}:00`);
+            const data = Object.values(hourlyData);
+            
+            chartInstances.trend = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '報到人數',
+                        data: data,
+                        borderColor: 'rgb(52, 152, 219)',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 更新出席狀況圓餅圖
+        function updateAttendanceChart() {
+            const ctx = document.getElementById('attendanceChart').getContext('2d');
+            
+            if (chartInstances.attendance) {
+                chartInstances.attendance.destroy();
+            }
+            
+            const total = allData.length;
+            const checkedIn = allData.filter(p => p.報到狀態 === 'OK').length;
+            const pending = total - checkedIn;
+            
+            chartInstances.attendance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['已報到', '未報到'],
+                    datasets: [{
+                        data: [checkedIn, pending],
+                        backgroundColor: [
+                            'rgb(39, 174, 96)',
+                            'rgb(231, 76, 60)'
+                        ],
+                        borderWidth: 2,
+                        borderColor: 'white'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 更新時間線圖
+        function updateTimelineChart() {
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            
+            if (chartInstances.timeline) {
+                chartInstances.timeline.destroy();
+            }
+            
+            // 按小時統計累積報到數
+            const hourlyData = {};
+            for (let i = 0; i < 24; i++) {
+                hourlyData[i] = 0;
+            }
+            
+            allData.forEach(person => {
+                if (person.報到時間) {
+                    const checkinTime = new Date(person.報到時間);
+                    const hour = checkinTime.getHours();
+                    
+                    // 累積到該小時為止的報到數
+                    for (let h = hour; h < 24; h++) {
+                        hourlyData[h]++;
+                    }
+                }
+            });
+            
+            const labels = Object.keys(hourlyData).map(h => `${h}:00`);
+            const data = Object.values(hourlyData);
+            
+            chartInstances.timeline = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '累積報到數',
+                        data: data,
+                        backgroundColor: 'rgba(23, 162, 184, 0.8)',
+                        borderColor: 'rgb(23, 162, 184)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 更新桌次分析
+        function updateTableAnalysis() {
+            const tableAnalysisGrid = document.getElementById('tableAnalysisGrid');
+            
+            // 統計各桌數據
+            const tableData = {};
+            allData.forEach(person => {
+                const table = person.桌次;
+                if (!tableData[table]) {
+                    tableData[table] = { total: 0, present: 0 };
+                }
+                tableData[table].total++;
+                if (person.報到狀態 === 'OK') {
+                    tableData[table].present++;
+                }
+            });
+            
+            // 按桌次排序
+            const sortedTables = Object.keys(tableData).sort();
+            
+            tableAnalysisGrid.innerHTML = sortedTables.map(table => {
+                const data = tableData[table];
+                const percentage = Math.round((data.present / data.total) * 100);
+                
+                let statusClass = 'empty';
+                if (percentage === 100) statusClass = 'full';
+                else if (percentage > 0) statusClass = 'partial';
+                
+                return `
+                    <div class="table-card ${statusClass}" onclick="showTableDetails('${table}')">
+                        <div class="table-name">${table} 桌</div>
+                        <div class="table-occupancy">${data.present}/${data.total}</div>
+                        <div class="table-percentage ${statusClass}">${percentage}%</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 更新貴賓列表
+        function updateVipLists() {
+            const vipData = allData.filter(p => p.貴賓名單 === 'TRUE');
+            const vipPresent = vipData.filter(p => p.報到狀態 === 'OK');
+            const vipAbsent = vipData.filter(p => p.報到狀態 !== 'OK');
+            
+            // 更新計數
+            document.getElementById('vipPresentCount').textContent = vipPresent.length;
+            document.getElementById('vipAbsentCount').textContent = vipAbsent.length;
+            
+            // 更新已報到貴賓列表
+            const presentList = document.getElementById('vipPresentList');
+            if (vipPresent.length === 0) {
+                presentList.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">暫無已報到貴賓</div>';
+            } else {
+                presentList.innerHTML = vipPresent.map(person => `
+                    <div class="vip-item">
+                        <div>
+                            <div class="vip-name">${person.姓名}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">${person.桌次}桌 • ${person.單位}</div>
+                        </div>
+                        <div class="vip-status present">已報到</div>
+                    </div>
+                `).join('');
+            }
+            
+            // 更新未報到貴賓列表
+            const absentList = document.getElementById('vipAbsentList');
+            if (vipAbsent.length === 0) {
+                absentList.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">所有貴賓皆已報到</div>';
+            } else {
+                absentList.innerHTML = vipAbsent.map(person => `
+                    <div class="vip-item">
+                        <div>
+                            <div class="vip-name">${person.姓名}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">${person.桌次}桌 • ${person.單位}</div>
+                        </div>
+                        <div class="vip-status absent">未報到</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 匯出資料
+        function exportData() {
+            const csvContent = "data:text/csv;charset=utf-8," + 
+                "編號,桌次,姓名,單位,職稱,貴賓名單,報到狀態,報到時間\n" +
+                allData.map(person => 
+                    `${person.編號},${person.桌次},${person.姓名},${person.單位 || ''},${person.職稱 || ''},${person.貴賓名單 || 'FALSE'},${person.報到狀態 || 'NONE'},${person.報到時間 || ''}`
+                ).join("\n");
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `活動統計_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 開始自動重新整理
+        function startAutoRefresh() {
+            refreshTimer = setInterval(refreshAllData, REFRESH_INTERVAL);
+        }
+
+        // 停止自動重新整理
+        function stopAutoRefresh() {
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+            }
+        }
+
+        // 頁面可見性變化處理
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                stopAutoRefresh();
+            } else {
+                refreshAllData();
+                startAutoRefresh();
+            }
+        });
+
+        // 頁面關閉時清理
+        window.addEventListener('beforeunload', function() {
+            stopAutoRefresh();
+            Object.values(chartInstances).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+        });
+
+        // 顯示桌次詳細資訊（投影螢幕專用）
+        function showTableDetails(tableName) {
+            const tableData = allData.filter(person => person.桌次 === tableName);
+            const presentCount = tableData.filter(person => person.報到狀態 === 'OK').length;
+            const totalCount = tableData.length;
+            const percentage = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
+            
+            // 更新標題和統計
+            document.getElementById('tableDetailTitle').textContent = `${tableName} 桌詳細名單`;
+            document.getElementById('tableDetailPresent').textContent = presentCount;
+            document.getElementById('tableDetailTotal').textContent = totalCount;
+            document.getElementById('tableDetailPercent').textContent = `${percentage}%`;
+            
+            // 生成成員列表
+            const memberList = tableData
+                .sort((a, b) => {
+                    // 已報到的排在前面
+                    if (a.報到狀態 === 'OK' && b.報到狀態 !== 'OK') return -1;
+                    if (a.報到狀態 !== 'OK' && b.報到狀態 === 'OK') return 1;
+                    return a.編號.localeCompare(b.編號);
+                })
+                .map(person => {
+                    const isPresent = person.報到狀態 === 'OK';
+                    const checkinTime = person.報到時間 ? 
+                        `✓ 報到時間：${new Date(person.報到時間).toLocaleString('zh-TW')}` : '';
+                    
+                    return `
+                        <div class="member-card ${isPresent ? 'present' : 'absent'}">
+                            <div class="member-status ${isPresent ? 'present' : 'absent'}"></div>
+                            <div class="member-info">
+                                <div class="member-name">${person.姓名}</div>
+                                <div class="member-details">
+                                    編號：${person.編號} | 
+                                    ${person.職稱 || '未提供'} | 
+                                    ${person.單位 || '未提供'}
+                                    ${person.貴賓名單 === 'TRUE' ? ' | 👑 貴賓' : ''}
+                                </div>
+                                ${isPresent ? `<div class="member-checkin-time">${checkinTime}</div>` : 
+                                    '<div style="color: var(--error); font-size: 0.9rem; margin-top: 4px;">未報到</div>'}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            
+            document.getElementById('tableDetailList').innerHTML = memberList;
+            
+            // 顯示面板
+            document.getElementById('tableDetailPanel').style.display = 'block';
+            
+            // 滾動到詳細面板
+            document.getElementById('tableDetailPanel').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 關閉桌次詳細資訊
+        function closeTableDetails() {
+            document.getElementById('tableDetailPanel').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
