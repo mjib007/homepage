@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎤 司儀專用 - 桌次查詢與統計分析</title>
+    <title>🗂️ 桌次查詢與統計分析</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -217,13 +217,28 @@
             height: 300px;
         }
 
-        /* 桌次分析 */
+        /* 桌次分析 - 主要功能區域 */
         .table-analysis {
             background: white;
             border-radius: 16px;
             padding: 30px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             margin-bottom: 40px;
+            border: 3px solid var(--accent);
+            position: relative;
+        }
+
+        .table-analysis::before {
+            content: '主要功能';
+            position: absolute;
+            top: -12px;
+            left: 30px;
+            background: var(--accent);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
         }
 
         .table-grid-analysis {
@@ -576,15 +591,9 @@
 
     <header class="header">
         <div class="header-content">
-            <h1 class="header-title">🎤 司儀專用 - 桌次查詢與統計</h1>
+            <h1 class="header-title">🗂️ 桌次查詢與統計</h1>
             <div class="header-controls">
                 <span id="lastUpdate" style="color: var(--text-muted); font-size: 0.9rem;"></span>
-                <button class="btn btn-outline" onclick="exportData()">
-                    📊 匯出資料
-                </button>
-                <button class="btn btn-primary" onclick="refreshAllData()">
-                    🔄 重新整理
-                </button>
             </div>
         </div>
     </header>
@@ -642,31 +651,10 @@
             </div>
         </div>
 
-        <!-- 圖表區域 -->
-        <div class="charts-grid">
-            <div class="chart-card">
-                <div class="chart-title">
-                    📈 報到趨勢圖
-                </div>
-                <div class="chart-container">
-                    <canvas id="checkinTrendChart"></canvas>
-                </div>
-            </div>
-
-            <div class="chart-card">
-                <div class="chart-title">
-                    🥧 出席狀況分佈
-                </div>
-                <div class="chart-container">
-                    <canvas id="attendanceChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- 桌次分析 -->
+        <!-- 各桌出席分析 - 主要功能區域 -->
         <div class="table-analysis">
             <div class="chart-title">
-                🗂️ 各桌出席分析
+                🗂️ 各桌出席分析 (點擊查看詳細名單)
             </div>
             <div class="table-grid-analysis" id="tableAnalysisGrid">
                 <!-- 動態生成桌次分析 -->
@@ -695,6 +683,27 @@
             </div>
             <div class="table-detail-list" id="tableDetailList">
                 <!-- 動態生成該桌次的詳細成員名單 -->
+            </div>
+        </div>
+
+        <!-- 圖表區域 -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-title">
+                    📈 報到趨勢圖
+                </div>
+                <div class="chart-container">
+                    <canvas id="checkinTrendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-title">
+                    🥧 出席狀況分佈
+                </div>
+                <div class="chart-container">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -1080,23 +1089,6 @@
                     </div>
                 `).join('');
             }
-        }
-
-        // 匯出資料
-        function exportData() {
-            const csvContent = "data:text/csv;charset=utf-8," + 
-                "編號,桌次,姓名,單位,職稱,貴賓名單,報到狀態,報到時間\n" +
-                allData.map(person => 
-                    `${person.編號},${person.桌次},${person.姓名},${person.單位 || ''},${person.職稱 || ''},${person.貴賓名單 || 'FALSE'},${person.報到狀態 || 'NONE'},${person.報到時間 || ''}`
-                ).join("\n");
-            
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `活動統計_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
 
         // 開始自動重新整理
