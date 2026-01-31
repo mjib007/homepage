@@ -806,8 +806,26 @@
             const pending = total - checkedIn;
             const attendanceRate = total > 0 ? Math.round((checkedIn / total) * 100) : 0;
             
-            const vipData = allData.filter(p => p.貴賓名單 === 'TRUE');
+            // 修正 VIP 判斷邏輯，支援多種格式
+            const vipData = allData.filter(p => {
+                const vipStatus = p.貴賓名單;
+                return vipStatus === 'TRUE' || vipStatus === true || vipStatus === 'true' || 
+                       vipStatus === '是' || vipStatus === 'YES' || vipStatus === 'yes' ||
+                       vipStatus === 'True';
+            });
             const vipPresent = vipData.filter(p => p.報到狀態 === 'OK').length;
+            
+            // Debug: 輸出 VIP 資料以便檢查
+            console.log('🔍 VIP Debug 資料:', {
+                總參與者: total,
+                VIP總數: vipData.length,
+                VIP已報到: vipPresent,
+                前3筆資料範例: allData.slice(0, 3).map(p => ({
+                    姓名: p.姓名,
+                    貴賓名單: p.貴賓名單,
+                    貴賓名單類型: typeof p.貴賓名單
+                }))
+            });
             
             const activeTables = new Set(allData.map(p => p.桌次)).size;
             
@@ -1050,7 +1068,13 @@
 
         // 更新貴賓列表
         function updateVipLists() {
-            const vipData = allData.filter(p => p.貴賓名單 === 'TRUE');
+            // 使用相同的 VIP 判斷邏輯
+            const vipData = allData.filter(p => {
+                const vipStatus = p.貴賓名單;
+                return vipStatus === 'TRUE' || vipStatus === true || vipStatus === 'true' || 
+                       vipStatus === '是' || vipStatus === 'YES' || vipStatus === 'yes' ||
+                       vipStatus === 'True';
+            });
             const vipPresent = vipData.filter(p => p.報到狀態 === 'OK');
             const vipAbsent = vipData.filter(p => p.報到狀態 !== 'OK');
             
