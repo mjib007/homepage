@@ -563,7 +563,7 @@
 
     <script>
         // 設定值
-        const API_BASE_URL = 'https://mjib007.zeabur.app/webhook';
+        const WEBHOOK_URL = 'https://mjib007.zeabur.app/webhook/get-all-attendees';
         const REFRESH_INTERVAL = 10000; // 10秒自動重新整理
         
         let vipData = [];
@@ -583,7 +583,7 @@
             showLoading(true);
             
             try {
-                const response = await fetch(`${API_BASE_URL}/get-vip-list`, {
+                const response = await fetch(WEBHOOK_URL, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -595,7 +595,12 @@
                 }
 
                 const data = await response.json();
-                vipData = data.vips || [];
+                
+                // 從所有參與者中篩選出VIP
+                const allAttendees = data.attendees || [];
+                vipData = allAttendees.filter(attendee => attendee.貴賓名單 === true);
+                
+                console.log('載入VIP資料:', vipData.length, '位貴賓');
                 
                 // 檢查是否有新報到
                 const currentCheckinCount = vipData.filter(vip => vip.報到狀態 === 'OK').length;
@@ -718,13 +723,13 @@
         function updateRecentCheckins() {
             const recentList = document.getElementById('recentList');
             
-            // 獲取最近報到的貴賓 (最近2小時內)
-            const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+            // 獲取最近報到的貴賓 (最近15分鐘內)
+            const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
             const recentCheckins = vipData
                 .filter(vip => {
                     if (!vip.報到時間) return false;
                     const checkinTime = new Date(vip.報到時間);
-                    return checkinTime > twoHoursAgo;
+                    return checkinTime > fifteenMinutesAgo;
                 })
                 .sort((a, b) => new Date(b.報到時間) - new Date(a.報到時間))
                 .slice(0, 10); // 只顯示最近10筆
