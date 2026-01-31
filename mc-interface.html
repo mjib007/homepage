@@ -596,9 +596,14 @@
 
                 const data = await response.json();
                 
-                // 從所有參與者中篩選出VIP
+                // 從所有參與者中篩選出VIP，支援多種格式
                 const allAttendees = data.attendees || [];
-                vipData = allAttendees.filter(attendee => attendee.貴賓名單 === true);
+                vipData = allAttendees.filter(attendee => {
+                    const vipStatus = attendee.貴賓名單;
+                    return vipStatus === 'TRUE' || vipStatus === true || vipStatus === 'true' || 
+                           vipStatus === '是' || vipStatus === 'YES' || vipStatus === 'yes' ||
+                           vipStatus === 'True';
+                });
                 
                 console.log('載入VIP資料:', vipData.length, '位貴賓');
                 
