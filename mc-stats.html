@@ -599,7 +599,42 @@
     </header>
 
     <div class="main-container">
-        <!-- 統計卡片 -->
+        <!-- 各桌出席分析 - 主要功能區域 -->
+        <div class="table-analysis">
+            <div class="chart-title">
+                🗂️ 各桌出席分析 (點擊查看詳細名單)
+            </div>
+            <div class="table-grid-analysis" id="tableAnalysisGrid">
+                <!-- 動態生成桌次分析 -->
+            </div>
+        </div>
+
+        <!-- 桌次詳細展示區域（投影螢幕專用） -->
+        <div class="table-detail-panel" id="tableDetailPanel" style="display: none;">
+            <div class="table-detail-header">
+                <h2 id="tableDetailTitle">C 桌詳細名單</h2>
+                <button class="close-btn" onclick="closeTableDetails()">✕ 關閉</button>
+            </div>
+            <div class="table-detail-stats" id="tableDetailStats">
+                <div class="detail-stat">
+                    <span class="stat-number" id="tableDetailPresent">0</span>
+                    <span class="stat-label">已報到</span>
+                </div>
+                <div class="detail-stat">
+                    <span class="stat-number" id="tableDetailTotal">0</span>
+                    <span class="stat-label">總人數</span>
+                </div>
+                <div class="detail-stat">
+                    <span class="stat-number" id="tableDetailPercent">0%</span>
+                    <span class="stat-label">出席率</span>
+                </div>
+            </div>
+            <div class="table-detail-list" id="tableDetailList">
+                <!-- 動態生成該桌次的詳細成員名單 -->
+            </div>
+        </div>
+
+        <!-- 整體統計卡片 -->
         <div class="stats-grid">
             <div class="stat-card success">
                 <div class="stat-header">
@@ -648,41 +683,6 @@
                 </div>
                 <div class="stat-number primary" id="activeTableCount">0</div>
                 <div class="stat-label">使用桌次</div>
-            </div>
-        </div>
-
-        <!-- 各桌出席分析 - 主要功能區域 -->
-        <div class="table-analysis">
-            <div class="chart-title">
-                🗂️ 各桌出席分析 (點擊查看詳細名單)
-            </div>
-            <div class="table-grid-analysis" id="tableAnalysisGrid">
-                <!-- 動態生成桌次分析 -->
-            </div>
-        </div>
-
-        <!-- 桌次詳細展示區域（投影螢幕專用） -->
-        <div class="table-detail-panel" id="tableDetailPanel" style="display: none;">
-            <div class="table-detail-header">
-                <h2 id="tableDetailTitle">C 桌詳細名單</h2>
-                <button class="close-btn" onclick="closeTableDetails()">✕ 關閉</button>
-            </div>
-            <div class="table-detail-stats" id="tableDetailStats">
-                <div class="detail-stat">
-                    <span class="stat-number" id="tableDetailPresent">0</span>
-                    <span class="stat-label">已報到</span>
-                </div>
-                <div class="detail-stat">
-                    <span class="stat-number" id="tableDetailTotal">0</span>
-                    <span class="stat-label">總人數</span>
-                </div>
-                <div class="detail-stat">
-                    <span class="stat-number" id="tableDetailPercent">0%</span>
-                    <span class="stat-label">出席率</span>
-                </div>
-            </div>
-            <div class="table-detail-list" id="tableDetailList">
-                <!-- 動態生成該桌次的詳細成員名單 -->
             </div>
         </div>
 
