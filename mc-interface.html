@@ -724,36 +724,31 @@
             document.getElementById('totalVips').textContent = total;
         }
 
-        // 更新最新報到列表
-        function updateRecentCheckins() {
-            const recentList = document.getElementById('recentList');
-            
-            // 獲取最近報到的貴賓 (最近15分鐘內)
-            const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
-            const recentCheckins = vipData
-                .filter(vip => {
-                    if (!vip.報到時間) return false;
-                    const checkinTime = new Date(vip.報到時間);
-                    return checkinTime > fifteenMinutesAgo;
-                })
-                .sort((a, b) => new Date(b.報到時間) - new Date(a.報到時間))
-                .slice(0, 10); // 只顯示最近10筆
+// 更新最新報到列表
+function updateRecentCheckins() {
+    const recentList = document.getElementById('recentList');
+    
+    // 改良：不設定時間限制，直接抓取「已報到」且「有報到時間」的人
+    const recentCheckins = vipData
+        .filter(vip => vip.報到狀態 === 'OK' && vip.報到時間) 
+        .sort((a, b) => new Date(b.報到時間) - new Date(a.報到時間))
+        .slice(0, 10); // 始終維持顯示最後報到的 10 位貴賓
 
-            if (recentCheckins.length === 0) {
-                recentList.innerHTML = `
-                    <div class="empty-state" style="padding: 20px;">
-                        <p style="font-size: 0.9rem;">暫無最新報到</p>
-                    </div>
-                `;
-            } else {
-                recentList.innerHTML = recentCheckins.map(vip => `
-                    <div class="recent-item">
-                        <div class="recent-name">${vip.姓名} (${vip.桌次}桌)</div>
-                        <div class="recent-time">${new Date(vip.報到時間).toLocaleTimeString('zh-TW')}</div>
-                    </div>
-                `).join('');
-            }
-        }
+    if (recentCheckins.length === 0) {
+        recentList.innerHTML = `
+            <div class="empty-state" style="padding: 20px;">
+                <p style="font-size: 0.9rem;">暫無最新報到</p>
+            </div>
+        `;
+    } else {
+        recentList.innerHTML = recentCheckins.map(vip => `
+            <div class="recent-item">
+                <div class="recent-name">${vip.姓名} (${vip.桌次}桌)</div>
+                <div class="recent-time">${new Date(vip.報到時間).toLocaleTimeString('zh-TW', {hour: '2-digit', minute:'2-digit'})}</div>
+            </div>
+        `).join('');
+    }
+}
 
         // 更新連線狀態
         function updateConnectionStatus(isOnline) {
