@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎪 活動報到系統 - 主控台</title>
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --primary-light: #16213e;
+            --accent: #e94560;
+            --accent-light: #f39c12;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --error: #e74c3c;
+            --surface: #0f0f23;
+            --surface-light: #16213e;
+            --text: #ffffff;
+            --text-muted: #bdc3c7;
+            --border: #34495e;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --scan-gradient: linear-gradient(45deg, #ff006e, #8338ec, #3a86ff);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--surface);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 動態背景效果 */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: var(--gradient);
+            opacity: 0.1;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        /* 主容器 - 改為單欄布局 */
+        .main-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        /* 掃描區域 */
+        .scan-section {
+            background: var(--surface-light);
+            border-radius: 24px;
+            padding: 40px;
+            border: 2px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scan-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: var(--scan-gradient);
+            opacity: 0.05;
+            transform: rotate(45deg);
+            z-index: 0;
+        }
+
+        .scan-header {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            margin-bottom: 20px; /* 從 40px 縮小到 20px */
+        }
+
+        .scan-title {
+            font-size: 2rem; /* 從 2.5rem 縮小到 2rem */
+            font-weight: 900;
+            background: var(--scan-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px; /* 從 10px 縮小到 8px */
+            line-height: 1.2;
+        }
+
+        .scan-subtitle {
+            font-size: 0.95rem; /* 從 1.1rem 縮小到 0.95rem */
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        /* 立即結果顯示區域 */
+        .immediate-result {
+            margin: 15px 0; /* 從 20px 減少到 15px */
+            min-height: 60px; /* 從 100px 大幅減少到 60px */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .immediate-result .result {
+            transform: scale(1.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .immediate-result .loading {
+            margin: 0;
+        }
+
+        /* QR掃描器 - 大幅優化 */
+        #qr-reader {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto 20px; /* 從 30px 減少到 20px */
+            border-radius: 20px;
+            overflow: hidden;
+            background: #000;
+            border: 4px solid transparent;
+            background-image: var(--scan-gradient);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+        }
+
+        /* 強化掃描框樣式 */
+        #qr-reader video {
+            width: 100% !important;
+            height: 400px !important;
+            object-fit: cover;
+            border-radius: 16px;
+        }
+
+        #qr-reader canvas {
+            width: 100% !important;
+            height: 400px !important;
+            border-radius: 16px;
+        }
+
+        /* 掃描狀態指示器 */
+        .scan-status {
+            text-align: center;
+            margin-bottom: 15px; /* 從 30px 縮小到 15px */
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .status-ready {
+            background: rgba(39, 174, 96, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .status-scanning {
+            background: rgba(243, 156, 18, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+            animation: pulse 2s infinite;
+        }
+
+        .status-error {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* 控制按鈕 */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px; /* 從 30px 減少到 20px */
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            font-family: inherit;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 8px 25px rgba(233, 69, 96, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(233, 69, 96, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--border);
+            transform: translateY(-1px);
+        }
+
+        /* 手動輸入區域 */
+        .manual-input {
+            background: var(--primary-light);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+
+        .manual-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .manual-input input {
+            flex: 1;
+            padding: 16px 20px;
+            font-size: 1rem;
+            background: #ffffff !important;
+            border: 2px solid #ddd !important;
+            border-radius: 12px;
+            color: #333333 !important;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 10;
+            pointer-events: auto;
+        }
+
+        .manual-input input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.2);
+        }
+
+        .manual-input input::placeholder {
+            color: #999999 !important;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        /* 快捷功能按鈕區域 */
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .quick-actions .btn {
+            flex: 1;
+            min-width: 140px;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .quick-actions {
+                flex-direction: column;
+            }
+            
+            .quick-actions .btn {
+                width: 100%;
+            }
+        }
+
+        /* 立即結果顯示區域 */
+
+        /* 結果顯示 */
+        .result-section {
+            position: relative;
+            z-index: 1;
+        }
+
+        .result {
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideInUp 0.5s ease;
+            border-left: 4px solid;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result.success {
+            background: rgba(39, 174, 96, 0.15);
+            border-color: var(--success);
+            color: var(--success);
+            border-width: 3px;
+            box-shadow: 0 4px 20px rgba(39, 174, 96, 0.3);
+        }
+
+        .result.error {
+            background: rgba(231, 76, 60, 0.1);
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .result.duplicate {
+            background: rgba(243, 156, 18, 0.1);
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+        .result-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .result-detail {
+            font-size: 1rem;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        /* 載入動畫 */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 快捷功能按鈕 */
+        .quick-actions {
+            margin-top: 30px;
+        }
+
+        .quick-actions .btn {
+            width: 100%;
+            margin-bottom: 12px;
+            justify-content: center;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .scan-title {
+                font-size: 2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+        }
+
+        /* 音效提示視覺化 */
+        .sound-wave {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .sound-wave.active {
+            display: block;
+            animation: soundPulse 0.5s ease;
+        }
+
+        @keyframes soundPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="sound-wave" id="soundWave">🔊</div>
+
+    <div class="main-container">
+        <!-- 主要掃描區域 -->
+        <div class="scan-section">
+            <div class="scan-header">
+                <h1 class="scan-title">🎪 活動報到系統</h1>
+                <p class="scan-subtitle">掃描 QR Code 或手動輸入編號進行報到</p>
+            </div>
+
+            <div class="scan-status">
+                <div class="status-indicator status-ready" id="statusIndicator">
+                    <span>⚪</span>
+                    <span>系統就緒</span>
+                </div>
+            </div>
+
+            <div id="qr-reader"></div>
+
+            <!-- 立即結果顯示區域 - 放在掃描器後面 -->
+            <div class="immediate-result">
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>處理中，請稍候...</p>
+                </div>
+                
+                <div id="result" class="result"></div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" id="startBtn" onclick="startScanning()">
+                    📷 開始掃描
+                </button>
+                <button class="btn btn-secondary" id="stopBtn" onclick="stopScanning()" style="display: none;">
+                    ⏹️ 停止掃描
+                </button>
+            </div>
+
+            <div class="manual-input">
+                <h3 class="manual-title">💾 手動輸入</h3>
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        id="manualInput" 
+                        placeholder="請輸入編號 (如: A001, B015)"
+                        maxlength="4"
+                        pattern="[A-Za-z][0-9]{3}"
+                    >
+                    <button class="btn btn-primary" id="manualBtn" onclick="manualCheckIn()">
+                        ✅ 手動報到
+                    </button>
+                </div>
+            </div>
+
+            <!-- 快捷功能按鈕區域 -->
+            <div class="quick-actions">
+                <button class="btn btn-secondary" onclick="openMCInterface()">
+                    🎤 司儀介面
+                </button>
+                <button class="btn btn-secondary" onclick="openTableInterface()">
+                    🗂️ 桌次查詢與統計
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 設定值
+        const WEBHOOK_URL = 'https://mjib007.zeabur.app/webhook/checkin';
+        
+        let html5QrCode;
+        let isScanning = false;
+
+        // 狀態指示器更新
+        function updateStatus(type, message) {
+            const indicator = document.getElementById('statusIndicator');
+            indicator.className = `status-indicator status-${type}`;
+            
+            const icons = {
+                ready: '⚪',
+                scanning: '🔴',
+                processing: '🟡',
+                success: '🟢',
+                error: '🔴'
+            };
+            
+            indicator.innerHTML = `
+                <span>${icons[type] || '⚪'}</span>
+                <span>${message}</span>
+            `;
+        }
+
+        // 改進的掃描啟動函數 - 增大掃描框
+        function startScanning() {
+            const config = {
+                fps: 10,
+                qrbox: { width: 350, height: 350 }, // 增大到 350x350
+                aspectRatio: 1.0
+            };
+
+            html5QrCode = new Html5Qrcode("qr-reader");
+            
+            document.getElementById('startBtn').disabled = true;
+            updateStatus('processing', '正在啟動相機...');
+            
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                onScanSuccess,
+                onScanError
+            ).then(() => {
+                isScanning = true;
+                document.getElementById('startBtn').style.display = 'none';
+                document.getElementById('stopBtn').style.display = 'inline-flex';
+                updateStatus('scanning', '掃描中... 請將 QR Code 對準相機');
+            }).catch(err => {
+                document.getElementById('startBtn').disabled = false;
+                updateStatus('error', '相機啟動失敗');
+                showResult('error', '無法開啟相機', '請確認已授權相機權限並重新整理頁面');
+                console.error('相機錯誤:', err);
+            });
+        }
+
+        function stopScanning() {
+            if (html5QrCode && isScanning) {
+                document.getElementById('stopBtn').disabled = true;
+                html5QrCode.stop().then(() => {
+                    isScanning = false;
+                    document.getElementById('startBtn').style.display = 'inline-flex';
+                    document.getElementById('stopBtn').style.display = 'none';
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('stopBtn').disabled = false;
+                    updateStatus('ready', '系統就緒');
+                }).catch(err => {
+                    document.getElementById('stopBtn').disabled = false;
+                    console.error('停止掃描錯誤:', err);
+                });
+            }
+        }
+
+        // 防抖處理掃描成功
+        let lastScanTime = 0;
+        const SCAN_COOLDOWN = 2000; // 2秒冷卻時間
+
+        async function onScanSuccess(decodedText) {
+            console.log('🎯 QR Code 掃描成功！原始內容:', decodedText);
+            
+            const now = Date.now();
+            if (now - lastScanTime < SCAN_COOLDOWN) {
+                console.log('⏰ 跳過掃描（冷卻時間）');
+                return; // 跳過過於頻繁的掃描
+            }
+            lastScanTime = now;
+
+            // 暫停掃描
+            if (html5QrCode && isScanning) {
+                await html5QrCode.pause();
+            }
+
+            updateStatus('processing', '處理 QR Code...');
+
+            // 驗證編號格式
+            let attendeeId = decodedText.trim().toUpperCase();
+            console.log('📝 處理後的內容:', attendeeId);
+            
+            if (!validateAttendeeId(attendeeId)) {
+                console.log('❌ 格式驗證失敗，嘗試 JSON 解析');
+                // 嘗試解析 JSON
+                try {
+                    const qrData = JSON.parse(decodedText);
+                    console.log('✅ JSON 解析成功:', qrData);
+                    attendeeId = qrData.編號 || qrData.id || qrData.attendee_id;
+                    console.log('📋 提取的編號:', attendeeId);
+                } catch (e) {
+                    console.error('🚫 JSON 解析失敗:', e);
+                    showResult('error', '無效的 QR Code', '請確認 QR Code 格式正確');
+                    resumeScanning();
+                    return;
+                }
+            } else {
+                console.log('✅ 格式驗證通過');
+            }
+            
+            console.log('🚀 準備發送報到請求，編號:', attendeeId);
+            await processCheckIn(attendeeId);
+            resumeScanning();
+        }
+
+        function resumeScanning() {
+            setTimeout(() => {
+                if (html5QrCode && isScanning) {
+                    html5QrCode.resume();
+                    updateStatus('scanning', '掃描中... 請將 QR Code 對準相機');
+                }
+            }, 3000);
+        }
+
+        function onScanError(errorMessage) {
+            // 忽略掃描錯誤，只在控制台記錄
+            if (errorMessage && !errorMessage.includes('No QR code found')) {
+                console.log('掃描訊息:', errorMessage);
+            }
+        }
+
+        // 驗證編號格式 (A001 格式)
+        function validateAttendeeId(id) {
+            const pattern = /^[A-Z][0-9]{3}$/;
+            return pattern.test(id);
+        }
+
+        // 手動輸入
+        async function manualCheckIn() {
+            const inputValue = document.getElementById('manualInput').value.trim().toUpperCase();
+
+            if (!validateAttendeeId(inputValue)) {
+                showResult('error', '格式錯誤', '請輸入正確格式 (如: A001, B015)');
+                return;
+            }
+
+            document.getElementById('manualBtn').disabled = true;
+            updateStatus('processing', '處理手動輸入...');
+
+            await processCheckIn(inputValue);
+
+            document.getElementById('manualInput').value = '';
+            document.getElementById('manualBtn').disabled = false;
+            updateStatus('ready', '系統就緒');
+        }
+
+        // 統一的報到處理函數
+        async function processCheckIn(attendeeId) {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        編號: attendeeId,
+                        timestamp: new Date().toISOString()
+                    }),
+                    signal: AbortSignal.timeout(10000) // 10秒超時
+                });
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                handleCheckInResult(result);
+
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                
+                let errorMessage = '系統暫時無法使用';
+                if (error.name === 'TimeoutError') {
+                    errorMessage = '請求超時，請重試';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = '網路連線錯誤';
+                }
+                
+                showResult('error', '❌ 系統錯誤', errorMessage);
+                playSound('error');
+                updateStatus('error', '處理失敗');
+            }
+        }
+
+        // 處理報到結果
+        function handleCheckInResult(result) {
+            
+            if (result.status === 'success') {
+                showResult('success', '✅ 報到成功！', 
+                    `編號：${result.編號}\n` +
+                    `姓名：${result.姓名}\n` +
+                    `職稱：${result.職稱 || result['職稱'] || '未提供'}\n` +
+                    `單位：${result.單位}\n` +
+                    `時間：${result.報到時間}`
+                );
+                playSound('success');
+                updateStatus('success', '報到成功');
+                
+            } else if (result.status === 'duplicate') {
+                showResult('duplicate', '⚠️ 重複報到', 
+                    `編號：${result.編號}\n` +
+                    `姓名：${result.姓名}\n` +
+                    `職稱：${result.職稱 || result['職稱'] || '未提供'}\n` +
+                    `單位：${result.單位}\n` +
+                    `首次報到：${result.報到時間}`
+                );
+                playSound('duplicate');
+                updateStatus('ready', '重複報到');
+                
+            } else {
+                showResult('error', '❌ 報到失敗', 
+                    result.message || '查無此編號，請確認是否正確'
+                );
+                playSound('error');
+                updateStatus('error', '報到失敗');
+            }
+        }
+
+        // 顯示結果
+        function showResult(type, title, detail) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = `
+                <div class="result-title">${title}</div>
+                <div class="result-detail">${detail.replace(/\n/g, '<br>')}</div>
+            `;
+            resultDiv.style.display = 'block';
+
+            // 自動隱藏成功結果（延長顯示時間）
+            if (type === 'success' || type === 'duplicate') {
+                // 添加手動關閉按鈕
+                const closeBtn = document.createElement('button');
+                closeBtn.innerHTML = '✕ 關閉';
+                closeBtn.style.cssText = `
+                    position: absolute;
+                    top: 10px;
+                    right: 15px;
+                    background: rgba(0,0,0,0.1);
+                    border: none;
+                    padding: 5px 10px;
+                    border-radius: 15px;
+                    cursor: pointer;
+                    font-size: 0.8rem;
+                    color: inherit;
+                `;
+                closeBtn.onclick = () => {
+                    resultDiv.style.display = 'none';
+                };
+                
+                resultDiv.style.position = 'relative';
+                resultDiv.appendChild(closeBtn);
+                
+                // 延長自動隱藏時間到 15 秒
+                setTimeout(() => {
+                    if (resultDiv.style.display !== 'none') {
+                        resultDiv.style.display = 'none';
+                    }
+                }, 15000);
+            }
+        }
+
+        // 音效提示
+        function playSound(type) {
+            const soundWave = document.getElementById('soundWave');
+            soundWave.classList.add('active');
+            setTimeout(() => soundWave.classList.remove('active'), 500);
+
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                const frequencies = {
+                    success: [800, 1000, 1200],
+                    duplicate: [600, 500],
+                    error: [300, 200, 300]
+                };
+
+                const freq = frequencies[type] || [400];
+                oscillator.frequency.setValueAtTime(freq[0], audioContext.currentTime);
+                
+                if (freq.length > 1) {
+                    freq.forEach((f, i) => {
+                        oscillator.frequency.setValueAtTime(f, audioContext.currentTime + (i * 0.1));
+                    });
+                }
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (error) {
+                console.log('無法播放音效:', error);
+            }
+        }
+
+        // 快捷功能
+        function openMCInterface() {
+            window.open('./mc-interface.html', '_blank', 'width=1200,height=800');
+        }
+
+        function openTableInterface() {
+            window.open('./mc-stats.html', '_blank', 'width=1400,height=900');
+        }
+
+        // 鍵盤快捷鍵
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && document.activeElement === document.getElementById('manualInput')) {
+                manualCheckIn();
+            }
+            
+            if (event.key === 'Escape' && isScanning) {
+                stopScanning();
+            }
+            
+            if (event.ctrlKey && event.key === ' ') {
+                event.preventDefault();
+                if (isScanning) {
+                    stopScanning();
+                } else {
+                    startScanning();
+                }
+            }
+        });
+
+        // 輸入格式化
+        document.getElementById('manualInput').addEventListener('input', function(e) {
+            let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            
+            // 更寬鬆的格式化：允許用戶自由輸入，只在最後限制長度
+            if (value.length > 4) {
+                value = value.slice(0, 4);
+            }
+            
+            e.target.value = value;
+        });
+
+        // 頁面載入時初始化
+        window.addEventListener('load', () => {
+            updateStatus('ready', '系統就緒');
+            console.log('活動報到系統已啟動');
+        });
+
+        // 頁面關閉時清理
+        window.addEventListener('beforeunload', () => {
+            if (html5QrCode && isScanning) {
+                html5QrCode.stop();
+            }
+        });
+    </script>
+</body>
+</html>
