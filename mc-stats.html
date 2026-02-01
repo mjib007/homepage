@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🗂️ 桌次查詢與統計分析</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #2c3e50;
@@ -693,37 +692,6 @@
             </div>
         </div>
 
-        <!-- 圖表區域 -->
-        <div class="charts-grid">
-            <div class="chart-card">
-                <div class="chart-title">
-                    📈 報到趨勢圖
-                </div>
-                <div class="chart-container">
-                    <canvas id="checkinTrendChart"></canvas>
-                </div>
-            </div>
-
-            <div class="chart-card">
-                <div class="chart-title">
-                    🥧 出席狀況分佈
-                </div>
-                <div class="chart-container">
-                    <canvas id="attendanceChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- 時間線分析 -->
-        <div class="timeline-card">
-            <div class="chart-title">
-                ⏰ 報到時間分佈
-            </div>
-            <div class="chart-container">
-                <canvas id="timelineChart"></canvas>
-            </div>
-        </div>
-
         <!-- 貴賓統計 -->
         <div class="vip-stats">
             <div class="vip-card">
@@ -863,99 +831,8 @@
 
         // 更新圖表
         function updateCharts() {
-            console.log('🔍 開始更新圖表, 資料筆數:', allData.length);
-            console.log('🔍 前3筆資料範例:', allData.slice(0, 3).map(p => ({
-                姓名: p.姓名,
-                報到狀態: p.報到狀態,
-                報到時間: p.報到時間,
-                時間類型: typeof p.報到時間
-            })));
-            
-            updateCheckinTrendChart();
-            updateAttendanceChart();
-            updateTimelineChart();
-        }
-
-        // 更新報到趨勢圖
-        function updateCheckinTrendChart() {
-            const ctx = document.getElementById('checkinTrendChart').getContext('2d');
-            
-            // 清除舊圖表
-            if (chartInstances.trend) {
-                chartInstances.trend.destroy();
-            }
-            
-            // 按小時分組統計報到數據
-            const hourlyData = {};
-            const now = new Date();
-            
-            // 初始化24小時數據
-            for (let i = 0; i < 24; i++) {
-                hourlyData[i] = 0;
-            }
-            
-            // 先用寬鬆的條件統計所有有報到時間的人
-            let totalWithTime = 0;
-            allData.forEach(person => {
-                if (person.報到時間) {
-                    try {
-                        const checkinTime = new Date(person.報到時間);
-                        if (!isNaN(checkinTime.getTime())) {
-                            const hour = checkinTime.getHours();
-                            hourlyData[hour]++;
-                            totalWithTime++;
-                        }
-                    } catch (error) {
-                        console.log('時間解析錯誤:', person.姓名, person.報到時間);
-                    }
-                }
-            });
-            
-            console.log('🔍 報到趨勢圖資料:', {
-                總資料筆數: allData.length,
-                有報到時間: totalWithTime,
-                時間分佈: hourlyData,
-                前3筆資料: allData.slice(0, 3).map(p => ({
-                    姓名: p.姓名,
-                    報到狀態: p.報到狀態,
-                    報到時間: p.報到時間
-                }))
-            });
-            
-            const labels = Object.keys(hourlyData).map(h => `${h}:00`);
-            const data = Object.values(hourlyData);
-            
-            chartInstances.trend = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: '報到人數',
-                        data: data,
-                        borderColor: 'rgb(52, 152, 219)',
-                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    }
-                }
-            });
+            console.log('🔍 圖表功能已移除，專注於桌次查詢功能');
+            // 圖表功能已移除，保持介面簡潔
         }
 
         // 更新出席狀況圓餅圖
