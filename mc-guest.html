@@ -357,6 +357,24 @@
             border-bottom-left-radius: 8px;
         }
 
+        /* 聊天中的連結樣式 */
+        .message-content a {
+            color: var(--primary-color);
+            text-decoration: underline;
+            font-weight: 600;
+            word-break: break-all;
+            transition: color 0.3s ease;
+        }
+
+        .message-content a:hover {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
+
+        .message-content a:visited {
+            color: var(--secondary-color);
+        }
+
         .chat-input-area {
             display: flex;
             gap: 10px;
@@ -711,7 +729,14 @@
             const messages = document.getElementById('chatMessages');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
-            messageDiv.innerHTML = `<div class="message-content">${content}</div>`;
+            
+            // 將網址轉換為可點擊的連結
+            const linkifiedContent = content.replace(
+                /(https?:\/\/[^\s<>"]+)/g,
+                '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #4ECDC4; text-decoration: underline; font-weight: 600;">$1</a>'
+            );
+            
+            messageDiv.innerHTML = `<div class="message-content">${linkifiedContent}</div>`;
             
             messages.appendChild(messageDiv);
             messages.scrollTop = messages.scrollHeight;
