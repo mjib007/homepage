@@ -362,8 +362,13 @@
             color: var(--primary-color);
             text-decoration: underline;
             font-weight: 600;
-            word-break: break-all;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            hyphens: none;
             transition: color 0.3s ease;
+            display: inline-block;
+            max-width: 100%;
+            line-height: 1.4;
         }
 
         .message-content a:hover {
@@ -730,11 +735,13 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
             
-            // 將網址轉換為可點擊的連結
-            const linkifiedContent = content.replace(
-                /(https?:\/\/[^\s<>"]+)/g,
-                '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #4ECDC4; text-decoration: underline; font-weight: 600;">$1</a>'
-            );
+            // 將網址轉換為可點擊的連結，並確保前後有適當空格
+            let linkifiedContent = content
+                // 先在網址前後加空格（如果沒有的話）
+                .replace(/([^\s])(https?:\/\/[^\s<>"]+)/g, '$1 $2')
+                .replace(/(https?:\/\/[^\s<>"]+)([^\s])/g, '$1 $2')
+                // 再將網址轉換為連結
+                .replace(/(https?:\/\/[^\s<>"]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #4ECDC4; text-decoration: underline; font-weight: 600;">$1</a>');
             
             messageDiv.innerHTML = `<div class="message-content">${linkifiedContent}</div>`;
             
