@@ -363,12 +363,13 @@
             text-decoration: underline;
             font-weight: 600;
             word-break: break-word;
-            overflow-wrap: break-word;
+            overflow-wrap: anywhere;
             hyphens: none;
             transition: color 0.3s ease;
             display: inline-block;
             max-width: 100%;
             line-height: 1.4;
+            white-space: normal;
         }
 
         .message-content a:hover {
@@ -740,7 +741,10 @@
                 // 先在網址前後加空格（如果沒有的話）
                 .replace(/([^\s])(https?:\/\/[^\s<>"]+)/g, '$1 $2')
                 .replace(/(https?:\/\/[^\s<>"]+)([^\s])/g, '$1 $2')
-                // 再將網址轉換為連結
+                // 將特定網址替換為簡潔的文字連結
+                .replace(/https:\/\/www\.twlawfdn\.org\/index\.php/g, '<a href="https://www.twlawfdn.org/index.php" target="_blank" rel="noopener noreferrer" style="color: #4ECDC4; text-decoration: underline; font-weight: 600;">【官網連結】</a>')
+                .replace(/https:\/\/www\.facebook\.com\/twlawfdn\//g, '<a href="https://www.facebook.com/twlawfdn/" target="_blank" rel="noopener noreferrer" style="color: #4ECDC4; text-decoration: underline; font-weight: 600;">【FB粉專】</a>')
+                // 其他網址保持原樣轉換
                 .replace(/(https?:\/\/[^\s<>"]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #4ECDC4; text-decoration: underline; font-weight: 600;">$1</a>');
             
             messageDiv.innerHTML = `<div class="message-content">${linkifiedContent}</div>`;
