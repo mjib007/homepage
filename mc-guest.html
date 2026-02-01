@@ -525,12 +525,18 @@
                 const response = await fetch(API_URL);
                 const data = await response.json();
                 
-                if (data.success && data.attendees) {
+                // 處理不同的API回應格式
+                if (data.attendees) {
+                    attendeesData = data.attendees;
+                    renderTableGrid();
+                    updateTime();
+                } else if (data.success && data.attendees) {
                     attendeesData = data.attendees;
                     renderTableGrid();
                     updateTime();
                 } else {
-                    throw new Error('資料格式錯誤');
+                    console.log('API回應:', data);
+                    throw new Error('資料格式錯誤 - 找不到attendees陣列');
                 }
             } catch (error) {
                 console.error('載入資料失敗:', error);
@@ -546,12 +552,16 @@
 
             // 統計各桌資料
             attendeesData.forEach(attendee => {
-                const table = attendee.table || '未分配';
+                const table = attendee.桌次 || attendee.table || '未分配';
                 if (!tableStats[table]) {
                     tableStats[table] = { total: 0, present: 0 };
                 }
                 tableStats[table].total++;
-                if (attendee.checked_in) {
+                // 支援多種報到狀態格式
+                const isCheckedIn = attendee.報到狀態 === 'OK' || 
+                                  attendee.checked_in === true ||
+                                  attendee.checked_in === 'true';
+                if (isCheckedIn) {
                     tableStats[table].present++;
                 }
             });
@@ -580,24 +590,32 @@
         // 顯示桌次詳情
         function showTableDetail(tableName) {
             const tableMembers = attendeesData.filter(attendee => 
-                (attendee.table || '未分配') === tableName
+                (attendee.桌次 || attendee.table || '未分配') === tableName
             );
 
             document.getElementById('detailTitle').innerHTML = `📋 ${tableName} 詳情`;
             
             let html = '';
             tableMembers.forEach(member => {
-                const statusClass = member.checked_in ? 'present' : 'absent';
-                const statusText = member.checked_in ? '已到場' : '未到場';
-                const statusBadgeClass = member.checked_in ? 'status-present' : 'status-absent';
+                // 支援多種報到狀態格式
+                const isCheckedIn = member.報到狀態 === 'OK' || 
+                                  member.checked_in === true ||
+                                  member.checked_in === 'true';
+                const statusClass = isCheckedIn ? 'present' : 'absent';
+                const statusText = isCheckedIn ? '已到場' : '未到場';
+                const statusBadgeClass = isCheckedIn ? 'status-present' : 'status-absent';
+                
+                // 支援多種姓名和單位欄位格式
+                const memberName = member.姓名 || member.name || '未知姓名';
+                const memberOrg = member.單位 || member.organization || '未提供單位資訊';
                 
                 html += `
                     <div class="member-card ${statusClass}">
                         <div class="member-name">
-                            ${member.name}
+                            ${memberName}
                             <span class="status-badge ${statusBadgeClass}">${statusText}</span>
                         </div>
-                        <div class="member-org">${member.organization || '未提供單位資訊'}</div>
+                        <div class="member-org">${memberOrg}</div>
                     </div>
                 `;
             });
