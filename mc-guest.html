@@ -13,19 +13,19 @@
         }
 
         :root {
-            /* 年輕活潑色調 */
-            --primary-color: #FF6B9D;
-            --secondary-color: #4ECDC4;
-            --accent-color: #45B7D1;
-            --success-color: #96CEB4;
-            --warning-color: #FFEAA7;
-            --background: #F8F9FF;
+            /* 清新綠藍色調 - 參考附圖配色 */
+            --primary-color: #4ECDC4;      /* 清新薄荷綠 */
+            --secondary-color: #45B7D1;    /* 清澈天藍 */
+            --accent-color: #96CEB4;       /* 柔和薄荷 */
+            --success-color: #6BCF7F;      /* 成功綠 */
+            --warning-color: #FFD93D;      /* 溫暖黃 */
+            --background: #F0FDF4;         /* 極淡薄荷白 */
             --card-bg: #FFFFFF;
-            --text-primary: #2D3748;
-            --text-secondary: #718096;
-            --border-color: #E2E8F0;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            --gradient: linear-gradient(135deg, #FF6B9D 0%, #4ECDC4 100%);
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --border-color: #D1FAE5;       /* 淡綠邊框 */
+            --shadow: 0 4px 20px rgba(76, 205, 196, 0.1);
+            --gradient: linear-gradient(135deg, #4ECDC4 0%, #45B7D1 100%);
         }
 
         body {
@@ -257,14 +257,14 @@
             color: white;
             font-size: 28px;
             cursor: pointer;
-            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
+            box-shadow: 0 8px 25px rgba(76, 205, 196, 0.4);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000;
         }
 
         .chat-btn:hover {
             transform: scale(1.1) rotate(15deg);
-            box-shadow: 0 12px 35px rgba(255, 107, 157, 0.6);
+            box-shadow: 0 12px 35px rgba(76, 205, 196, 0.6);
         }
 
         /* AI聊天窗口 */
@@ -444,8 +444,8 @@
         <!-- 首頁 - 桌次總覽 -->
         <div class="main-view">
             <div class="header">
-                <h1>🎉 活動來賓資訊</h1>
-                <p>歡迎您的到來，一起共襄盛舉！</p>
+                <h1>🏛️ 台灣法學基金會</h1>
+                <p>歡迎您的到來，一起參與法治推廣！</p>
             </div>
             
             <div style="text-align: center;">
@@ -484,15 +484,15 @@
     <div class="chat-overlay" id="chatOverlay">
         <div class="chat-window">
             <div class="chat-header">
-                <div class="chat-title">🤖 基金會小助手</div>
+                <div class="chat-title">🏛️ 法學基金會小助手</div>
                 <button class="close-chat" onclick="closeChat()">×</button>
             </div>
             
             <div class="chat-messages" id="chatMessages">
                 <div class="message bot">
                     <div class="message-content">
-                        您好！我是基金會的AI小助手 😊<br>
-                        很高興為您介紹我們的基金會，有什麼想了解的嗎？
+                        您好！我是台灣法學基金會的AI小助手 🏛️<br>
+                        很高興為您介紹我們的基金會，有什麼法律相關問題想了解的嗎？
                     </div>
                 </div>
             </div>
