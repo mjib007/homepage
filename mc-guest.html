@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎉 活動來賓資訊 - 歡迎您的到來</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* 年輕活潑色調 */
+            --primary-color: #FF6B9D;
+            --secondary-color: #4ECDC4;
+            --accent-color: #45B7D1;
+            --success-color: #96CEB4;
+            --warning-color: #FFEAA7;
+            --background: #F8F9FF;
+            --card-bg: #FFFFFF;
+            --text-primary: #2D3748;
+            --text-secondary: #718096;
+            --border-color: #E2E8F0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --gradient: linear-gradient(135deg, #FF6B9D 0%, #4ECDC4 100%);
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            font-size: 18px; /* 基礎大字體 */
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+        }
+
+        /* 標題區域 */
+        .header {
+            text-align: center;
+            padding: 30px 0 40px;
+            background: var(--gradient);
+            margin: -20px -20px 30px -20px;
+            color: white;
+            border-radius: 0 0 25px 25px;
+        }
+
+        .header h1 {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 28px; /* 大標題 */
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        /* 更新時間 */
+        .update-time {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 25px;
+            padding: 8px 16px;
+            background: #F1F5F9;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        /* 主要導航按鈕 */
+        .nav-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 22px; /* 大字體 */
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: var(--primary-color);
+            margin-right: 12px;
+            border-radius: 2px;
+        }
+
+        /* 桌次網格 */
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .table-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .table-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-color);
+        }
+
+        .table-name {
+            font-size: 20px; /* 大字體 */
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .table-count {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .attendance-bar {
+            width: 100%;
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .attendance-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color), var(--secondary-color));
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+
+        .attendance-percent {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--success-color);
+        }
+
+        /* 桌次詳情頁面 */
+        .table-detail {
+            display: none;
+        }
+
+        .back-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(69, 183, 209, 0.3);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(69, 183, 209, 0.4);
+        }
+
+        .member-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .member-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .member-card.present {
+            border-color: var(--success-color);
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+        }
+
+        .member-card.absent {
+            opacity: 0.7;
+            background: #fafafa;
+        }
+
+        .member-name {
+            font-size: 20px; /* 大字體 */
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .member-org {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-present {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .status-absent {
+            background: var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        /* AI聊天按鈕 */
+        .chat-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            background: var(--gradient);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+        }
+
+        .chat-btn:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 12px 35px rgba(255, 107, 157, 0.6);
+        }
+
+        /* AI聊天窗口 */
+        .chat-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            display: none;
+            backdrop-filter: blur(8px);
+        }
+
+        .chat-window {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70vh;
+            background: var(--card-bg);
+            border-radius: 25px 25px 0 0;
+            padding: 25px 20px 20px;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .chat-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .close-chat {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 5px;
+        }
+
+        .chat-messages {
+            height: calc(100% - 140px);
+            overflow-y: auto;
+            padding: 0 0 15px;
+            margin-bottom: 15px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .message.user .message-content {
+            background: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 8px;
+        }
+
+        .message.bot .message-content {
+            background: #F7FAFC;
+            color: var(--text-primary);
+            border-bottom-left-radius: 8px;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .send-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+            background: var(--secondary-color);
+        }
+
+        /* 載入動畫 */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 響應式設計 */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 600px;
+            }
+            
+            .table-grid {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            }
+            
+            .chat-window {
+                max-width: 500px;
+                left: 50%;
+                transform: translateX(-50%);
+                border-radius: 25px;
+                height: 80vh;
+                bottom: 10vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 首頁 - 桌次總覽 -->
+        <div class="main-view">
+            <div class="header">
+                <h1>🎉 活動來賓資訊</h1>
+                <p>歡迎您的到來，一起共襄盛舉！</p>
+            </div>
+            
+            <div style="text-align: center;">
+                <span class="update-time" id="updateTime">資料更新中...</span>
+            </div>
+            
+            <div class="nav-section">
+                <div class="section-title">
+                    📋 各桌出席狀況
+                </div>
+                <div class="table-grid" id="tableGrid">
+                    <div class="loading">載入桌次資料中...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 桌次詳情頁面 -->
+        <div class="table-detail" id="tableDetail">
+            <button class="back-btn" onclick="showMainView()">← 返回桌次總覽</button>
+            
+            <div class="nav-section">
+                <div class="section-title" id="detailTitle">
+                    📋 桌次詳情
+                </div>
+                <div class="member-list" id="memberList">
+                    <div class="loading">載入成員資料中...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI聊天按鈕 -->
+    <button class="chat-btn" onclick="openChat()">🤖</button>
+
+    <!-- AI聊天窗口 -->
+    <div class="chat-overlay" id="chatOverlay">
+        <div class="chat-window">
+            <div class="chat-header">
+                <div class="chat-title">🤖 基金會小助手</div>
+                <button class="close-chat" onclick="closeChat()">×</button>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    <div class="message-content">
+                        您好！我是基金會的AI小助手 😊<br>
+                        很高興為您介紹我們的基金會，有什麼想了解的嗎？
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" id="chatInput" placeholder="輸入您的問題..." onkeypress="handleKeyPress(event)">
+                <button class="send-btn" onclick="sendMessage()">📤</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 設定值
+        const API_URL = 'https://mjib007.zeabur.app/webhook/get-all-attendees';
+        const CHAT_API_URL = 'https://mjib007.zeabur.app/webhook/chat-ai';
+        const UPDATE_INTERVAL = 90000; // 90秒更新一次
+
+        let attendeesData = [];
+        let updateTimer = null;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAttendeesData();
+            startAutoUpdate();
+        });
+
+        // 載入來賓資料
+        async function loadAttendeesData() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                
+                if (data.success && data.attendees) {
+                    attendeesData = data.attendees;
+                    renderTableGrid();
+                    updateTime();
+                } else {
+                    throw new Error('資料格式錯誤');
+                }
+            } catch (error) {
+                console.error('載入資料失敗:', error);
+                document.getElementById('tableGrid').innerHTML = 
+                    '<div style="text-align: center; color: #e53e3e; padding: 20px;">載入資料失敗，請稍後重試</div>';
+            }
+        }
+
+        // 渲染桌次網格
+        function renderTableGrid() {
+            const tableGrid = document.getElementById('tableGrid');
+            const tableStats = {};
+
+            // 統計各桌資料
+            attendeesData.forEach(attendee => {
+                const table = attendee.table || '未分配';
+                if (!tableStats[table]) {
+                    tableStats[table] = { total: 0, present: 0 };
+                }
+                tableStats[table].total++;
+                if (attendee.checked_in) {
+                    tableStats[table].present++;
+                }
+            });
+
+            // 生成桌次卡片
+            let html = '';
+            Object.keys(tableStats).sort().forEach(table => {
+                const stats = tableStats[table];
+                const percentage = Math.round((stats.present / stats.total) * 100) || 0;
+                
+                html += `
+                    <div class="table-card" onclick="showTableDetail('${table}')">
+                        <div class="table-name">${table}</div>
+                        <div class="table-count">${stats.present}/${stats.total} 人</div>
+                        <div class="attendance-bar">
+                            <div class="attendance-fill" style="width: ${percentage}%"></div>
+                        </div>
+                        <div class="attendance-percent">${percentage}%</div>
+                    </div>
+                `;
+            });
+
+            tableGrid.innerHTML = html;
+        }
+
+        // 顯示桌次詳情
+        function showTableDetail(tableName) {
+            const tableMembers = attendeesData.filter(attendee => 
+                (attendee.table || '未分配') === tableName
+            );
+
+            document.getElementById('detailTitle').innerHTML = `📋 ${tableName} 詳情`;
+            
+            let html = '';
+            tableMembers.forEach(member => {
+                const statusClass = member.checked_in ? 'present' : 'absent';
+                const statusText = member.checked_in ? '已到場' : '未到場';
+                const statusBadgeClass = member.checked_in ? 'status-present' : 'status-absent';
+                
+                html += `
+                    <div class="member-card ${statusClass}">
+                        <div class="member-name">
+                            ${member.name}
+                            <span class="status-badge ${statusBadgeClass}">${statusText}</span>
+                        </div>
+                        <div class="member-org">${member.organization || '未提供單位資訊'}</div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('memberList').innerHTML = html;
+            document.querySelector('.main-view').style.display = 'none';
+            document.getElementById('tableDetail').style.display = 'block';
+        }
+
+        // 返回主頁
+        function showMainView() {
+            document.querySelector('.main-view').style.display = 'block';
+            document.getElementById('tableDetail').style.display = 'none';
+        }
+
+        // 更新時間顯示
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-TW', {
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('updateTime').textContent = `最後更新：${timeString}`;
+        }
+
+        // 自動更新
+        function startAutoUpdate() {
+            updateTimer = setInterval(() => {
+                loadAttendeesData();
+            }, UPDATE_INTERVAL);
+        }
+
+        // AI聊天功能
+        function openChat() {
+            document.getElementById('chatOverlay').style.display = 'block';
+            document.getElementById('chatInput').focus();
+        }
+
+        function closeChat() {
+            document.getElementById('chatOverlay').style.display = 'none';
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // 添加用戶訊息
+            addMessage(message, 'user');
+            input.value = '';
+
+            try {
+                // 發送到AI聊天API
+                const response = await fetch(CHAT_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    addMessage(data.response, 'bot');
+                } else {
+                    throw new Error('AI回應失敗');
+                }
+            } catch (error) {
+                console.error('聊天失敗:', error);
+                addMessage('抱歉，目前AI助手暫時無法回應，請稍後再試。', 'bot');
+            }
+        }
+
+        function addMessage(content, type) {
+            const messages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `<div class="message-content">${content}</div>`;
+            
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        // 頁面卸載時清理定時器
+        window.addEventListener('beforeunload', function() {
+            if (updateTimer) {
+                clearInterval(updateTimer);
+            }
+        });
+    </script>
+</body>
+</html>
