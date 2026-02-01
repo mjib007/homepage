@@ -687,11 +687,19 @@
                 });
 
                 const data = await response.json();
+                console.log('AI回應資料:', data); // 調試用
                 
-                if (data.success) {
+                // 處理回應 - 檢查多種可能的回應格式
+                if (data.success && data.response) {
                     addMessage(data.response, 'bot');
+                } else if (data.response) {
+                    // 即使沒有success欄位，只要有response就顯示
+                    addMessage(data.response, 'bot');
+                } else if (data.error) {
+                    addMessage(data.error, 'bot');
                 } else {
-                    throw new Error('AI回應失敗');
+                    // 如果都沒有，顯示整個回應內容
+                    addMessage(JSON.stringify(data), 'bot');
                 }
             } catch (error) {
                 console.error('聊天失敗:', error);
