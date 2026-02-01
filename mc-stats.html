@@ -114,8 +114,8 @@
         /* 統計卡片網格 */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 15px;
             margin-bottom: 40px;
         }
 
@@ -516,7 +516,8 @@
             }
             
             .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
             }
         }
 
@@ -528,6 +529,12 @@
             .header-content {
                 flex-direction: column;
                 gap: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
                 text-align: center;
             }
             
@@ -856,6 +863,14 @@
 
         // 更新圖表
         function updateCharts() {
+            console.log('🔍 開始更新圖表, 資料筆數:', allData.length);
+            console.log('🔍 前3筆資料範例:', allData.slice(0, 3).map(p => ({
+                姓名: p.姓名,
+                報到狀態: p.報到狀態,
+                報到時間: p.報到時間,
+                時間類型: typeof p.報到時間
+            })));
+            
             updateCheckinTrendChart();
             updateAttendanceChart();
             updateTimelineChart();
