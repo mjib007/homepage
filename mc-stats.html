@@ -1010,13 +1010,6 @@
                 chartInstances.timeline.destroy();
             }
             
-        function updateTimelineChart() {
-            const ctx = document.getElementById('timelineChart').getContext('2d');
-            
-            if (chartInstances.timeline) {
-                chartInstances.timeline.destroy();
-            }
-            
             // 按小時統計累積報到數
             const hourlyData = {};
             for (let i = 0; i < 24; i++) {
