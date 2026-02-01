@@ -894,27 +894,32 @@
                 hourlyData[i] = 0;
             }
             
-            // 統計已報到且有報到時間的人員
-            let validCheckins = 0;
+            // 先用寬鬆的條件統計所有有報到時間的人
+            let totalWithTime = 0;
             allData.forEach(person => {
-                if (person.報到狀態 === 'OK' && person.報到時間) {
+                if (person.報到時間) {
                     try {
                         const checkinTime = new Date(person.報到時間);
-                        if (!isNaN(checkinTime.getTime())) {  // 檢查是否為有效時間
+                        if (!isNaN(checkinTime.getTime())) {
                             const hour = checkinTime.getHours();
                             hourlyData[hour]++;
-                            validCheckins++;
+                            totalWithTime++;
                         }
                     } catch (error) {
-                        console.log('時間解析錯誤:', person.報到時間, error);
+                        console.log('時間解析錯誤:', person.姓名, person.報到時間);
                     }
                 }
             });
             
             console.log('🔍 報到趨勢圖資料:', {
-                有效報到數: validCheckins,
+                總資料筆數: allData.length,
+                有報到時間: totalWithTime,
                 時間分佈: hourlyData,
-                非零小時: Object.entries(hourlyData).filter(([h, count]) => count > 0)
+                前3筆資料: allData.slice(0, 3).map(p => ({
+                    姓名: p.姓名,
+                    報到狀態: p.報到狀態,
+                    報到時間: p.報到時間
+                }))
             });
             
             const labels = Object.keys(hourlyData).map(h => `${h}:00`);
@@ -1018,27 +1023,27 @@
                 hourlyData[i] = 0;
             }
             
-            // 統計已報到且有報到時間的人員
-            let validTimelineCheckins = 0;
+            // 統計所有有報到時間的人員（不限制報到狀態）
+            let timelineWithTime = 0;
             allData.forEach(person => {
-                if (person.報到狀態 === 'OK' && person.報到時間) {
+                if (person.報到時間) {
                     try {
                         const checkinTime = new Date(person.報到時間);
-                        if (!isNaN(checkinTime.getTime())) {  // 檢查是否為有效時間
+                        if (!isNaN(checkinTime.getTime())) {
                             const hour = checkinTime.getHours();
                             hourlyData[hour]++;
-                            validTimelineCheckins++;
+                            timelineWithTime++;
                         }
                     } catch (error) {
-                        console.log('時間線圖時間解析錯誤:', person.報到時間, error);
+                        console.log('時間線圖時間解析錯誤:', person.姓名, person.報到時間);
                     }
                 }
             });
             
             console.log('🔍 時間分佈圖資料:', {
-                有效報到數: validTimelineCheckins,
-                時間分佈: hourlyData,
-                非零小時: Object.entries(hourlyData).filter(([h, count]) => count > 0)
+                總資料筆數: allData.length,
+                有報到時間: timelineWithTime,
+                時間分佈: hourlyData
             });
             
             const labels = Object.keys(hourlyData).map(h => `${h}:00`);
