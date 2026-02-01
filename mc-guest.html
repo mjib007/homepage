@@ -736,16 +736,16 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
             
-            // 將網址轉換為可點擊的連結，並確保前後有適當空格
+            // 將網址轉換為可點擊的連結
             let linkifiedContent = content
-                // 先在網址前後加空格（如果沒有的話）
-                .replace(/([^\s])(https?:\/\/[^\s<>"]+)/g, '$1 $2')
-                .replace(/(https?:\/\/[^\s<>"]+)([^\s])/g, '$1 $2')
-                // 將特定網址替換為簡潔的文字連結
-                .replace(/https:\/\/www\.twlawfdn\.org\/index\.php/g, '<a href="https://www.twlawfdn.org/index.php" target="_blank" rel="noopener noreferrer" style="color: #4ECDC4; text-decoration: underline; font-weight: 600;">【官網連結】</a>')
-                .replace(/https:\/\/www\.facebook\.com\/twlawfdn\//g, '<a href="https://www.facebook.com/twlawfdn/" target="_blank" rel="noopener noreferrer" style="color: #4ECDC4; text-decoration: underline; font-weight: 600;">【FB粉專】</a>')
-                // 其他網址保持原樣轉換
-                .replace(/(https?:\/\/[^\s<>"]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #4ECDC4; text-decoration: underline; font-weight: 600;">$1</a>');
+                // 先處理特定的基金會網址，替換為簡潔文字
+                .replace(/https:\/\/www\.twlawfdn\.org\/index\.php/g, ' 【官網連結】 ')
+                .replace(/https:\/\/www\.facebook\.com\/twlawfdn\//g, ' 【FB粉專】 ')
+                // 再處理其他網址
+                .replace(/(https?:\/\/[^\s<>"]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #4ECDC4; text-decoration: underline; font-weight: 600;">$1</a>')
+                // 最後將簡潔文字轉為連結
+                .replace(/【官網連結】/g, '<a href="https://www.twlawfdn.org/index.php" target="_blank" rel="noopener noreferrer" style="color: #4ECDC4; text-decoration: underline; font-weight: 600;">【官網連結】</a>')
+                .replace(/【FB粉專】/g, '<a href="https://www.facebook.com/twlawfdn/" target="_blank" rel="noopener noreferrer" style="color: #4ECDC4; text-decoration: underline; font-weight: 600;">【FB粉專】</a>');
             
             messageDiv.innerHTML = `<div class="message-content">${linkifiedContent}</div>`;
             
