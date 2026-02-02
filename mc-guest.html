@@ -436,6 +436,105 @@
             color: var(--secondary-color);
         }
 
+        /* 活動議程樣式 */
+        .agenda-section {
+            margin-bottom: 25px;
+        }
+
+        .agenda-current {
+            background: linear-gradient(135deg, rgba(76, 205, 196, 0.1), rgba(69, 183, 209, 0.1));
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .current-time {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .current-activity {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .next-activity {
+            font-size: 14px;
+            color: var(--text-secondary);
+            opacity: 0.8;
+        }
+
+        .agenda-toggle {
+            width: 100%;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 16px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .agenda-toggle:hover {
+            border-color: var(--primary-color);
+            background: var(--background);
+            color: var(--primary-color);
+        }
+
+        .agenda-full {
+            margin-top: 15px;
+        }
+
+        .agenda-list {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .agenda-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .agenda-item:last-child {
+            border-bottom: none;
+        }
+
+        .agenda-time {
+            font-weight: 600;
+            color: var(--text-primary);
+            min-width: 100px;
+            font-size: 14px;
+        }
+
+        .agenda-content {
+            flex: 1;
+            margin-left: 15px;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+
+        .agenda-status {
+            margin-right: 10px;
+            font-size: 12px;
+        }
+
+        .status-completed { color: #22C55E; }
+        .status-current { color: var(--primary-color); }
+        .status-upcoming { color: var(--text-secondary); }
+
         .chat-input-area {
             display: flex;
             gap: 10px;
@@ -535,6 +634,24 @@
             <div style="text-align: center;">
                 <span class="update-time" id="updateTime">資料更新中...</span>
             </div>
+
+            <!-- 活動議程區塊 -->
+            <div class="nav-section agenda-section">
+                <div class="section-title">
+                    📅 活動議程
+                </div>
+                <div class="agenda-current">
+                    <div class="current-time">🕐 <span id="currentTime"></span></div>
+                    <div class="current-activity" id="currentActivity">載入中...</div>
+                    <div class="next-activity" id="nextActivity"></div>
+                </div>
+                <button class="agenda-toggle" onclick="toggleAgenda()">查看完整議程 ▼</button>
+                <div class="agenda-full" id="agendaFull" style="display: none;">
+                    <div class="agenda-list" id="agendaList">
+                        <!-- 議程項目將由JavaScript生成 -->
+                    </div>
+                </div>
+            </div>
             
             <div class="nav-section">
                 <div class="section-title">
@@ -601,6 +718,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadAttendeesData();
             startAutoUpdate();
+            updateTimeAndAgenda(); // 初始化議程
+            
+            // 每分鐘更新時間和議程
+            setInterval(updateTimeAndAgenda, 60000);
         });
 
         // 載入來賓資料
@@ -828,12 +949,155 @@
             messages.scrollTop = messages.scrollHeight;
         }
 
-        // 頁面卸載時清理定時器
-        window.addEventListener('beforeunload', function() {
-            if (updateTimer) {
-                clearInterval(updateTimer);
+        // 活動議程數據
+        const agenda = [
+            { time: '12:05-12:15', activity: '謝董事長、許兆慶理事長、李兆環理事長致詞' },
+            { time: '12:15-12:30', activity: '基金會最高顧問勉勵及董事代表、貴賓致詞' },
+            { time: '12:30-12:40', activity: '基金會最高顧問、董事及主桌貴賓大合照' },
+            { time: '12:40-12:50', activity: '全場大合照' },
+            { time: '12:50-13:40', activity: '司儀唱名各桌出席貴賓' },
+            { time: '13:40-14:00', activity: '摸彩活動' },
+            { time: '14:00-14:15', activity: '自由聯誼、敬酒交流互動' },
+            { time: '14:15-14:30', activity: '大獎摸彩活動' },
+            { time: '14:30-14:45', activity: '自由聯誼、敬酒交流互動' },
+            { time: '14:45-14:50', activity: '董事長上台致結語' },
+            { time: '14:50', activity: '賦歸' }
+        ];
+
+        // 活動日期 (2026年3月7日)
+        const eventDate = new Date(2026, 2, 7); // 月份從0開始
+
+        // 更新時間和議程
+        function updateTimeAndAgenda() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-TW', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            // 更新當前時間
+            document.getElementById('currentTime').textContent = timeStr;
+            
+            // 檢查是否為活動當日
+            const isEventDay = now.toDateString() === eventDate.toDateString();
+            
+            if (!isEventDay) {
+                // 非活動當日的顯示
+                document.getElementById('currentActivity').innerHTML = 
+                    '🗓️ 春酒活動將於 <strong>2026年3月7日 12:00</strong> 開始';
+                document.getElementById('nextActivity').textContent = 
+                    '📍 台北喜來登大飯店 B2 壽喜廳';
+                return;
             }
-        });
+            
+            // 活動當日 - 找出當前活動
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            let currentItem = null;
+            let nextItem = null;
+            
+            for (let i = 0; i < agenda.length; i++) {
+                const item = agenda[i];
+                const timeRange = parseTimeRange(item.time);
+                
+                if (currentMinutes >= timeRange.start && currentMinutes < timeRange.end) {
+                    currentItem = item;
+                    nextItem = agenda[i + 1] || null;
+                    break;
+                } else if (currentMinutes < timeRange.start) {
+                    nextItem = item;
+                    break;
+                }
+            }
+            
+            if (currentItem) {
+                document.getElementById('currentActivity').innerHTML = 
+                    `🎤 <strong>進行中：${currentItem.activity}</strong><br><small>(${currentItem.time})</small>`;
+            } else {
+                document.getElementById('currentActivity').innerHTML = 
+                    '⏰ <strong>活動進行中</strong>';
+            }
+            
+            if (nextItem) {
+                document.getElementById('nextActivity').textContent = 
+                    `⏰ 下一個：${nextItem.activity} (${nextItem.time})`;
+            } else {
+                document.getElementById('nextActivity').textContent = 
+                    '🎉 活動即將結束，感謝您的參與！';
+            }
+        }
+
+        // 解析時間範圍
+        function parseTimeRange(timeStr) {
+            if (timeStr === '14:50') {
+                return { start: 14 * 60 + 50, end: 24 * 60 }; // 結束時間
+            }
+            
+            const parts = timeStr.split('-');
+            if (parts.length !== 2) return { start: 0, end: 0 };
+            
+            const startTime = parts[0].trim().split(':');
+            const endTime = parts[1].trim().split(':');
+            
+            const start = parseInt(startTime[0]) * 60 + parseInt(startTime[1]);
+            const end = parseInt(endTime[0]) * 60 + parseInt(endTime[1]);
+            
+            return { start, end };
+        }
+
+        // 切換完整議程顯示
+        function toggleAgenda() {
+            const agendaFull = document.getElementById('agendaFull');
+            const toggleBtn = document.querySelector('.agenda-toggle');
+            
+            if (agendaFull.style.display === 'none') {
+                // 顯示完整議程
+                renderFullAgenda();
+                agendaFull.style.display = 'block';
+                toggleBtn.innerHTML = '收起完整議程 ▲';
+            } else {
+                // 隱藏完整議程
+                agendaFull.style.display = 'none';
+                toggleBtn.innerHTML = '查看完整議程 ▼';
+            }
+        }
+
+        // 渲染完整議程
+        function renderFullAgenda() {
+            const agendaList = document.getElementById('agendaList');
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            const isEventDay = now.toDateString() === eventDate.toDateString();
+            
+            let html = '<div style="text-align: center; margin-bottom: 15px; color: var(--text-secondary);"><strong>2026年3月7日 春酒餐宴流程</strong></div>';
+            
+            agenda.forEach(item => {
+                let status = 'upcoming';
+                let statusIcon = '⏰';
+                
+                if (isEventDay) {
+                    const timeRange = parseTimeRange(item.time);
+                    
+                    if (currentMinutes >= timeRange.end) {
+                        status = 'completed';
+                        statusIcon = '✅';
+                    } else if (currentMinutes >= timeRange.start && currentMinutes < timeRange.end) {
+                        status = 'current';
+                        statusIcon = '🔴';
+                    }
+                }
+                
+                html += `
+                    <div class="agenda-item">
+                        <div class="agenda-status status-${status}">${statusIcon}</div>
+                        <div class="agenda-time">${item.time}</div>
+                        <div class="agenda-content">${item.activity}</div>
+                    </div>
+                `;
+            });
+            
+            agendaList.innerHTML = html;
+        }
 
         // 語音播放功能
         function speakText(text, button) {
