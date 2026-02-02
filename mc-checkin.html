@@ -267,6 +267,19 @@
             transform: translateY(-1px);
         }
 
+        .btn-accent {
+            background: linear-gradient(135deg, #4ECDC4 0%, #45B7D1 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .btn-accent:hover:not(:disabled) {
+            background: linear-gradient(135deg, #45B7D1 0%, #4ECDC4 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+        }
+
         /* 手動輸入區域 */
         .manual-input {
             background: var(--primary-light);
@@ -546,6 +559,9 @@
                 </button>
                 <button class="btn btn-secondary" onclick="openTableInterface()">
                     🗂️ 桌次查詢與統計
+                </button>
+                <button class="btn btn-accent" onclick="openGuestInterface()">
+                    👥 賓客展示介面
                 </button>
             </div>
         </div>
@@ -880,6 +896,10 @@
 
         function openTableInterface() {
             window.open('./mc-stats.html', '_blank', 'width=1400,height=900');
+        }
+
+        function openGuestInterface() {
+            window.open('https://mjib007.github.io/homepage/mc-guest.html', '_blank', 'width=400,height=800');
         }
 
         // 鍵盤快捷鍵
