@@ -267,6 +267,61 @@
             box-shadow: 0 12px 35px rgba(76, 205, 196, 0.6);
         }
 
+        /* 頂部通知條 */
+        .notification-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #4ECDC4 0%, #45B7D1 100%);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            transform: translateY(-100%);
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2000;
+            box-shadow: 0 4px 15px rgba(76, 205, 196, 0.3);
+        }
+
+        .notification-bar.show {
+            transform: translateY(0);
+        }
+
+        .notification-bar.hide {
+            transform: translateY(-100%);
+        }
+
+        /* 語音播放按鈕 */
+        .voice-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-btn:hover {
+            background: var(--accent-color);
+            transform: scale(1.1);
+        }
+
+        .message-content {
+            position: relative;
+            padding-right: 40px;
+        }
+
         /* AI聊天窗口 */
         .chat-overlay {
             position: fixed;
@@ -464,12 +519,17 @@
     </style>
 </head>
 <body>
+    <!-- 頂部通知條 -->
+    <div class="notification-bar" id="notificationBar">
+        <span id="notificationText"></span>
+    </div>
+
     <div class="container">
         <!-- 首頁 - 桌次總覽 -->
         <div class="main-view">
             <div class="header">
-                <h1>🏛️ 台灣法學基金會春酒活動</h1>
-                <p>歡迎您的到來與各方法學先進同歡，持續一起參與法治推廣！</p>
+                <h1>🏛️ 台灣法學基金會</h1>
+                <p>歡迎您的到來，一起參與法治推廣！</p>
             </div>
             
             <div style="text-align: center;">
@@ -609,6 +669,9 @@
             });
 
             tableGrid.innerHTML = html;
+            
+            // 檢查出席率里程碑
+            checkAttendanceMilestones();
         }
 
         // 顯示桌次詳情
@@ -747,7 +810,19 @@
                 .replace(/【官網連結】/g, '<a href="https://www.twlawfdn.org/index.php" target="_blank" rel="noopener noreferrer" style="color: #4ECDC4; text-decoration: underline; font-weight: 600;">【官網連結】</a>')
                 .replace(/【FB粉專】/g, '<a href="https://www.facebook.com/twlawfdn/" target="_blank" rel="noopener noreferrer" style="color: #4ECDC4; text-decoration: underline; font-weight: 600;">【FB粉專】</a>');
             
-            messageDiv.innerHTML = `<div class="message-content">${linkifiedContent}</div>`;
+            // 為AI回應添加語音播放按鈕
+            if (type === 'bot') {
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        ${linkifiedContent}
+                        <button class="voice-btn" onclick="speakText('${content.replace(/'/g, "\\'")}', this)" title="語音播放">
+                            🔊
+                        </button>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `<div class="message-content">${linkifiedContent}</div>`;
+            }
             
             messages.appendChild(messageDiv);
             messages.scrollTop = messages.scrollHeight;
@@ -759,6 +834,105 @@
                 clearInterval(updateTimer);
             }
         });
+
+        // 語音播放功能
+        function speakText(text, button) {
+            if ('speechSynthesis' in window) {
+                // 清理文字中的HTML標籤和特殊符號
+                const cleanText = text.replace(/<[^>]*>/g, '').replace(/【.*?】/g, '連結');
+                
+                // 停止當前播放
+                speechSynthesis.cancel();
+                
+                // 創建語音合成
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.lang = 'zh-TW';
+                utterance.rate = 0.9;
+                utterance.pitch = 1.0;
+                
+                // 播放狀態指示
+                button.innerHTML = '🔇';
+                button.style.background = '#ff6b6b';
+                
+                utterance.onend = function() {
+                    button.innerHTML = '🔊';
+                    button.style.background = 'var(--primary-color)';
+                };
+                
+                speechSynthesis.speak(utterance);
+            } else {
+                alert('您的瀏覽器不支援語音播放功能');
+            }
+        }
+
+        // 出席率檢查和恭喜訊息
+        function checkAttendanceMilestones() {
+            const tableGrid = document.getElementById('tableGrid');
+            if (!tableGrid || !attendeesData.length) return;
+            
+            // 計算總出席率
+            const totalMembers = attendeesData.length;
+            const presentMembers = attendeesData.filter(attendee => {
+                return attendee.報到狀態 === 'OK' || 
+                       attendee.checked_in === true ||
+                       attendee.checked_in === 'true';
+            }).length;
+            
+            const attendanceRate = Math.round((presentMembers / totalMembers) * 100);
+            
+            // 檢查里程碑
+            const milestones = [30, 50, 70, 85];
+            milestones.forEach(milestone => {
+                const storageKey = `milestone_${milestone}`;
+                if (attendanceRate >= milestone && !localStorage.getItem(storageKey)) {
+                    showNotification(`🎉 太棒了！出席率已達${milestone}%，活動氣氛熱烈！`);
+                    localStorage.setItem(storageKey, 'true');
+                }
+            });
+        }
+
+        // 顯示頂部通知條
+        function showNotification(message) {
+            const notificationBar = document.getElementById('notificationBar');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            notificationBar.classList.add('show');
+            
+            // 播放提示音
+            playNotificationSound();
+            
+            // 5秒後自動隱藏
+            setTimeout(() => {
+                notificationBar.classList.remove('show');
+                notificationBar.classList.add('hide');
+                
+                setTimeout(() => {
+                    notificationBar.classList.remove('hide');
+                }, 500);
+            }, 5000);
+        }
+
+        // 播放提示音
+        function playNotificationSound() {
+            // 創建簡單的提示音
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
     </script>
 </body>
 </html>
