@@ -838,31 +838,69 @@
         // 語音播放功能
         function speakText(text, button) {
             if ('speechSynthesis' in window) {
+                // 如果正在播放，則停止播放
+                if (speechSynthesis.speaking) {
+                    speechSynthesis.cancel();
+                    button.innerHTML = '🔊';
+                    button.style.background = 'var(--primary-color)';
+                    return;
+                }
+                
                 // 清理文字中的HTML標籤和特殊符號
                 const cleanText = text.replace(/<[^>]*>/g, '').replace(/【.*?】/g, '連結');
                 
-                // 停止當前播放
-                speechSynthesis.cancel();
-                
                 // 創建語音合成
                 const utterance = new SpeechSynthesisUtterance(cleanText);
+                
+                // 尋找最佳的中文語音
+                const voices = speechSynthesis.getVoices();
+                const chineseVoice = voices.find(voice => 
+                    voice.lang.includes('zh') || 
+                    voice.lang.includes('TW') ||
+                    voice.name.includes('Chinese') ||
+                    voice.name.includes('Taiwan')
+                ) || voices.find(voice => voice.default);
+                
+                if (chineseVoice) {
+                    utterance.voice = chineseVoice;
+                }
+                
+                // 優化語音參數
                 utterance.lang = 'zh-TW';
-                utterance.rate = 0.9;
-                utterance.pitch = 1.0;
+                utterance.rate = 0.85;    // 稍微慢一點，更自然
+                utterance.pitch = 1.1;    // 稍微高一點音調
+                utterance.volume = 0.8;   // 適中音量
                 
                 // 播放狀態指示
-                button.innerHTML = '🔇';
+                button.innerHTML = '⏹️';
                 button.style.background = '#ff6b6b';
+                button.title = '點擊停止播放';
                 
+                // 播放結束時恢復按鈕
                 utterance.onend = function() {
                     button.innerHTML = '🔊';
                     button.style.background = 'var(--primary-color)';
+                    button.title = '語音播放';
+                };
+                
+                // 播放錯誤時恢復按鈕
+                utterance.onerror = function() {
+                    button.innerHTML = '🔊';
+                    button.style.background = 'var(--primary-color)';
+                    button.title = '語音播放';
                 };
                 
                 speechSynthesis.speak(utterance);
             } else {
                 alert('您的瀏覽器不支援語音播放功能');
             }
+        }
+
+        // 確保語音列表載入完成
+        if ('speechSynthesis' in window) {
+            speechSynthesis.onvoiceschanged = function() {
+                // 語音列表載入完成，無需特別處理
+            };
         }
 
         // 出席率檢查和恭喜訊息
