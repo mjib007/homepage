@@ -949,23 +949,23 @@
             messages.scrollTop = messages.scrollHeight;
         }
 
-        // 活動議程數據（測試用時間）
+        // 活動議程數據
         const agenda = [
-            { time: '22:30-22:35', activity: '謝董事長、許兆慶理事長、李兆環理事長致詞' },
-            { time: '22:35-22:40', activity: '基金會最高顧問勉勵及董事代表、貴賓致詞' },
-            { time: '22:40-22:45', activity: '基金會最高顧問、董事及主桌貴賓大合照' },
-            { time: '22:45-22:50', activity: '全場大合照' },
-            { time: '22:50-23:10', activity: '司儀唱名各桌出席貴賓' },
-            { time: '23:10-23:15', activity: '摸彩活動' },
-            { time: '23:15-23:20', activity: '自由聯誼、敬酒交流互動' },
-            { time: '23:20-23:25', activity: '大獎摸彩活動' },
-            { time: '23:25-23:30', activity: '自由聯誼、敬酒交流互動' },
-            { time: '23:30-23:35', activity: '董事長上台致結語' },
-            { time: '23:35', activity: '賦歸' }
+            { time: '12:05-12:15', activity: '謝董事長、許兆慶理事長、李兆環理事長致詞' },
+            { time: '12:15-12:30', activity: '基金會最高顧問勉勵及董事代表、貴賓致詞' },
+            { time: '12:30-12:40', activity: '基金會最高顧問、董事及主桌貴賓大合照' },
+            { time: '12:40-12:50', activity: '全場大合照' },
+            { time: '12:50-13:40', activity: '司儀唱名各桌出席貴賓' },
+            { time: '13:40-14:00', activity: '摸彩活動' },
+            { time: '14:00-14:15', activity: '自由聯誼、敬酒交流互動' },
+            { time: '14:15-14:30', activity: '大獎摸彩活動' },
+            { time: '14:30-14:45', activity: '自由聯誼、敬酒交流互動' },
+            { time: '14:45-14:50', activity: '董事長上台致結語' },
+            { time: '14:50', activity: '賦歸' }
         ];
 
-        // 活動日期 (測試用 - 設為今天)
-        const eventDate = new Date(); // 設為今天進行測試
+        // 活動日期 (2026年3月7日)
+        const eventDate = new Date(2026, 2, 7); // 月份從0開始
 
         // 更新時間和議程
         function updateTimeAndAgenda() {
