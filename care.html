@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>銀髮守護 - 智慧照護監控系統</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #2E7D3D;
+            --secondary-color: #4CAF50;
+            --warning-color: #FF9800;
+            --danger-color: #F44336;
+            --safe-color: #8BC34A;
+            --bg-primary: #0F1419;
+            --bg-secondary: #1A2332;
+            --bg-card: #232B3D;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B8C5D9;
+            --border-color: #334155;
+        }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #0F1419 0%, #1A2332 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: var(--bg-card);
+            padding: 20px 30px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .logo-text h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .logo-text p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: var(--bg-secondary);
+            border-radius: 25px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-safe { background-color: var(--safe-color); }
+        .status-warning { background-color: var(--warning-color); }
+        .status-danger { background-color: var(--danger-color); }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .camera-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .camera-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .camera-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-small {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+        
+        .camera-feed {
+            width: 100%;
+            height: 400px;
+            background: #000;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .camera-placeholder {
+            text-align: center;
+            color: var(--text-secondary);
+        }
+        
+        .camera-placeholder .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+        
+        #videoElement {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .stats-card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .stats-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .stats-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .risk-level {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .risk-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .risk-0 { background: var(--safe-color); }
+        .risk-1 { background: var(--safe-color); }
+        .risk-2 { background: var(--warning-color); }
+        .risk-3 { background: var(--warning-color); }
+        .risk-4 { background: var(--danger-color); }
+        .risk-5 { background: var(--danger-color); }
+        
+        .risk-info h3 {
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        
+        .risk-info p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .last-check {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .activity-log {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            height: 400px;
+            overflow-y: auto;
+        }
+        
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .activity-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .log-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .log-item:last-child {
+            border-bottom: none;
+        }
+        
+        .log-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+            min-width: 60px;
+        }
+        
+        .log-content {
+            flex: 1;
+        }
+        
+        .log-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-top: 6px;
+        }
+        
+        .log-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .log-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 12px;
+            padding: 2px 8px;
+            border: 1px solid var(--primary-color);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .log-link:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .controls-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .control-card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .control-icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+        
+        .control-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+        
+        .btn-cancel {
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        
+        .history-item {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--safe-color);
+        }
+        
+        .history-item.warning {
+            border-left-color: var(--warning-color);
+        }
+        
+        .history-item.danger {
+            border-left-color: var(--danger-color);
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .history-risk {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .history-description {
+            font-size: 13px;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">🛡️</div>
+                <div class="logo-text">
+                    <h1>銀髮守護</h1>
+                    <p>智慧照護監控系統</p>
+                </div>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot status-safe" id="statusDot"></div>
+                <span id="statusText">系統正常運行</span>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Camera Section -->
+            <div class="camera-section">
+                <div class="camera-header">
+                    <h2 class="camera-title">即時監控</h2>
+                    <div class="camera-controls">
+                        <button class="btn" onclick="startCamera()">開啟攝影機</button>
+                        <button class="btn" onclick="stopCamera()">關閉攝影機</button>
+                        <button class="btn btn-primary" onclick="capturePhoto()">立即檢測</button>
+                    </div>
+                </div>
+                <div class="camera-feed">
+                    <video id="videoElement" style="display: none;"></video>
+                    <div class="camera-placeholder" id="cameraPlaceholder">
+                        <div class="icon">📷</div>
+                        <p>點擊「開啟攝影機」開始監控</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="right-panel">
+                <!-- Risk Status -->
+                <div class="stats-card">
+                    <div class="stats-header">
+                        <h3 class="stats-title">風險狀態</h3>
+                    </div>
+                    <div class="risk-level">
+                        <div class="risk-circle risk-0" id="riskCircle">0</div>
+                        <div class="risk-info">
+                            <h3 id="riskStatus">安全狀態</h3>
+                            <p id="riskDescription">目前環境安全，無異常狀況</p>
+                        </div>
+                    </div>
+                    <div class="last-check" id="lastCheck">上次檢查: 尚未開始監控</div>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="activity-log">
+                    <div class="activity-header">
+                        <h3 class="stats-title">活動記錄</h3>
+                        <div class="activity-controls">
+                            <button class="btn btn-small" onclick="loadHistoryFromDrive()" title="從雲端載入歷史記錄">📥</button>
+                            <button class="btn btn-small" onclick="openDriveFolder()" title="開啟雲端資料夾">☁️</button>
+                            <button class="btn btn-small" onclick="clearLocalLog()" title="清空本地記錄">🗑️</button>
+                        </div>
+                    </div>
+                    <div id="activityLog">
+                        <div class="log-item">
+                            <div class="log-time">--:--</div>
+                            <div class="log-status status-safe"></div>
+                            <div class="log-content">系統已啟動，等待開始監控</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="controls-panel">
+            <div class="control-card">
+                <div class="control-icon">⚙️</div>
+                <h3 class="control-title">監控設定</h3>
+                <p>設定檢測頻率與 Google Drive</p>
+                <button class="btn" onclick="openSettings()">設定</button>
+            </div>
+            <div class="control-card">
+                <div class="control-icon">📧</div>
+                <h3 class="control-title">緊急聯絡</h3>
+                <p>設定家人聯絡資訊</p>
+                <button class="btn" onclick="openContacts()">設定</button>
+            </div>
+            <div class="control-card">
+                <div class="control-icon">📊</div>
+                <h3 class="control-title">雲端記錄</h3>
+                <p>查看 Google Drive 記錄</p>
+                <button class="btn" onclick="viewCloudHistory()">查看</button>
+            </div>
+            <div class="control-card">
+                <div class="control-icon">🚨</div>
+                <h3 class="control-title">緊急按鈕</h3>
+                <p>手動發送緊急警報</p>
+                <button class="btn btn-primary" onclick="emergencyAlert()">立即警報</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="settings-modal" id="settingsModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 25px;">監控設定</h3>
+            <div class="form-group">
+                <label class="form-label">檢測間隔 (分鐘)</label>
+                <input type="number" class="form-input" id="intervalInput" value="10" min="1" max="60">
+            </div>
+            <div class="form-group">
+                <label class="form-label">風險敏感度</label>
+                <select class="form-input" id="sensitivityInput">
+                    <option value="low">低敏感度</option>
+                    <option value="medium" selected>中等敏感度</option>
+                    <option value="high">高敏感度</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">n8n Webhook URL</label>
+                <input type="url" class="form-input" id="webhookUrl" placeholder="https://your-n8n-instance.com/webhook/elderly-care">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Google Drive 照片資料夾 ID</label>
+                <input type="text" class="form-input" id="drivePhotoFolderId" placeholder="Google Drive 照片資料夾的 ID">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Google Drive 分析資料夾 ID</label>
+                <input type="text" class="form-input" id="driveAnalysisFolderId" placeholder="Google Drive 分析記錄資料夾的 ID">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-cancel" onclick="closeSettings()">取消</button>
+                <button class="btn btn-primary" onclick="saveSettings()">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let videoStream = null;
+        let monitoringInterval = null;
+        let settings = {
+            interval: 10,
+            sensitivity: 'medium',
+            webhookUrl: 'https://mjib007.zeabur.app/webhook/elderly-care',
+            drivePhotoFolderId: '',
+            driveAnalysisFolderId: ''
+        };
+
+        // Load settings from localStorage
+        function loadSettings() {
+            const saved = localStorage.getItem('elderlyCareSettings');
+            if (saved) {
+                settings = { ...settings, ...JSON.parse(saved) };
+            }
+        }
+
+        // Save settings to localStorage
+        function saveSettingsToStorage() {
+            localStorage.setItem('elderlyCareSettings', JSON.stringify(settings));
+        }
+
+        // Start camera
+        async function startCamera() {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 640, height: 480 }
+                });
+                
+                const videoElement = document.getElementById('videoElement');
+                const placeholder = document.getElementById('cameraPlaceholder');
+                
+                videoElement.srcObject = videoStream;
+                videoElement.style.display = 'block';
+                placeholder.style.display = 'none';
+                
+                videoElement.play();
+                
+                // Start monitoring
+                startMonitoring();
+                updateStatus('safe', '攝影機已啟動');
+                addLogEntry('攝影機已啟動，開始監控');
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                updateStatus('danger', '攝影機啟動失敗');
+                addLogEntry('錯誤: 無法存取攝影機');
+            }
+        }
+
+        // Stop camera
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+            }
+            
+            const videoElement = document.getElementById('videoElement');
+            const placeholder = document.getElementById('cameraPlaceholder');
+            
+            videoElement.style.display = 'none';
+            placeholder.style.display = 'block';
+            
+            stopMonitoring();
+            updateStatus('warning', '監控已暫停');
+            addLogEntry('攝影機已關閉');
+        }
+
+        // Start monitoring
+        function startMonitoring() {
+            if (monitoringInterval) return;
+            
+            monitoringInterval = setInterval(() => {
+                capturePhoto();
+            }, settings.interval * 60 * 1000);
+        }
+
+        // Stop monitoring
+        function stopMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+            }
+        }
+
+        // Capture photo and send to n8n
+        async function capturePhoto() {
+            if (!videoStream || !settings.webhookUrl) {
+                if (!settings.webhookUrl) {
+                    addLogEntry('錯誤: 請先設定 Webhook URL');
+                }
+                return;
+            }
+
+            try {
+                const videoElement = document.getElementById('videoElement');
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                canvas.width = videoElement.videoWidth;
+                canvas.height = videoElement.videoHeight;
+                ctx.drawImage(videoElement, 0, 0);
+                
+                canvas.toBlob(async (blob) => {
+                    const formData = new FormData();
+                    formData.append('image', blob, 'capture.jpg');
+                    formData.append('timestamp', new Date().toISOString());
+                    formData.append('sensitivity', settings.sensitivity);
+                    
+                    try {
+                        const response = await fetch(settings.webhookUrl, {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        if (response.ok) {
+                            const result = await response.json();
+                            processAnalysisResult(result);
+                        } else {
+                            addLogEntry('錯誤: 分析請求失敗');
+                        }
+                    } catch (error) {
+                        console.error('Error sending image:', error);
+                        addLogEntry('錯誤: 無法連接到分析服務');
+                    }
+                }, 'image/jpeg', 0.8);
+                
+                addLogEntry('已發送照片進行分析');
+                
+            } catch (error) {
+                console.error('Error capturing photo:', error);
+                addLogEntry('錯誤: 照片擷取失敗');
+            }
+        }
+
+        // Process analysis result
+        function processAnalysisResult(result) {
+            const riskLevel = result.riskLevel || 0;
+            const description = result.description || '分析完成';
+            const recommendation = result.recommendation || '';
+            const imageUrl = result.imageUrl || '';
+            
+            updateRiskStatus(riskLevel, description);
+            
+            // Add detailed log entry
+            const logContent = `風險等級: ${riskLevel} - ${description}`;
+            const logActions = imageUrl ? 
+                `<div class="log-actions"><a href="${imageUrl}" target="_blank" class="log-link">查看照片</a></div>` : '';
+            
+            addLogEntry(logContent + logActions);
+            
+            // Update last check time
+            document.getElementById('lastCheck').textContent = 
+                `上次檢查: ${new Date().toLocaleTimeString('zh-TW')}`;
+            
+            // Handle high risk situations
+            if (riskLevel >= 4) {
+                emergencyAlert(description);
+            }
+        }
+
+        // Update risk status
+        function updateRiskStatus(level, description) {
+            const circle = document.getElementById('riskCircle');
+            const status = document.getElementById('riskStatus');
+            const desc = document.getElementById('riskDescription');
+            
+            circle.textContent = level;
+            circle.className = `risk-circle risk-${level}`;
+            
+            const statusTexts = {
+                0: '安全狀態',
+                1: '正常狀態', 
+                2: '輕微警戒',
+                3: '中等警戒',
+                4: '高度警戒',
+                5: '緊急狀況'
+            };
+            
+            status.textContent = statusTexts[level] || '未知狀態';
+            desc.textContent = description;
+            
+            const statusClass = level >= 4 ? 'danger' : level >= 2 ? 'warning' : 'safe';
+            updateStatus(statusClass, statusTexts[level]);
+        }
+
+        // Update main status
+        function updateStatus(type, text) {
+            const dot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            dot.className = `status-dot status-${type}`;
+            statusText.textContent = text;
+        }
+
+        // Add log entry
+        function addLogEntry(message, type = 'safe') {
+            const log = document.getElementById('activityLog');
+            const time = new Date().toLocaleTimeString('zh-TW', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            const logItem = document.createElement('div');
+            logItem.className = 'log-item';
+            logItem.innerHTML = `
+                <div class="log-time">${time}</div>
+                <div class="log-status status-${type}"></div>
+                <div class="log-content">${message}</div>
+            `;
+            
+            log.insertBefore(logItem, log.firstChild);
+            
+            // Keep only last 20 entries
+            while (log.children.length > 20) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        // Load history from Google Drive (模擬功能)
+        async function loadHistoryFromDrive() {
+            if (!settings.driveAnalysisFolderId) {
+                alert('請先在設定中輸入 Google Drive 分析資料夾 ID');
+                return;
+            }
+            
+            addLogEntry('開始載入雲端記錄...', 'warning');
+            
+            // 這裡需要實作 Google Drive API 或透過 n8n webhook
+            // 簡化版本：提示使用者手動查看
+            setTimeout(() => {
+                addLogEntry('雲端記錄載入完成（模擬）', 'safe');
+                
+                // 示範如何顯示歷史記錄
+                const exampleRecord = {
+                    timestamp: '2024-02-07T14:30:00Z',
+                    riskLevel: 2,
+                    status: '輕微警戒',
+                    description: '偵測到長者坐在椅子上，姿勢正常',
+                    imageUrl: 'https://drive.google.com/file/d/example/view'
+                };
+                
+                displayHistoryRecord(exampleRecord);
+            }, 2000);
+        }
+
+        // Display history record
+        function displayHistoryRecord(record) {
+            const log = document.getElementById('activityLog');
+            const time = new Date(record.timestamp).toLocaleTimeString('zh-TW', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            const date = new Date(record.timestamp).toLocaleDateString('zh-TW');
+            
+            const riskClass = record.riskLevel >= 4 ? 'danger' : 
+                             record.riskLevel >= 2 ? 'warning' : 'safe';
+            
+            const historyItem = document.createElement('div');
+            historyItem.className = `history-item ${riskClass}`;
+            historyItem.innerHTML = `
+                <div class="history-header">
+                    <span class="history-risk risk-${record.riskLevel}">${record.status}</span>
+                    <span class="log-time">${date} ${time}</span>
+                </div>
+                <div class="history-description">${record.description}</div>
+                ${record.imageUrl ? `<div class="log-actions"><a href="${record.imageUrl}" target="_blank" class="log-link">查看照片</a></div>` : ''}
+            `;
+            
+            // Insert after current session logs
+            const firstHistoryItem = log.querySelector('.history-item');
+            if (firstHistoryItem) {
+                log.insertBefore(historyItem, firstHistoryItem);
+            } else {
+                log.appendChild(historyItem);
+            }
+        }
+
+        // Open Drive folder
+        function openDriveFolder() {
+            if (settings.drivePhotoFolderId) {
+                window.open(`https://drive.google.com/drive/folders/${settings.drivePhotoFolderId}`, '_blank');
+            } else {
+                alert('請先在設定中輸入 Google Drive 資料夾 ID');
+            }
+        }
+
+        // Clear local log
+        function clearLocalLog() {
+            if (confirm('確定要清空本地記錄嗎？（雲端記錄不會被刪除）')) {
+                const log = document.getElementById('activityLog');
+                log.innerHTML = `
+                    <div class="log-item">
+                        <div class="log-time">--:--</div>
+                        <div class="log-status status-safe"></div>
+                        <div class="log-content">記錄已清空</div>
+                    </div>
+                `;
+            }
+        }
+
+        // View cloud history
+        function viewCloudHistory() {
+            if (settings.driveAnalysisFolderId) {
+                window.open(`https://drive.google.com/drive/folders/${settings.driveAnalysisFolderId}`, '_blank');
+            } else {
+                alert('請先在設定中輸入 Google Drive 分析資料夾 ID');
+            }
+        }
+
+        // Emergency alert
+        function emergencyAlert(description = '手動觸發緊急警報') {
+            if (confirm('確定要發送緊急警報給緊急聯絡人嗎？')) {
+                // Send emergency notification
+                if (settings.webhookUrl) {
+                    fetch(settings.webhookUrl.replace('/elderly-care', '/emergency'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            type: 'emergency',
+                            description: description,
+                            timestamp: new Date().toISOString()
+                        })
+                    });
+                }
+                
+                updateStatus('danger', '緊急警報已發送');
+                addLogEntry(`緊急警報: ${description}`, 'danger');
+            }
+        }
+
+        // Modal functions
+        function openSettings() {
+            document.getElementById('intervalInput').value = settings.interval;
+            document.getElementById('sensitivityInput').value = settings.sensitivity;
+            document.getElementById('webhookUrl').value = settings.webhookUrl;
+            document.getElementById('drivePhotoFolderId').value = settings.drivePhotoFolderId;
+            document.getElementById('driveAnalysisFolderId').value = settings.driveAnalysisFolderId;
+            document.getElementById('settingsModal').style.display = 'block';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function saveSettings() {
+            settings.interval = parseInt(document.getElementById('intervalInput').value);
+            settings.sensitivity = document.getElementById('sensitivityInput').value;
+            settings.webhookUrl = document.getElementById('webhookUrl').value;
+            settings.drivePhotoFolderId = document.getElementById('drivePhotoFolderId').value;
+            settings.driveAnalysisFolderId = document.getElementById('driveAnalysisFolderId').value;
+            
+            saveSettingsToStorage();
+            closeSettings();
+            
+            // Restart monitoring with new settings
+            if (monitoringInterval) {
+                stopMonitoring();
+                startMonitoring();
+            }
+            
+            addLogEntry('設定已更新');
+        }
+
+        function openContacts() {
+            alert('緊急聯絡人設定功能開發中...\n建議在 n8n 流程中直接設定 LINE 和 Email 通知');
+        }
+
+        // Initialize
+        loadSettings();
+        addLogEntry('系統已啟動');
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('settingsModal');
+            if (event.target === modal) {
+                closeSettings();
+            }
+        }
+    </script>
+</body>
+</html>
