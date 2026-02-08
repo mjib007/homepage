@@ -208,7 +208,7 @@
         
         .stats-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
@@ -542,7 +542,7 @@
                 <button class="btn" onclick="openSettings()">設定</button>
             </div>
             <div class="control-card">
-                <div class="control-icon">📧</div>
+                <div class="control-icon">📞</div>
                 <h3 class="control-title">緊急聯絡</h3>
                 <p>設定家人聯絡資訊</p>
                 <button class="btn" onclick="openContacts()">設定</button>
@@ -604,8 +604,9 @@
             interval: 10,
             sensitivity: 'medium',
             webhookUrl: 'https://mjib007.zeabur.app/webhook/elderly-care',
-            drivePhotoFolderId: '',
-            driveAnalysisFolderId: ''
+            searchWebhookUrl: 'https://mjib007.zeabur.app/webhook/search-care-records',
+            drivePhotoFolderId: '1d3z7gMGL5T-ldYwfiTVIfifW4rqIoAmL',
+            driveAnalysisFolderId: '1d3z7gMGL5T-ldYwfiTVIfifW4rqIoAmL'
         };
 
         // Load settings from localStorage
@@ -818,31 +819,68 @@
             }
         }
 
-        // Load history from Google Drive (模擬功能)
+        // Load history from Google Drive (真實功能)
         async function loadHistoryFromDrive() {
-            if (!settings.driveAnalysisFolderId) {
-                alert('請先在設定中輸入 Google Drive 分析資料夾 ID');
+            if (!settings.searchWebhookUrl) {
+                alert('請先在設定中輸入查詢 Webhook URL');
                 return;
             }
             
             addLogEntry('開始載入雲端記錄...', 'warning');
             
-            // 這裡需要實作 Google Drive API 或透過 n8n webhook
-            // 簡化版本：提示使用者手動查看
-            setTimeout(() => {
-                addLogEntry('雲端記錄載入完成（模擬）', 'safe');
+            try {
+                // 計算查詢範圍：最近 7 天
+                const dateTo = new Date();
+                const dateFrom = new Date();
+                dateFrom.setDate(dateFrom.getDate() - 7);
                 
-                // 示範如何顯示歷史記錄
-                const exampleRecord = {
-                    timestamp: '2024-02-07T14:30:00Z',
-                    riskLevel: 2,
-                    status: '輕微警戒',
-                    description: '偵測到長者坐在椅子上，姿勢正常',
-                    imageUrl: 'https://drive.google.com/file/d/example/view'
-                };
+                const response = await fetch(settings.searchWebhookUrl, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        date_from: dateFrom.toISOString().split('T')[0],
+                        date_to: dateTo.toISOString().split('T')[0],
+                        include_content: true,
+                        limit: 20
+                    })
+                });
                 
-                displayHistoryRecord(exampleRecord);
-            }, 2000);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.records && result.records.length > 0) {
+                    // 清空現有的歷史記錄區域（保留即時記錄）
+                    const log = document.getElementById('activityLog');
+                    const historyItems = log.querySelectorAll('.history-item');
+                    historyItems.forEach(item => item.remove());
+                    
+                    // 顯示每一筆雲端記錄
+                    result.records.forEach(record => {
+                        displayHistoryRecord({
+                            timestamp: record.timestamp,
+                            riskLevel: record.risk_level || 1,
+                            status: record.status || '雲端記錄',
+                            description: record.description || `記錄於 ${record.date} ${record.time}`,
+                            recommendation: record.recommendation || '',
+                            imageUrl: record.view_url,
+                            downloadUrl: record.download_url
+                        });
+                    });
+                    
+                    addLogEntry(`✅ 已載入 ${result.count} 筆雲端記錄（共 ${result.total} 筆符合條件）`, 'safe');
+                } else {
+                    addLogEntry('⚠️ 找不到符合條件的記錄', 'warning');
+                }
+            } catch (error) {
+                console.error('載入失敗:', error);
+                addLogEntry(`❌ 雲端記錄載入失敗: ${error.message}`, 'danger');
+            }
         }
 
         // Display history record
@@ -865,7 +903,11 @@
                     <span class="log-time">${date} ${time}</span>
                 </div>
                 <div class="history-description">${record.description}</div>
-                ${record.imageUrl ? `<div class="log-actions"><a href="${record.imageUrl}" target="_blank" class="log-link">查看照片</a></div>` : ''}
+                ${record.recommendation ? `<div class="history-description" style="color: var(--text-secondary); font-size: 12px; margin-top: 5px;">建議: ${record.recommendation}</div>` : ''}
+                <div class="log-actions">
+                    ${record.imageUrl ? `<a href="${record.imageUrl}" target="_blank" class="log-link">查看記錄</a>` : ''}
+                    ${record.downloadUrl ? `<a href="${record.downloadUrl}" target="_blank" class="log-link">下載JSON</a>` : ''}
+                </div>
             `;
             
             // Insert after current session logs
