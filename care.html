@@ -739,12 +739,25 @@
         function processAnalysisResult(result) {
             console.log('收到分析結果:', result);  // 調試用
             
+            // 處理可能的 rawResponse 格式
+            let data = result;
+            if (result.rawResponse) {
+                try {
+                    data = JSON.parse(result.rawResponse);
+                } catch (e) {
+                    console.error('無法解析 rawResponse:', e);
+                    data = result;
+                }
+            }
+            
             // 處理 riskLevel 可能是字串或數字的情況
-            const riskLevel = parseInt(result.riskLevel || result.risk_level || 0);
-            const description = result.description || '分析完成';
-            const recommendation = result.recommendation || '';
-            const status = result.status || '';
+            const riskLevel = parseInt(data.riskLevel || data.risk_level || result.riskLevel || 0);
+            const status = data.status || result.status || '';
+            const description = data.description || result.description || '分析完成';
+            const recommendation = data.recommendation || result.recommendation || '';
             const imageUrl = result.imageUrl || '';
+            
+            console.log('解析後的資料:', { riskLevel, status, description, recommendation });
             
             // 更新風險狀態顯示
             updateRiskStatus(riskLevel, description, status);
