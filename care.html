@@ -854,26 +854,41 @@
                 
                 const result = await response.json();
                 
-                if (result.success && result.records && result.records.length > 0) {
-                    // 清空現有的歷史記錄區域（保留即時記錄）
-                    const log = document.getElementById('activityLog');
-                    const historyItems = log.querySelectorAll('.history-item');
-                    historyItems.forEach(item => item.remove());
-                    
-                    // 顯示每一筆雲端記錄
-                    result.records.forEach(record => {
-                        displayHistoryRecord({
-                            timestamp: record.timestamp,
-                            riskLevel: record.risk_level || 1,
-                            status: record.status || '雲端記錄',
-                            description: record.description || `記錄於 ${record.date} ${record.time}`,
-                            recommendation: record.recommendation || '',
-                            imageUrl: record.view_url,
-                            downloadUrl: record.download_url
+                // 檢查回應格式
+                if (!result || typeof result !== 'object') {
+                    throw new Error('伺服器回應格式錯誤');
+                }
+                
+                if (result.success && result.records && Array.isArray(result.records)) {
+                    if (result.records.length > 0) {
+                        // 清空現有的歷史記錄區域（保留即時記錄）
+                        const log = document.getElementById('activityLog');
+                        const historyItems = log.querySelectorAll('.history-item');
+                        historyItems.forEach(item => item.remove());
+                        
+                        // 顯示每一筆雲端記錄
+                        result.records.forEach(record => {
+                            displayHistoryRecord({
+                                timestamp: record.timestamp,
+                                riskLevel: record.risk_level || 1,
+                                status: record.status || '雲端記錄',
+                                description: record.description || `記錄於 ${record.date} ${record.time}`,
+                                recommendation: record.recommendation || '',
+                                imageUrl: record.view_url,
+                                downloadUrl: record.download_url,
+                                type: record.type || 'unknown',
+                                thumbnail_url: record.thumbnail_url,
+                                image_url: record.image_url,
+                                view_url: record.view_url,
+                                risk_level: record.risk_level
+                            });
                         });
-                    });
-                    
-                    addLogEntry(`✅ 已載入 ${result.count} 筆雲端記錄（共 ${result.total} 筆符合條件）`, 'safe');
+                        
+                        addLogEntry(`✅ 已載入 ${result.count} 筆雲端記錄（分析: ${result.analysis_count || 0}, 圖片: ${result.image_count || 0}）`, 'safe');
+                    } else {
+                        // 沒有記錄
+                        addLogEntry('⚠️ 找不到符合條件的記錄（資料夾可能是空的）', 'warning');
+                    }
                 } else {
                     addLogEntry('⚠️ 找不到符合條件的記錄', 'warning');
                 }
