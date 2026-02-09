@@ -737,37 +737,64 @@
 
         // Process analysis result
         function processAnalysisResult(result) {
-            console.log('收到分析結果:', result);  // 調試用
+            console.log('=== 收到完整分析結果 ===');
+            console.log(JSON.stringify(result, null, 2));
             
-            // 處理可能的 rawResponse 格式
+            // 重要：n8n 可能回傳陣列格式 [{}] 而不是單一物件 {}
             let data = result;
-            if (result.rawResponse) {
+            if (Array.isArray(result) && result.length > 0) {
+                console.log('檢測到陣列格式，取第一個元素');
+                data = result[0];
+            }
+            
+            let riskLevel = 0;
+            let status = '';
+            let description = '分析完成';
+            let recommendation = '';
+            
+            // 策略 1: 嘗試從 rawResponse 解析
+            if (data.rawResponse) {
+                console.log('嘗試解析 rawResponse...');
                 try {
-                    data = JSON.parse(result.rawResponse);
+                    const parsed = JSON.parse(data.rawResponse);
+                    console.log('rawResponse 解析成功:', parsed);
+                    riskLevel = parseInt(parsed.riskLevel) || 0;
+                    status = parsed.status || '';
+                    description = parsed.description || '';
+                    recommendation = parsed.recommendation || '';
                 } catch (e) {
-                    console.error('無法解析 rawResponse:', e);
-                    data = result;
+                    console.error('rawResponse 解析失敗:', e);
                 }
             }
             
-            // 處理 riskLevel 可能是字串或數字的情況
-            const riskLevel = parseInt(data.riskLevel || data.risk_level || result.riskLevel || 0);
-            const status = data.status || result.status || '';
-            const description = data.description || result.description || '分析完成';
-            const recommendation = data.recommendation || result.recommendation || '';
-            const imageUrl = result.imageUrl || '';
+            // 策略 2: 如果 rawResponse 解析失敗或為空，直接從 data 取值
+            if (riskLevel === 0 && data.riskLevel) {
+                console.log('從 data 直接取值...');
+                riskLevel = parseInt(data.riskLevel) || 0;
+                status = data.status || '';
+                description = data.description || '';
+                // 注意：有可能是 "recommendation " (帶空格) 或 "recommendation"
+                recommendation = data.recommendation || data['recommendation '] || '';
+            }
             
-            console.log('解析後的資料:', { riskLevel, status, description, recommendation });
+            console.log('=== 最終使用的值 ===');
+            console.log('riskLevel:', riskLevel);
+            console.log('status:', status);
+            console.log('description:', description);
+            console.log('recommendation:', recommendation);
+            
+            // 如果還是沒有值，就用預設值
+            if (!status && !description) {
+                console.warn('⚠️ 警告：沒有獲得有效的分析結果');
+                description = '分析完成，但未獲得詳細資訊';
+            }
             
             // 更新風險狀態顯示
             updateRiskStatus(riskLevel, description, status);
             
             // Add detailed log entry
             const logContent = `風險等級: ${riskLevel} - ${status || description}`;
-            const logActions = imageUrl ? 
-                `<div class="log-actions"><a href="${imageUrl}" target="_blank" class="log-link">查看照片</a></div>` : '';
-            
-            addLogEntry(logContent + logActions);
+            addLogEntry(logContent);
             
             // 如果有建議，也顯示在 log 中
             if (recommendation) {
@@ -780,6 +807,7 @@
             
             // Handle high risk situations
             if (riskLevel >= 4) {
+                console.log('🚨 高風險警報！');
                 emergencyAlert(description);
             }
         }
