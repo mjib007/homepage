@@ -883,7 +883,7 @@
             }
         }
 
-        // Display history record
+        // Display history record (支援圖片和分析記錄)
         function displayHistoryRecord(record) {
             const log = document.getElementById('activityLog');
             const time = new Date(record.timestamp).toLocaleTimeString('zh-TW', { 
@@ -892,23 +892,70 @@
             });
             const date = new Date(record.timestamp).toLocaleDateString('zh-TW');
             
-            const riskClass = record.riskLevel >= 4 ? 'danger' : 
-                             record.riskLevel >= 2 ? 'warning' : 'safe';
-            
             const historyItem = document.createElement('div');
-            historyItem.className = `history-item ${riskClass}`;
-            historyItem.innerHTML = `
-                <div class="history-header">
-                    <span class="history-risk risk-${record.riskLevel}">${record.status}</span>
-                    <span class="log-time">${date} ${time}</span>
-                </div>
-                <div class="history-description">${record.description}</div>
-                ${record.recommendation ? `<div class="history-description" style="color: var(--text-secondary); font-size: 12px; margin-top: 5px;">建議: ${record.recommendation}</div>` : ''}
-                <div class="log-actions">
-                    ${record.imageUrl ? `<a href="${record.imageUrl}" target="_blank" class="log-link">查看記錄</a>` : ''}
-                    ${record.downloadUrl ? `<a href="${record.downloadUrl}" target="_blank" class="log-link">下載JSON</a>` : ''}
-                </div>
-            `;
+            
+            // 根據記錄類型設定樣式
+            if (record.type === 'image') {
+                // 圖片記錄
+                historyItem.className = 'history-item safe';
+                historyItem.innerHTML = `
+                    <div class="history-header">
+                        <span class="history-risk" style="background: #2196F3;">📷 監控照片</span>
+                        <span class="log-time">${date} ${time}</span>
+                    </div>
+                    <div class="history-description">
+                        <img src="${record.thumbnail_url}" 
+                             alt="${record.name}" 
+                             style="width: 100%; max-width: 400px; border-radius: 8px; margin-top: 10px; cursor: pointer;"
+                             onclick="window.open('${record.image_url}', '_blank')">
+                    </div>
+                    <div class="log-actions">
+                        <a href="${record.image_url}" target="_blank" class="log-link">查看原圖</a>
+                        <a href="${record.download_url}" target="_blank" class="log-link">下載</a>
+                    </div>
+                `;
+            } else if (record.type === 'analysis') {
+                // 分析記錄
+                const riskLevel = record.riskLevel || record.risk_level || 0;
+                const riskClass = riskLevel >= 4 ? 'danger' : 
+                                 riskLevel >= 2 ? 'warning' : 'safe';
+                
+                historyItem.className = `history-item ${riskClass}`;
+                historyItem.innerHTML = `
+                    <div class="history-header">
+                        <span class="history-risk risk-${riskLevel}">${record.status || '分析記錄'}</span>
+                        <span class="log-time">${date} ${time}</span>
+                    </div>
+                    <div class="history-description">
+                        <strong>風險等級: ${riskLevel}</strong><br>
+                        ${record.description || '無詳細描述'}
+                    </div>
+                    ${record.recommendation ? `<div class="history-description" style="color: var(--text-secondary); font-size: 12px; margin-top: 5px;">💡 建議: ${record.recommendation}</div>` : ''}
+                    <div class="log-actions">
+                        <a href="${record.view_url}" target="_blank" class="log-link">查看記錄</a>
+                        <a href="${record.download_url}" target="_blank" class="log-link">下載JSON</a>
+                    </div>
+                `;
+            } else {
+                // 其他類型（舊格式相容）
+                const riskLevel = record.riskLevel || 1;
+                const riskClass = riskLevel >= 4 ? 'danger' : 
+                                 riskLevel >= 2 ? 'warning' : 'safe';
+                
+                historyItem.className = `history-item ${riskClass}`;
+                historyItem.innerHTML = `
+                    <div class="history-header">
+                        <span class="history-risk risk-${riskLevel}">${record.status}</span>
+                        <span class="log-time">${date} ${time}</span>
+                    </div>
+                    <div class="history-description">${record.description}</div>
+                    ${record.recommendation ? `<div class="history-description" style="color: var(--text-secondary); font-size: 12px; margin-top: 5px;">建議: ${record.recommendation}</div>` : ''}
+                    <div class="log-actions">
+                        ${record.imageUrl ? `<a href="${record.imageUrl}" target="_blank" class="log-link">查看記錄</a>` : ''}
+                        ${record.downloadUrl ? `<a href="${record.downloadUrl}" target="_blank" class="log-link">下載JSON</a>` : ''}
+                    </div>
+                `;
+            }
             
             // Insert after current session logs
             const firstHistoryItem = log.querySelector('.history-item');
