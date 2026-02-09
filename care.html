@@ -737,69 +737,19 @@
 
         // Process analysis result
         function processAnalysisResult(result) {
-            console.log('=== 收到完整分析結果 ===');
-            console.log(JSON.stringify(result, null, 2));
+            const riskLevel = result.riskLevel || 0;
+            const description = result.description || '分析完成';
+            const recommendation = result.recommendation || '';
+            const imageUrl = result.imageUrl || '';
             
-            // 重要：n8n 可能回傳陣列格式 [{}] 而不是單一物件 {}
-            let data = result;
-            if (Array.isArray(result) && result.length > 0) {
-                console.log('檢測到陣列格式，取第一個元素');
-                data = result[0];
-            }
-            
-            let riskLevel = 0;
-            let status = '';
-            let description = '分析完成';
-            let recommendation = '';
-            
-            // 策略 1: 嘗試從 rawResponse 解析
-            if (data.rawResponse) {
-                console.log('嘗試解析 rawResponse...');
-                try {
-                    const parsed = JSON.parse(data.rawResponse);
-                    console.log('rawResponse 解析成功:', parsed);
-                    riskLevel = parseInt(parsed.riskLevel) || 0;
-                    status = parsed.status || '';
-                    description = parsed.description || '';
-                    recommendation = parsed.recommendation || '';
-                } catch (e) {
-                    console.error('rawResponse 解析失敗:', e);
-                }
-            }
-            
-            // 策略 2: 如果 rawResponse 解析失敗或為空，直接從 data 取值
-            if (riskLevel === 0 && data.riskLevel) {
-                console.log('從 data 直接取值...');
-                riskLevel = parseInt(data.riskLevel) || 0;
-                status = data.status || '';
-                description = data.description || '';
-                // 注意：有可能是 "recommendation " (帶空格) 或 "recommendation"
-                recommendation = data.recommendation || data['recommendation '] || '';
-            }
-            
-            console.log('=== 最終使用的值 ===');
-            console.log('riskLevel:', riskLevel);
-            console.log('status:', status);
-            console.log('description:', description);
-            console.log('recommendation:', recommendation);
-            
-            // 如果還是沒有值，就用預設值
-            if (!status && !description) {
-                console.warn('⚠️ 警告：沒有獲得有效的分析結果');
-                description = '分析完成，但未獲得詳細資訊';
-            }
-            
-            // 更新風險狀態顯示
-            updateRiskStatus(riskLevel, description, status);
+            updateRiskStatus(riskLevel, description);
             
             // Add detailed log entry
-            const logContent = `風險等級: ${riskLevel} - ${status || description}`;
-            addLogEntry(logContent);
+            const logContent = `風險等級: ${riskLevel} - ${description}`;
+            const logActions = imageUrl ? 
+                `<div class="log-actions"><a href="${imageUrl}" target="_blank" class="log-link">查看照片</a></div>` : '';
             
-            // 如果有建議，也顯示在 log 中
-            if (recommendation) {
-                addLogEntry(`💡 建議: ${recommendation}`, 'warning');
-            }
+            addLogEntry(logContent + logActions);
             
             // Update last check time
             document.getElementById('lastCheck').textContent = 
@@ -807,15 +757,14 @@
             
             // Handle high risk situations
             if (riskLevel >= 4) {
-                console.log('🚨 高風險警報！');
                 emergencyAlert(description);
             }
         }
 
         // Update risk status
-        function updateRiskStatus(level, description, status) {
+        function updateRiskStatus(level, description) {
             const circle = document.getElementById('riskCircle');
-            const statusElement = document.getElementById('riskStatus');
+            const status = document.getElementById('riskStatus');
             const desc = document.getElementById('riskDescription');
             
             circle.textContent = level;
@@ -830,8 +779,7 @@
                 5: '緊急狀況'
             };
             
-            // 優先使用 status，如果沒有就用預設文字
-            statusElement.textContent = status || statusTexts[level] || '未知狀態';
+            status.textContent = statusTexts[level] || '未知狀態';
             desc.textContent = description;
             
             const statusClass = level >= 4 ? 'danger' : level >= 2 ? 'warning' : 'safe';
@@ -906,41 +854,26 @@
                 
                 const result = await response.json();
                 
-                // 檢查回應格式
-                if (!result || typeof result !== 'object') {
-                    throw new Error('伺服器回應格式錯誤');
-                }
-                
-                if (result.success && result.records && Array.isArray(result.records)) {
-                    if (result.records.length > 0) {
-                        // 清空現有的歷史記錄區域（保留即時記錄）
-                        const log = document.getElementById('activityLog');
-                        const historyItems = log.querySelectorAll('.history-item');
-                        historyItems.forEach(item => item.remove());
-                        
-                        // 顯示每一筆雲端記錄
-                        result.records.forEach(record => {
-                            displayHistoryRecord({
-                                timestamp: record.timestamp,
-                                riskLevel: record.risk_level || 1,
-                                status: record.status || '雲端記錄',
-                                description: record.description || `記錄於 ${record.date} ${record.time}`,
-                                recommendation: record.recommendation || '',
-                                imageUrl: record.view_url,
-                                downloadUrl: record.download_url,
-                                type: record.type || 'unknown',
-                                thumbnail_url: record.thumbnail_url,
-                                image_url: record.image_url,
-                                view_url: record.view_url,
-                                risk_level: record.risk_level
-                            });
+                if (result.success && result.records && result.records.length > 0) {
+                    // 清空現有的歷史記錄區域（保留即時記錄）
+                    const log = document.getElementById('activityLog');
+                    const historyItems = log.querySelectorAll('.history-item');
+                    historyItems.forEach(item => item.remove());
+                    
+                    // 顯示每一筆雲端記錄
+                    result.records.forEach(record => {
+                        displayHistoryRecord({
+                            timestamp: record.timestamp,
+                            riskLevel: record.risk_level || 1,
+                            status: record.status || '雲端記錄',
+                            description: record.description || `記錄於 ${record.date} ${record.time}`,
+                            recommendation: record.recommendation || '',
+                            imageUrl: record.view_url,
+                            downloadUrl: record.download_url
                         });
-                        
-                        addLogEntry(`✅ 已載入 ${result.count} 筆雲端記錄（分析: ${result.analysis_count || 0}, 圖片: ${result.image_count || 0}）`, 'safe');
-                    } else {
-                        // 沒有記錄
-                        addLogEntry('⚠️ 找不到符合條件的記錄（資料夾可能是空的）', 'warning');
-                    }
+                    });
+                    
+                    addLogEntry(`✅ 已載入 ${result.count} 筆雲端記錄（共 ${result.total} 筆符合條件）`, 'safe');
                 } else {
                     addLogEntry('⚠️ 找不到符合條件的記錄', 'warning');
                 }
@@ -950,85 +883,32 @@
             }
         }
 
-        // Display history record (支援圖片和分析記錄)
+        // Display history record
         function displayHistoryRecord(record) {
             const log = document.getElementById('activityLog');
-            
-            // 使用台灣時區格式化時間
-            const dateObj = new Date(record.timestamp);
-            const time = dateObj.toLocaleTimeString('zh-TW', { 
-                timeZone: 'Asia/Taipei',
+            const time = new Date(record.timestamp).toLocaleTimeString('zh-TW', { 
                 hour: '2-digit', 
-                minute: '2-digit'
+                minute: '2-digit' 
             });
-            const date = dateObj.toLocaleDateString('zh-TW', { 
-                timeZone: 'Asia/Taipei'
-            });
+            const date = new Date(record.timestamp).toLocaleDateString('zh-TW');
+            
+            const riskClass = record.riskLevel >= 4 ? 'danger' : 
+                             record.riskLevel >= 2 ? 'warning' : 'safe';
             
             const historyItem = document.createElement('div');
-            
-            // 根據記錄類型設定樣式
-            if (record.type === 'image') {
-                // 圖片記錄
-                historyItem.className = 'history-item safe';
-                historyItem.innerHTML = `
-                    <div class="history-header">
-                        <span class="history-risk" style="background: #2196F3;">📷 監控照片</span>
-                        <span class="log-time">${date} ${time}</span>
-                    </div>
-                    <div class="history-description">
-                        <img src="${record.thumbnail_url}" 
-                             alt="${record.name}" 
-                             style="width: 100%; max-width: 400px; border-radius: 8px; margin-top: 10px; cursor: pointer;"
-                             onclick="window.open('${record.image_url}', '_blank')">
-                    </div>
-                    <div class="log-actions">
-                        <a href="${record.image_url}" target="_blank" class="log-link">查看原圖</a>
-                        <a href="${record.download_url}" target="_blank" class="log-link">下載</a>
-                    </div>
-                `;
-            } else if (record.type === 'analysis') {
-                // 分析記錄
-                const riskLevel = record.riskLevel || record.risk_level || 0;
-                const riskClass = riskLevel >= 4 ? 'danger' : 
-                                 riskLevel >= 2 ? 'warning' : 'safe';
-                
-                historyItem.className = `history-item ${riskClass}`;
-                historyItem.innerHTML = `
-                    <div class="history-header">
-                        <span class="history-risk risk-${riskLevel}">${record.status || '分析記錄'}</span>
-                        <span class="log-time">${date} ${time}</span>
-                    </div>
-                    <div class="history-description">
-                        <strong>風險等級: ${riskLevel}</strong><br>
-                        ${record.description || '無詳細描述'}
-                    </div>
-                    ${record.recommendation ? `<div class="history-description" style="color: var(--text-secondary); font-size: 12px; margin-top: 5px;">💡 建議: ${record.recommendation}</div>` : ''}
-                    <div class="log-actions">
-                        <a href="${record.view_url}" target="_blank" class="log-link">查看記錄</a>
-                        <a href="${record.download_url}" target="_blank" class="log-link">下載JSON</a>
-                    </div>
-                `;
-            } else {
-                // 其他類型（舊格式相容）
-                const riskLevel = record.riskLevel || 1;
-                const riskClass = riskLevel >= 4 ? 'danger' : 
-                                 riskLevel >= 2 ? 'warning' : 'safe';
-                
-                historyItem.className = `history-item ${riskClass}`;
-                historyItem.innerHTML = `
-                    <div class="history-header">
-                        <span class="history-risk risk-${riskLevel}">${record.status}</span>
-                        <span class="log-time">${date} ${time}</span>
-                    </div>
-                    <div class="history-description">${record.description}</div>
-                    ${record.recommendation ? `<div class="history-description" style="color: var(--text-secondary); font-size: 12px; margin-top: 5px;">建議: ${record.recommendation}</div>` : ''}
-                    <div class="log-actions">
-                        ${record.imageUrl ? `<a href="${record.imageUrl}" target="_blank" class="log-link">查看記錄</a>` : ''}
-                        ${record.downloadUrl ? `<a href="${record.downloadUrl}" target="_blank" class="log-link">下載JSON</a>` : ''}
-                    </div>
-                `;
-            }
+            historyItem.className = `history-item ${riskClass}`;
+            historyItem.innerHTML = `
+                <div class="history-header">
+                    <span class="history-risk risk-${record.riskLevel}">${record.status}</span>
+                    <span class="log-time">${date} ${time}</span>
+                </div>
+                <div class="history-description">${record.description}</div>
+                ${record.recommendation ? `<div class="history-description" style="color: var(--text-secondary); font-size: 12px; margin-top: 5px;">建議: ${record.recommendation}</div>` : ''}
+                <div class="log-actions">
+                    ${record.imageUrl ? `<a href="${record.imageUrl}" target="_blank" class="log-link">查看記錄</a>` : ''}
+                    ${record.downloadUrl ? `<a href="${record.downloadUrl}" target="_blank" class="log-link">下載JSON</a>` : ''}
+                </div>
+            `;
             
             // Insert after current session logs
             const firstHistoryItem = log.querySelector('.history-item');
