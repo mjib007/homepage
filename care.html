@@ -886,11 +886,17 @@
         // Display history record (支援圖片和分析記錄)
         function displayHistoryRecord(record) {
             const log = document.getElementById('activityLog');
-            const time = new Date(record.timestamp).toLocaleTimeString('zh-TW', { 
+            
+            // 使用台灣時區格式化時間
+            const dateObj = new Date(record.timestamp);
+            const time = dateObj.toLocaleTimeString('zh-TW', { 
+                timeZone: 'Asia/Taipei',
                 hour: '2-digit', 
-                minute: '2-digit' 
+                minute: '2-digit'
             });
-            const date = new Date(record.timestamp).toLocaleDateString('zh-TW');
+            const date = dateObj.toLocaleDateString('zh-TW', { 
+                timeZone: 'Asia/Taipei'
+            });
             
             const historyItem = document.createElement('div');
             
