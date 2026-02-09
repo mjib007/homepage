@@ -737,19 +737,29 @@
 
         // Process analysis result
         function processAnalysisResult(result) {
-            const riskLevel = result.riskLevel || 0;
+            console.log('收到分析結果:', result);  // 調試用
+            
+            // 處理 riskLevel 可能是字串或數字的情況
+            const riskLevel = parseInt(result.riskLevel || result.risk_level || 0);
             const description = result.description || '分析完成';
             const recommendation = result.recommendation || '';
+            const status = result.status || '';
             const imageUrl = result.imageUrl || '';
             
-            updateRiskStatus(riskLevel, description);
+            // 更新風險狀態顯示
+            updateRiskStatus(riskLevel, description, status);
             
             // Add detailed log entry
-            const logContent = `風險等級: ${riskLevel} - ${description}`;
+            const logContent = `風險等級: ${riskLevel} - ${status || description}`;
             const logActions = imageUrl ? 
                 `<div class="log-actions"><a href="${imageUrl}" target="_blank" class="log-link">查看照片</a></div>` : '';
             
             addLogEntry(logContent + logActions);
+            
+            // 如果有建議，也顯示在 log 中
+            if (recommendation) {
+                addLogEntry(`💡 建議: ${recommendation}`, 'warning');
+            }
             
             // Update last check time
             document.getElementById('lastCheck').textContent = 
@@ -762,9 +772,9 @@
         }
 
         // Update risk status
-        function updateRiskStatus(level, description) {
+        function updateRiskStatus(level, description, status) {
             const circle = document.getElementById('riskCircle');
-            const status = document.getElementById('riskStatus');
+            const statusElement = document.getElementById('riskStatus');
             const desc = document.getElementById('riskDescription');
             
             circle.textContent = level;
@@ -779,7 +789,8 @@
                 5: '緊急狀況'
             };
             
-            status.textContent = statusTexts[level] || '未知狀態';
+            // 優先使用 status，如果沒有就用預設文字
+            statusElement.textContent = status || statusTexts[level] || '未知狀態';
             desc.textContent = description;
             
             const statusClass = level >= 4 ? 'danger' : level >= 2 ? 'warning' : 'safe';
