@@ -99,6 +99,55 @@ body::after{content:'';position:fixed;inset:0;opacity:0.02;background-image:url(
 .ema-card-wrapper{display:flex;flex-direction:column;align-items:center}
 .ema-string{width:2px;height:18px;background:linear-gradient(180deg,var(--rope),var(--wood));margin-bottom:-2px}
 .ema-card{position:relative;width:200px;min-height:148px;padding:22px 14px 14px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(145deg,#E8C96E 0%,#D4B456 20%,#E8C96E 40%,#C8A24A 60%,#DEB668 80%,#D4B456 100%);border-radius:4px;box-shadow:0 4px 12px rgba(92,74,30,0.2),inset 0 1px 0 rgba(255,255,255,0.15);clip-path:polygon(0% 12%,50% 0%,100% 12%,100% 100%,0% 100%);animation:fadeHang 0.6s ease-out both;transition:transform 0.3s}
+/* ===== 多主題繪馬色 ===== */
+
+.ema-theme-gold{
+  background:linear-gradient(145deg,#E8C96E,#D4B456,#C8A24A);
+}
+
+.ema-theme-red{
+  background:linear-gradient(145deg,#E58C86,#D1443A,#A8302A);
+  color:#fff;
+}
+
+.ema-theme-green{
+  background:linear-gradient(145deg,#A8C69F,#7E9C75,#5A7053);
+  color:#fff;
+}
+
+.ema-theme-blue{
+  background:linear-gradient(145deg,#93B5CF,#5B8AAD,#3E5E78);
+  color:#fff;
+}
+
+.ema-theme-purple{
+  background:linear-gradient(145deg,#B296C7,#8A6DA3,#654E7A);
+  color:#fff;
+}
+
+.ema-theme-pink{
+  background:linear-gradient(145deg,#F8C3CD,#E87A90,#D05A6E);
+  color:#fff;
+}
+
+/* 深色背景文字優化 */
+.ema-theme-red .ema-message,
+.ema-theme-green .ema-message,
+.ema-theme-blue .ema-message,
+.ema-theme-purple .ema-message,
+.ema-theme-pink .ema-message{
+  color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,0.35);
+}
+
+.ema-theme-red .ema-author,
+.ema-theme-green .ema-author,
+.ema-theme-blue .ema-author,
+.ema-theme-purple .ema-author,
+.ema-theme-pink .ema-author{
+  color:rgba(255,255,255,0.85);
+}
+
 .ema-card:hover{transform:rotate(-1deg) translateY(-2px)}
 .ema-card::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(95deg,transparent,transparent 6px,rgba(139,105,20,0.05) 6px,rgba(139,105,20,0.05) 7px);pointer-events:none;clip-path:polygon(0% 12%,50% 0%,100% 12%,100% 100%,0% 100%)}
 .ema-card::after{content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);width:7px;height:7px;background:var(--cream);border-radius:50%;border:1.5px solid var(--wood-dark);box-shadow:inset 0 1px 2px rgba(0,0,0,0.15)}
@@ -367,13 +416,46 @@ async function loadBlessings(){
     loading.classList.add('hidden');
     if(!data.blessings||data.blessings.length===0){empty.classList.remove('hidden');grid.innerHTML='';myBlessing=null;updateFormState();return}
     grid.innerHTML='';myBlessing=null;
-    data.blessings.forEach((b,i)=>{
-      const isOwn=b.googleId===currentUser.googleId;
-      if(isOwn)myBlessing=b;
-      const w=document.createElement('div');w.className='ema-card-wrapper';
-      w.innerHTML=`<div class="ema-string"></div><div class="ema-card" style="animation-delay:${i*0.08}s"><div class="ema-message">${escapeHtml(b.message)}</div><div class="ema-author">— ${escapeHtml(b.displayName)}</div>${isOwn?'<div class="ema-own-badge">✦ 我的繪馬</div>':''}</div>`;
-      grid.appendChild(w);
-    });
+const themes=[
+  'ema-theme-gold',
+  'ema-theme-red',
+  'ema-theme-green',
+  'ema-theme-blue',
+  'ema-theme-purple',
+  'ema-theme-pink'
+];
+
+function hashCode(str){
+  let hash=0;
+  for(let i=0;i<str.length;i++){
+    hash=str.charCodeAt(i)+((hash<<5)-hash);
+  }
+  return Math.abs(hash);
+}
+
+data.blessings.forEach((b,i)=>{
+
+  const isOwn=b.googleId===currentUser.googleId;
+  if(isOwn)myBlessing=b;
+
+  const themeIndex=hashCode(b.googleId)%themes.length;
+  const themeClass=themes[themeIndex];
+
+  const w=document.createElement('div');
+  w.className='ema-card-wrapper';
+
+  w.innerHTML=`
+    <div class="ema-string"></div>
+    <div class="ema-card ${themeClass}" style="animation-delay:${i*0.08}s">
+      <div class="ema-message">${escapeHtml(b.message)}</div>
+      <div class="ema-author">— ${escapeHtml(b.displayName)}</div>
+      ${isOwn?'<div class="ema-own-badge" style="color:inherit;">✦ 我的繪馬</div>':''}
+    </div>
+  `;
+
+  grid.appendChild(w);
+});
+
     wall.classList.remove('hidden');updateFormState();
   }catch(e){loading.classList.add('hidden');showToast('載入祈福牆失敗，請稍後再試');console.error(e)}
 }
