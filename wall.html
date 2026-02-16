@@ -808,7 +808,7 @@
         class="ema-textarea"
         maxlength="30"
         placeholder="在此寫下心願..."
-        oninput="updateCharCount()"
+        oninput="handleInput()"
       ></textarea>
       <div id="char-count" class="char-count">0 / 30</div>
       <button id="submit-btn" class="ema-submit-btn" onclick="handleSubmit()">
@@ -1062,6 +1062,13 @@ function updateFormState() {
     label.textContent = '寫下您的新年祝福';
     actions.classList.add('hidden');
   }
+  updateCharCount();
+}
+
+function handleInput() {
+  const input = document.getElementById('blessing-input');
+  // 過濾換行符，祝福語只允許單行
+  input.value = input.value.replace(/[\r\n]/g, '');
   updateCharCount();
 }
 
