@@ -2,750 +2,179 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>新年祈福牆 🎍</title>
-
-<!-- Google Sign-In -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Zen+Maru+Gothic:wght@400;500;700&family=Shippori+Mincho:wght@400;600;800&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --vermillion: #D1443A;
-    --vermillion-dark: #A8302A;
-    --gold: #C8A951;
-    --gold-light: #E8D48B;
-    --gold-pale: #F5ECD0;
-    --wood: #8B6914;
-    --wood-dark: #5C4A1E;
-    --wood-light: #C49A3C;
-    --cream: #FDF8EF;
-    --ink: #2C1810;
-    --ink-light: #5A3D2B;
-    --rope: #D4A843;
-    --shrine-red: #BC2B2B;
-    --paper: #FBF5E8;
-    --shadow: rgba(44, 24, 16, 0.15);
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'Noto Serif TC', 'Shippori Mincho', serif;
-    background: var(--cream);
-    color: var(--ink);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ===== Background Pattern ===== */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(circle at 20% 50%, rgba(209,68,58,0.03) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(200,169,81,0.05) 0%, transparent 50%),
-      radial-gradient(circle at 50% 80%, rgba(188,43,43,0.02) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Subtle Asanoha pattern overlay */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    opacity: 0.025;
-    background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 0L80 40L40 80L0 40Z' fill='none' stroke='%23BC2B2B' stroke-width='0.5'/%3E%3Cpath d='M40 0L40 80M0 40L80 40' fill='none' stroke='%23BC2B2B' stroke-width='0.3'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* ===== Torii Gate Header ===== */
-  .torii-header {
-    position: relative;
-    text-align: center;
-    padding: 40px 20px 30px;
-    z-index: 1;
-  }
-
-  .torii-gate {
-    display: inline-block;
-    position: relative;
-    padding: 0 60px;
-  }
-
-  /* Torii top beam (kasagi) */
-  .torii-gate::before {
-    content: '';
-    position: absolute;
-    top: -8px;
-    left: -20px;
-    right: -20px;
-    height: 12px;
-    background: var(--vermillion);
-    border-radius: 2px;
-    box-shadow: 0 2px 8px rgba(209,68,58,0.3);
-  }
-
-  /* Torii secondary beam (nuki) */
-  .torii-gate::after {
-    content: '';
-    position: absolute;
-    top: 22px;
-    left: 10px;
-    right: 10px;
-    height: 6px;
-    background: var(--vermillion);
-    border-radius: 1px;
-  }
-
-  .torii-pillars {
-    position: absolute;
-    top: -12px;
-    bottom: -10px;
-    width: 10px;
-    background: var(--vermillion);
-    border-radius: 1px;
-  }
-  .torii-pillars.left { left: 12px; }
-  .torii-pillars.right { right: 12px; }
-
-  .header-title {
-    font-family: 'Noto Serif TC', serif;
-    font-size: clamp(1.8rem, 5vw, 2.8rem);
-    font-weight: 900;
-    color: var(--ink);
-    letter-spacing: 0.15em;
-    padding-top: 38px;
-    position: relative;
-    z-index: 1;
-  }
-
-  .header-subtitle {
-    font-family: 'Zen Maru Gothic', sans-serif;
-    font-size: clamp(0.8rem, 2vw, 1rem);
-    color: var(--ink-light);
-    margin-top: 8px;
-    letter-spacing: 0.08em;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* ===== Shimenawa rope decoration ===== */
-  .shimenawa {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 10px auto 0;
-    max-width: 400px;
-    gap: 12px;
-    position: relative;
-    z-index: 1;
-  }
-
-  .shimenawa-line {
-    flex: 1;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--rope), transparent);
-    border-radius: 2px;
-  }
-
-  .shimenawa-tassel {
-    font-size: 1.2rem;
-    animation: sway 3s ease-in-out infinite;
-  }
-
-  @keyframes sway {
-    0%, 100% { transform: rotate(-3deg); }
-    50% { transform: rotate(3deg); }
-  }
-
-  /* ===== Login Section ===== */
-  .login-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
-    position: relative;
-    z-index: 1;
-  }
-
-  .login-card {
-    background: var(--paper);
-    border: 1px solid var(--gold-light);
-    border-radius: 4px;
-    padding: 48px 40px;
-    text-align: center;
-    max-width: 400px;
-    width: 100%;
-    box-shadow:
-      0 4px 20px var(--shadow),
-      inset 0 0 60px rgba(200,169,81,0.05);
-    position: relative;
-  }
-
-  .login-card::before {
-    content: '⛩️';
-    font-size: 2.5rem;
-    display: block;
-    margin-bottom: 16px;
-  }
-
-  .login-card h2 {
-    font-family: 'Noto Serif TC', serif;
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-bottom: 8px;
-    color: var(--ink);
-  }
-
-  .login-card p {
-    font-family: 'Zen Maru Gothic', sans-serif;
-    font-size: 0.9rem;
-    color: var(--ink-light);
-    margin-bottom: 28px;
-    line-height: 1.6;
-  }
-
-  .google-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 28px;
-    background: white;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    font-family: 'Zen Maru Gothic', sans-serif;
-    font-size: 1rem;
-    font-weight: 500;
-    color: #333;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-  }
-
-  .google-btn:hover {
-    border-color: var(--gold);
-    box-shadow: 0 2px 8px rgba(200,169,81,0.2);
-    transform: translateY(-1px);
-  }
-
-  .google-btn svg { width: 20px; height: 20px; }
-
-  /* ===== User Bar ===== */
-  .user-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    padding: 12px 20px;
-    background: rgba(251,245,232,0.9);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--gold-light);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .user-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: 'Zen Maru Gothic', sans-serif;
-    font-size: 0.85rem;
-    color: var(--ink-light);
-  }
-
-  .user-avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 2px solid var(--gold-light);
-  }
-
-  .btn-sm {
-    padding: 6px 16px;
-    border: 1px solid var(--gold);
-    background: transparent;
-    color: var(--ink-light);
-    font-family: 'Zen Maru Gothic', sans-serif;
-    font-size: 0.8rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn-sm:hover {
-    background: var(--gold);
-    color: white;
-  }
-
-  .btn-sm.danger {
-    border-color: var(--vermillion);
-    color: var(--vermillion);
-  }
-
-  .btn-sm.danger:hover {
-    background: var(--vermillion);
-    color: white;
-  }
-
-  /* ===== Ema Writing Form ===== */
-  .ema-form-section {
-    display: flex;
-    justify-content: center;
-    padding: 30px 20px 20px;
-    position: relative;
-    z-index: 1;
-  }
-
-  .ema-form-card {
-    position: relative;
-    width: 340px;
-    min-height: 200px;
-    padding: 28px 24px 20px;
-    text-align: center;
-    /* Wood texture gradient for ema board */
-    background:
-      linear-gradient(135deg,
-        #DEB668 0%, #C8A24A 15%, #DEB668 30%,
-        #B8922A 50%, #D4AC5A 70%, #C8A24A 85%, #DEB668 100%);
-    border-radius: 6px 6px 6px 6px;
-    box-shadow:
-      0 6px 20px rgba(92, 74, 30, 0.25),
-      inset 0 1px 0 rgba(255,255,255,0.2),
-      inset 0 -2px 4px rgba(92, 74, 30, 0.15);
-    /* Pentagon-ish ema shape with clip-path */
-    clip-path: polygon(0% 15%, 50% 0%, 100% 15%, 100% 100%, 0% 100%);
-  }
-
-  .ema-form-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 8px,
-        rgba(139, 105, 20, 0.06) 8px,
-        rgba(139, 105, 20, 0.06) 9px
-      );
-    pointer-events: none;
-    clip-path: polygon(0% 15%, 50% 0%, 100% 15%, 100% 100%, 0% 100%);
-  }
-
-  /* Rope hole at top */
-  .ema-form-card::after {
-    content: '';
-    position: absolute;
-    top: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 10px;
-    height: 10px;
-    background: var(--cream);
-    border-radius: 50%;
-    border: 2px solid var(--wood-dark);
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
-  }
-
-  .ema-form-label {
-    font-family: 'Noto Serif TC', serif;
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: var(--wood-dark);
-    margin-top: 16px;
-    margin-bottom: 12px;
-    text-shadow: 0 1px 0 rgba(255,255,255,0.3);
-  }
-
-  .ema-textarea {
-    width: 100%;
-    height: 70px;
-    padding: 10px 12px;
-    border: none;
-    border-radius: 4px;
-    background: rgba(255,255,255,0.45);
-    font-family: 'Noto Serif TC', serif;
-    font-size: 1.05rem;
-    color: var(--ink);
-    text-align: center;
-    resize: none;
-    line-height: 1.6;
-    outline: none;
-    transition: background 0.3s;
-  }
-
-  .ema-textarea::placeholder {
-    color: rgba(92,74,30,0.4);
-    font-size: 0.9rem;
-  }
-
-  .ema-textarea:focus {
-    background: rgba(255,255,255,0.6);
-  }
-
-  .char-count {
-    font-family: 'Zen Maru Gothic', sans-serif;
-    font-size: 0.75rem;
-    color: var(--wood-dark);
-    margin-top: 6px;
-    opacity: 0.7;
-  }
-
-  .char-count.warn { color: var(--vermillion); opacity: 1; }
-
-  .ema-submit-btn {
-    margin-top: 10px;
-    padding: 8px 32px;
-    background: var(--vermillion);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-family: 'Noto Serif TC', serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: 0.1em;
-    transition: all 0.2s;
-    box-shadow: 0 2px 6px rgba(209,68,58,0.3);
-  }
-
-  .ema-submit-btn:hover {
-    background: var(--vermillion-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(209,68,58,0.35);
-  }
-
-  .ema-submit-btn:disabled {
-    background: #aaa;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
-  }
-
-  /* ===== Blessing Wall ===== */
-  .wall-section {
-    padding: 10px 20px 60px;
-    max-width: 1100px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
-  }
-
-  .wall-title {
-    text-align: center;
-    font-family: 'Noto Serif TC', serif;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--ink-light);
-    margin-bottom: 24px;
-    letter-spacing: 0.1em;
-  }
-
-  .wall-title span {
-    display: inline-block;
-    padding: 0 20px;
-    position: relative;
-  }
-
-  .wall-title span::before,
-  .wall-title span::after {
-    content: '✦';
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--gold);
-    font-size: 0.7rem;
-  }
-
-  .wall-title span::before { left: 0; }
-  .wall-title span::after { right: 0; }
-
-  /* Horizontal rope for hanging emas */
-  .ema-rope {
-    position: relative;
-    padding-top: 20px;
-    margin-bottom: 40px;
-  }
-
-  .ema-rope::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 6px;
-    background: linear-gradient(180deg, var(--rope), #B8922A);
-    border-radius: 3px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-
-  .ema-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
-    justify-content: center;
-    padding-top: 10px;
-  }
-
-  /* ===== Individual Ema Card ===== */
-  .ema-card {
-    position: relative;
-    width: 220px;
-    min-height: 160px;
-    padding: 24px 16px 16px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    /* Wood ema board */
-    background:
-      linear-gradient(145deg,
-        #E8C96E 0%, #D4B456 20%, #E8C96E 40%,
-        #C8A24A 60%, #DEB668 80%, #D4B456 100%);
-    border-radius: 4px;
-    box-shadow:
-      0 4px 12px rgba(92, 74, 30, 0.2),
-      inset 0 1px 0 rgba(255,255,255,0.15);
-    clip-path: polygon(0% 12%, 50% 0%, 100% 12%, 100% 100%, 0% 100%);
-    animation: fadeHang 0.6s ease-out both;
-    transition: transform 0.3s;
-  }
-
-  .ema-card:hover {
-    transform: rotate(-1deg) translateY(-2px);
-  }
-
-  /* Wood grain texture */
-  .ema-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      repeating-linear-gradient(
-        95deg,
-        transparent,
-        transparent 6px,
-        rgba(139, 105, 20, 0.05) 6px,
-        rgba(139, 105, 20, 0.05) 7px
-      );
-    pointer-events: none;
-    clip-path: polygon(0% 12%, 50% 0%, 100% 12%, 100% 100%, 0% 100%);
-  }
-
-  /* Rope hole */
-  .ema-card::after {
-    content: '';
-    position: absolute;
-    top: 14px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 8px;
-    height: 8px;
-    background: var(--cream);
-    border-radius: 50%;
-    border: 1.5px solid var(--wood-dark);
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.15);
-  }
-
-  /* Hanging string from rope */
-  .ema-card-wrapper {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .ema-string {
-    width: 2px;
-    height: 20px;
-    background: linear-gradient(180deg, var(--rope), var(--wood));
-    margin-bottom: -2px;
-  }
-
-  .ema-message {
-    font-family: 'Noto Serif TC', serif;
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--ink);
-    line-height: 1.6;
-    margin-top: 6px;
-    word-break: break-word;
-    text-shadow: 0 0.5px 0 rgba(255,255,255,0.2);
-  }
-
-  .ema-author {
-    font-family: 'Zen Maru Gothic', sans-serif;
-    font-size: 0.7rem;
-    color: var(--wood-dark);
-    margin-top: 10px;
-    opacity: 0.7;
-  }
-
-  .ema-own-badge {
-    position: absolute;
-    bottom: 6px;
-    right: 8px;
-    font-size: 0.55rem;
-    color: var(--vermillion);
-    font-family: 'Zen Maru Gothic', sans-serif;
-    opacity: 0.8;
-  }
-
-  @keyframes fadeHang {
-    from {
-      opacity: 0;
-      transform: translateY(-20px) rotate(2deg);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) rotate(0deg);
-    }
-  }
-
-  /* Stagger animation */
-  .ema-card-wrapper:nth-child(1) .ema-card { animation-delay: 0.05s; }
-  .ema-card-wrapper:nth-child(2) .ema-card { animation-delay: 0.1s; }
-  .ema-card-wrapper:nth-child(3) .ema-card { animation-delay: 0.15s; }
-  .ema-card-wrapper:nth-child(4) .ema-card { animation-delay: 0.2s; }
-  .ema-card-wrapper:nth-child(5) .ema-card { animation-delay: 0.25s; }
-  .ema-card-wrapper:nth-child(6) .ema-card { animation-delay: 0.3s; }
-  .ema-card-wrapper:nth-child(7) .ema-card { animation-delay: 0.35s; }
-  .ema-card-wrapper:nth-child(8) .ema-card { animation-delay: 0.4s; }
-  .ema-card-wrapper:nth-child(9) .ema-card { animation-delay: 0.45s; }
-  .ema-card-wrapper:nth-child(10) .ema-card { animation-delay: 0.5s; }
-
-  /* ===== Empty State ===== */
-  .empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    font-family: 'Zen Maru Gothic', sans-serif;
-    color: var(--ink-light);
-    opacity: 0.6;
-  }
-
-  .empty-state .empty-icon {
-    font-size: 2.5rem;
-    margin-bottom: 12px;
-  }
-
-  /* ===== Toast / Notification ===== */
-  .toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    padding: 12px 28px;
-    background: var(--ink);
-    color: var(--cream);
-    font-family: 'Zen Maru Gothic', sans-serif;
-    font-size: 0.9rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-    z-index: 1000;
-    opacity: 0;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    pointer-events: none;
-  }
-
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  /* ===== Loading spinner ===== */
-  .loading {
-    text-align: center;
-    padding: 40px;
-    z-index: 1;
-    position: relative;
-  }
-
-  .spinner {
-    display: inline-block;
-    width: 32px;
-    height: 32px;
-    border: 3px solid var(--gold-light);
-    border-top-color: var(--vermillion);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ===== Footer ===== */
-  .footer {
-    text-align: center;
-    padding: 20px;
-    font-family: 'Zen Maru Gothic', sans-serif;
-    font-size: 0.7rem;
-    color: var(--ink-light);
-    opacity: 0.4;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* ===== Falling petals (sakura) ===== */
-  .petal {
-    position: fixed;
-    top: -20px;
-    width: 12px;
-    height: 12px;
-    background: radial-gradient(ellipse at center, #FFB7C5 0%, #FF9CAD 60%, transparent 70%);
-    border-radius: 50% 0 50% 50%;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 0;
-    animation: fall linear infinite;
-  }
-
-  @keyframes fall {
-    0% {
-      opacity: 0;
-      transform: translateX(0) rotate(0deg);
-    }
-    10% { opacity: 0.6; }
-    90% { opacity: 0.4; }
-    100% {
-      opacity: 0;
-      transform: translateX(80px) rotate(360deg);
-      top: 100vh;
-    }
-  }
-
-  /* ===== Responsive ===== */
-  @media (max-width: 600px) {
-    .ema-form-card { width: 280px; }
-    .ema-card { width: 180px; min-height: 140px; }
-    .ema-grid { gap: 16px; }
-    .user-bar { gap: 10px; flex-wrap: wrap; }
-    .torii-gate { padding: 0 40px; }
-  }
-
-  /* ===== Hidden utility ===== */
-  .hidden { display: none !important; }
+:root{--vermillion:#D1443A;--vermillion-dark:#A8302A;--gold:#C8A951;--gold-light:#E8D48B;--wood:#8B6914;--wood-dark:#5C4A1E;--cream:#FDF8EF;--ink:#2C1810;--ink-light:#5A3D2B;--rope:#D4A843;--paper:#FBF5E8;--shadow:rgba(44,24,16,0.15)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Serif TC',serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at 20% 50%,rgba(209,68,58,0.03) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(200,169,81,0.05) 0%,transparent 50%),radial-gradient(circle at 50% 80%,rgba(188,43,43,0.02) 0%,transparent 50%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;opacity:0.02;background-image:url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 0L80 40L40 80L0 40Z' fill='none' stroke='%23BC2B2B' stroke-width='0.5'/%3E%3Cpath d='M40 0L40 80M0 40L80 40' fill='none' stroke='%23BC2B2B' stroke-width='0.3'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+
+/* Torii Header */
+.torii-header{position:relative;text-align:center;padding:36px 20px 24px;z-index:1}
+.torii-gate{display:inline-block;position:relative;padding:0 50px}
+.torii-gate::before{content:'';position:absolute;top:-8px;left:-16px;right:-16px;height:11px;background:var(--vermillion);border-radius:2px;box-shadow:0 2px 8px rgba(209,68,58,0.3)}
+.torii-gate::after{content:'';position:absolute;top:20px;left:8px;right:8px;height:5px;background:var(--vermillion);border-radius:1px}
+.torii-pillars{position:absolute;top:-12px;bottom:-10px;width:9px;background:var(--vermillion);border-radius:1px}
+.torii-pillars.left{left:10px}.torii-pillars.right{right:10px}
+.header-title{font-size:clamp(1.6rem,5vw,2.6rem);font-weight:900;letter-spacing:0.12em;padding-top:34px;position:relative;z-index:1}
+.header-subtitle{font-family:'Zen Maru Gothic',sans-serif;font-size:clamp(0.75rem,2vw,0.95rem);color:var(--ink-light);margin-top:6px;letter-spacing:0.06em;position:relative;z-index:1}
+.shimenawa{display:flex;align-items:center;justify-content:center;margin:8px auto 0;max-width:320px;gap:10px;position:relative;z-index:1}
+.shimenawa-line{flex:1;height:2px;background:linear-gradient(90deg,transparent,var(--rope),transparent)}
+.shimenawa-tassel{font-size:1.1rem;animation:sway 3s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+
+/* Login */
+.login-section{display:flex;flex-direction:column;align-items:center;padding:40px 20px;position:relative;z-index:1}
+.login-card{background:var(--paper);border:1px solid var(--gold-light);border-radius:4px;padding:40px 32px;text-align:center;max-width:380px;width:100%;box-shadow:0 4px 20px var(--shadow),inset 0 0 60px rgba(200,169,81,0.05)}
+.login-card::before{content:'⛩️';font-size:2.2rem;display:block;margin-bottom:14px}
+.login-card h2{font-size:1.3rem;font-weight:700;margin-bottom:6px}
+.login-card p{font-family:'Zen Maru Gothic',sans-serif;font-size:0.85rem;color:var(--ink-light);margin-bottom:24px;line-height:1.6}
+.google-btn{display:inline-flex;align-items:center;gap:10px;padding:12px 24px;background:#fff;border:2px solid #ddd;border-radius:6px;font-family:'Zen Maru Gothic',sans-serif;font-size:0.95rem;font-weight:500;color:#333;cursor:pointer;transition:all 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.1)}
+.google-btn:hover{border-color:var(--gold);box-shadow:0 2px 8px rgba(200,169,81,0.2);transform:translateY(-1px)}
+.google-btn:active{transform:translateY(0)}
+.google-btn svg{width:20px;height:20px}
+
+/* User Bar */
+.user-bar{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;background:rgba(251,245,232,0.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--gold-light);position:sticky;top:0;z-index:100}
+.user-info{display:flex;align-items:center;gap:8px;font-family:'Zen Maru Gothic',sans-serif;font-size:0.82rem;color:var(--ink-light);min-width:0}
+.user-info span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px}
+.user-avatar{width:26px;height:26px;border-radius:50%;border:2px solid var(--gold-light);flex-shrink:0}
+.btn-sm{padding:5px 14px;border:1px solid var(--gold);background:transparent;color:var(--ink-light);font-family:'Zen Maru Gothic',sans-serif;font-size:0.75rem;border-radius:4px;cursor:pointer;transition:all 0.2s;white-space:nowrap;flex-shrink:0}
+.btn-sm:hover{background:var(--gold);color:#fff}
+.btn-sm.danger{border-color:var(--vermillion);color:var(--vermillion)}
+.btn-sm.danger:hover{background:var(--vermillion);color:#fff}
+
+/* Ema Form */
+.ema-form-section{display:flex;justify-content:center;padding:24px 16px 16px;position:relative;z-index:1}
+.ema-form-card{position:relative;width:300px;min-height:190px;padding:26px 20px 18px;text-align:center;background:linear-gradient(135deg,#DEB668 0%,#C8A24A 15%,#DEB668 30%,#B8922A 50%,#D4AC5A 70%,#C8A24A 85%,#DEB668 100%);border-radius:4px;box-shadow:0 6px 20px rgba(92,74,30,0.25),inset 0 1px 0 rgba(255,255,255,0.2),inset 0 -2px 4px rgba(92,74,30,0.15);clip-path:polygon(0% 14%,50% 0%,100% 14%,100% 100%,0% 100%)}
+.ema-form-card::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 8px,rgba(139,105,20,0.06) 8px,rgba(139,105,20,0.06) 9px);pointer-events:none;clip-path:polygon(0% 14%,50% 0%,100% 14%,100% 100%,0% 100%)}
+.ema-form-card::after{content:'';position:absolute;top:16px;left:50%;transform:translateX(-50%);width:9px;height:9px;background:var(--cream);border-radius:50%;border:2px solid var(--wood-dark);box-shadow:inset 0 1px 2px rgba(0,0,0,0.2)}
+.ema-form-label{font-size:0.85rem;font-weight:700;color:var(--wood-dark);margin-top:14px;margin-bottom:10px;text-shadow:0 1px 0 rgba(255,255,255,0.3)}
+.ema-textarea{width:100%;height:60px;padding:8px 10px;border:none;border-radius:4px;background:rgba(255,255,255,0.45);font-family:'Noto Serif TC',serif;font-size:1rem;color:var(--ink);text-align:center;resize:none;line-height:1.5;outline:none;transition:background 0.3s}
+.ema-textarea::placeholder{color:rgba(92,74,30,0.4);font-size:0.85rem}
+.ema-textarea:focus{background:rgba(255,255,255,0.6)}
+.char-count{font-family:'Zen Maru Gothic',sans-serif;font-size:0.7rem;color:var(--wood-dark);margin-top:4px;opacity:0.7}
+.char-count.warn{color:var(--vermillion);opacity:1}
+.ema-submit-btn{margin-top:8px;padding:7px 28px;background:var(--vermillion);color:#fff;border:none;border-radius:4px;font-family:'Noto Serif TC',serif;font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.1em;transition:all 0.2s;box-shadow:0 2px 6px rgba(209,68,58,0.3)}
+.ema-submit-btn:hover{background:var(--vermillion-dark);transform:translateY(-1px)}
+.ema-submit-btn:active{transform:translateY(0)}
+.ema-submit-btn:disabled{background:#aaa;cursor:not-allowed;box-shadow:none;transform:none}
+.my-actions{text-align:center;margin-bottom:8px;position:relative;z-index:1}
+
+/* About Section */
+.about-section{max-width:640px;margin:0 auto;padding:0 20px 24px;position:relative;z-index:1}
+.about-card{background:var(--paper);border:1px solid rgba(200,169,81,0.25);border-radius:6px;padding:22px 22px 18px;box-shadow:0 2px 12px rgba(44,24,16,0.06);position:relative;overflow:hidden}
+.about-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--vermillion),var(--gold),var(--vermillion))}
+.about-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;-webkit-user-select:none}
+.about-toggle-title{display:flex;align-items:center;gap:8px;font-size:0.9rem;font-weight:700;color:var(--ink)}
+.about-toggle-title .icon{font-size:1.1rem}
+.about-arrow{font-size:0.65rem;color:var(--ink-light);transition:transform 0.3s;flex-shrink:0}
+.about-arrow.open{transform:rotate(180deg)}
+.about-content{max-height:0;overflow:hidden;transition:max-height 0.4s ease,opacity 0.3s ease;opacity:0}
+.about-content.open{max-height:600px;opacity:1}
+.about-body{padding-top:14px;font-family:'Zen Maru Gothic',sans-serif;font-size:0.8rem;line-height:1.85;color:var(--ink-light)}
+.about-body p{margin-bottom:10px}
+.about-body p:last-child{margin-bottom:0}
+.about-body strong{color:var(--ink);font-weight:700}
+.about-body .hl{color:var(--vermillion-dark);font-weight:500}
+.about-divider{width:36px;height:1px;background:var(--gold-light);margin:12px 0}
+
+/* Wall */
+.wall-section{padding:8px 16px 50px;max-width:1000px;margin:0 auto;position:relative;z-index:1}
+.wall-title{text-align:center;font-size:1.1rem;font-weight:700;color:var(--ink-light);margin-bottom:20px;letter-spacing:0.08em}
+.wall-title span{display:inline-block;padding:0 18px;position:relative}
+.wall-title span::before,.wall-title span::after{content:'✦';position:absolute;top:50%;transform:translateY(-50%);color:var(--gold);font-size:0.6rem}
+.wall-title span::before{left:0}.wall-title span::after{right:0}
+.ema-rope{position:relative;padding-top:18px;margin-bottom:30px}
+.ema-rope::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(180deg,var(--rope),#B8922A);border-radius:3px;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.ema-grid{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;padding-top:8px}
+
+/* Ema Card */
+.ema-card-wrapper{display:flex;flex-direction:column;align-items:center}
+.ema-string{width:2px;height:18px;background:linear-gradient(180deg,var(--rope),var(--wood));margin-bottom:-2px}
+.ema-card{position:relative;width:200px;min-height:148px;padding:22px 14px 14px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(145deg,#E8C96E 0%,#D4B456 20%,#E8C96E 40%,#C8A24A 60%,#DEB668 80%,#D4B456 100%);border-radius:4px;box-shadow:0 4px 12px rgba(92,74,30,0.2),inset 0 1px 0 rgba(255,255,255,0.15);clip-path:polygon(0% 12%,50% 0%,100% 12%,100% 100%,0% 100%);animation:fadeHang 0.6s ease-out both;transition:transform 0.3s}
+.ema-card:hover{transform:rotate(-1deg) translateY(-2px)}
+.ema-card::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(95deg,transparent,transparent 6px,rgba(139,105,20,0.05) 6px,rgba(139,105,20,0.05) 7px);pointer-events:none;clip-path:polygon(0% 12%,50% 0%,100% 12%,100% 100%,0% 100%)}
+.ema-card::after{content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);width:7px;height:7px;background:var(--cream);border-radius:50%;border:1.5px solid var(--wood-dark);box-shadow:inset 0 1px 2px rgba(0,0,0,0.15)}
+.ema-message{font-size:0.92rem;font-weight:700;color:var(--ink);line-height:1.55;margin-top:4px;word-break:break-word;text-shadow:0 0.5px 0 rgba(255,255,255,0.2)}
+.ema-author{font-family:'Zen Maru Gothic',sans-serif;font-size:0.65rem;color:var(--wood-dark);margin-top:8px;opacity:0.7}
+.ema-own-badge{position:absolute;bottom:5px;right:7px;font-size:0.5rem;color:var(--vermillion);font-family:'Zen Maru Gothic',sans-serif;opacity:0.8}
+@keyframes fadeHang{from{opacity:0;transform:translateY(-16px) rotate(2deg)}to{opacity:1;transform:translateY(0) rotate(0deg)}}
+.ema-card-wrapper:nth-child(1) .ema-card{animation-delay:.05s}
+.ema-card-wrapper:nth-child(2) .ema-card{animation-delay:.1s}
+.ema-card-wrapper:nth-child(3) .ema-card{animation-delay:.15s}
+.ema-card-wrapper:nth-child(4) .ema-card{animation-delay:.2s}
+.ema-card-wrapper:nth-child(5) .ema-card{animation-delay:.25s}
+.ema-card-wrapper:nth-child(6) .ema-card{animation-delay:.3s}
+.ema-card-wrapper:nth-child(7) .ema-card{animation-delay:.35s}
+.ema-card-wrapper:nth-child(8) .ema-card{animation-delay:.4s}
+
+/* States */
+.empty-state{text-align:center;padding:32px 20px;font-family:'Zen Maru Gothic',sans-serif;color:var(--ink-light);opacity:0.6}
+.empty-state .empty-icon{font-size:2.2rem;margin-bottom:10px}
+.loading{text-align:center;padding:32px;z-index:1;position:relative}
+.spinner{display:inline-block;width:28px;height:28px;border:3px solid var(--gold-light);border-top-color:var(--vermillion);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);padding:10px 24px;background:var(--ink);color:var(--cream);font-family:'Zen Maru Gothic',sans-serif;font-size:0.85rem;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.25);z-index:1000;opacity:0;transition:all 0.4s cubic-bezier(0.16,1,0.3,1);pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Footer */
+.footer{text-align:center;padding:16px;font-family:'Zen Maru Gothic',sans-serif;font-size:0.65rem;color:var(--ink-light);opacity:0.35;position:relative;z-index:1}
+
+/* Petals */
+.petal{position:fixed;top:-20px;width:12px;height:12px;background:radial-gradient(ellipse at center,#FFB7C5 0%,#FF9CAD 60%,transparent 70%);border-radius:50% 0 50% 50%;opacity:0;pointer-events:none;z-index:0;animation:fall linear infinite}
+@keyframes fall{0%{opacity:0;transform:translateX(0) rotate(0deg)}10%{opacity:0.5}90%{opacity:0.3}100%{opacity:0;transform:translateX(60px) rotate(360deg);top:100vh}}
+
+.hidden{display:none!important}
+
+/* ===== Mobile ===== */
+@media(max-width:480px){
+  .torii-header{padding:24px 16px 16px}
+  .torii-gate{padding:0 32px}
+  .torii-pillars{width:7px}
+  .torii-pillars.left{left:5px}.torii-pillars.right{right:5px}
+  .torii-gate::before{height:8px;left:-10px;right:-10px}
+  .torii-gate::after{height:4px;top:16px}
+  .header-title{padding-top:28px}
+  .login-card{padding:28px 18px}
+  .login-section{padding:28px 16px}
+  .ema-form-section{padding:18px 10px 10px}
+  .ema-form-card{width:250px;min-height:170px;padding:22px 14px 14px}
+  .about-section{padding:0 14px 18px}
+  .about-card{padding:16px 16px 14px}
+  .about-toggle-title{font-size:0.82rem;gap:6px}
+  .about-body{font-size:0.75rem;line-height:1.75}
+  .wall-section{padding:6px 10px 36px}
+  .ema-grid{gap:12px}
+  .ema-card{width:145px;min-height:118px;padding:16px 8px 10px}
+  .ema-message{font-size:0.78rem}
+  .ema-author{font-size:0.55rem}
+  .ema-string{height:12px}
+  .ema-card::after{top:10px;width:6px;height:6px}
+  .user-bar{gap:8px;padding:8px 10px}
+  .user-info span{max-width:90px;font-size:0.75rem}
+}
+@media(min-width:481px) and (max-width:768px){
+  .ema-form-card{width:280px}
+  .ema-card{width:175px;min-height:132px}
+  .ema-grid{gap:16px}
+}
 </style>
 </head>
-
 <body>
 
-<!-- ===== Falling Petals ===== -->
 <div id="petals-container"></div>
-
-<!-- ===== Toast ===== -->
 <div id="toast" class="toast"></div>
 
-<!-- ===== LOGIN SCREEN ===== -->
+<!-- ===== LOGIN ===== -->
 <div id="screen-login">
   <div class="torii-header">
     <div class="torii-gate">
@@ -771,11 +200,34 @@
       </button>
     </div>
   </div>
+
+  <!-- 登入頁也能看繪馬說明 -->
+  <div class="about-section">
+    <div class="about-card">
+      <div class="about-toggle" onclick="toggleAbout('login')">
+        <div class="about-toggle-title">
+          <span class="icon">🏮</span>
+          <span>關於繪馬 — 千年祈願的傳統</span>
+        </div>
+        <span id="about-arrow-login" class="about-arrow">▼</span>
+      </div>
+      <div id="about-content-login" class="about-content">
+        <div class="about-body">
+          <p><strong>繪馬（絵馬，えま）</strong>是日本神社中用來書寫願望的木製小牌。參拜者將心願寫在繪馬上，繫於神社的架子上，祈求神明保佑願望實現。</p>
+          <div class="about-divider"></div>
+          <p>繪馬的起源可追溯至<span class="hl">奈良時代（710-794年）</span>。古代日本人相信馬是神明的坐騎，因此以活馬獻給神社作為祈願供品。後來因為活馬珍貴且不易飼養，漸漸改用繪有馬匹圖案的木板取代，「繪馬」一詞由此而來。</p>
+          <div class="about-divider"></div>
+          <p>到了<span class="hl">江戶時代（1603-1868年）</span>，繪馬逐漸普及至庶民階層，形狀也固定為我們現在熟悉的五角形木牌。人們在正面繪製圖案，背面寫下心願，舉凡學業、健康、戀愛、事業，各種祈願都能透過繪馬向神明傳達。</p>
+          <div class="about-divider"></div>
+          <p>本祈福牆靈感取自這份延續千年的祈願文化。在新年之際，邀請您寫下心中的祝福，讓美好的願望在這面數位繪馬牆上匯聚 🌸</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- ===== MAIN SCREEN ===== -->
+<!-- ===== MAIN ===== -->
 <div id="screen-main" class="hidden">
-  <!-- User Bar -->
   <div class="user-bar">
     <div class="user-info">
       <img id="user-avatar" class="user-avatar" src="" alt="">
@@ -784,7 +236,6 @@
     <button class="btn-sm danger" onclick="handleLogout()">登出</button>
   </div>
 
-  <!-- Header -->
   <div class="torii-header">
     <div class="torii-gate">
       <div class="torii-pillars left"></div>
@@ -799,43 +250,51 @@
     </div>
   </div>
 
-  <!-- Ema Writing Form -->
   <div class="ema-form-section">
     <div class="ema-form-card">
       <div class="ema-form-label" id="form-label">寫下您的新年祝福</div>
-      <textarea
-        id="blessing-input"
-        class="ema-textarea"
-        maxlength="30"
-        placeholder="在此寫下心願..."
-        oninput="handleInput()"
-      ></textarea>
+      <textarea id="blessing-input" class="ema-textarea" maxlength="30" placeholder="在此寫下心願..." oninput="handleInput()"></textarea>
       <div id="char-count" class="char-count">0 / 30</div>
-      <button id="submit-btn" class="ema-submit-btn" onclick="handleSubmit()">
-        繫上繪馬
-      </button>
+      <button id="submit-btn" class="ema-submit-btn" onclick="handleSubmit()">繫上繪馬</button>
     </div>
   </div>
 
-  <!-- My Blessing Actions -->
-  <div id="my-blessing-actions" class="hidden" style="text-align:center; margin-bottom: 10px; position:relative; z-index:1;">
+  <div id="my-blessing-actions" class="my-actions hidden">
     <button class="btn-sm danger" onclick="handleDelete()">🗑 取下我的繪馬</button>
   </div>
 
-  <!-- Blessing Wall -->
+  <!-- 主頁繪馬說明 -->
+  <div class="about-section">
+    <div class="about-card">
+      <div class="about-toggle" onclick="toggleAbout('main')">
+        <div class="about-toggle-title">
+          <span class="icon">🏮</span>
+          <span>關於繪馬 — 千年祈願的傳統</span>
+        </div>
+        <span id="about-arrow-main" class="about-arrow">▼</span>
+      </div>
+      <div id="about-content-main" class="about-content">
+        <div class="about-body">
+          <p><strong>繪馬（絵馬，えま）</strong>是日本神社中用來書寫願望的木製小牌。參拜者將心願寫在繪馬上，繫於神社的架子上，祈求神明保佑願望實現。</p>
+          <div class="about-divider"></div>
+          <p>繪馬的起源可追溯至<span class="hl">奈良時代（710-794年）</span>。古代日本人相信馬是神明的坐騎，因此以活馬獻給神社作為祈願供品。後來因為活馬珍貴且不易飼養，漸漸改用繪有馬匹圖案的木板取代，「繪馬」一詞由此而來。</p>
+          <div class="about-divider"></div>
+          <p>到了<span class="hl">江戶時代（1603-1868年）</span>，繪馬逐漸普及至庶民階層，形狀也固定為我們現在熟悉的五角形木牌。人們在正面繪製圖案，背面寫下心願，舉凡學業、健康、戀愛、事業，各種祈願都能透過繪馬向神明傳達。</p>
+          <div class="about-divider"></div>
+          <p>本祈福牆靈感取自這份延續千年的祈願文化。在新年之際，邀請您寫下心中的祝福，讓美好的願望在這面數位繪馬牆上匯聚 🌸</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="wall-section">
     <div class="wall-title"><span>繪馬祈福牆</span></div>
-
-    <div id="loading" class="loading">
-      <div class="spinner"></div>
-    </div>
-
+    <div id="loading" class="loading"><div class="spinner"></div></div>
     <div id="ema-wall" class="hidden">
       <div class="ema-rope">
         <div id="ema-grid" class="ema-grid"></div>
       </div>
     </div>
-
     <div id="empty-state" class="empty-state hidden">
       <div class="empty-icon">🎐</div>
       <p>尚無祝福，成為第一位許願的人吧！</p>
@@ -846,371 +305,119 @@
 </div>
 
 <script>
-// ============================================================
-// ⚙️ 設定區 — 請修改為你的實際 URL
-// ============================================================
-const CONFIG = {
-  // Google OAuth Client ID（請替換為你的 Google Client ID）
-  GOOGLE_CLIENT_ID: '973721313231-0no4ivldu33he0kts8k51kn4tqd979g7.apps.googleusercontent.com',
-
-  // n8n Webhook URLs
-  API_AUTH:      'https://mjib007.zeabur.app/webhook/auth-blessing',
-  API_GET:       'https://mjib007.zeabur.app/webhook/blessings-get',
-  API_SAVE:      'https://mjib007.zeabur.app/webhook/blessings-save',
-  API_DELETE:    'https://mjib007.zeabur.app/webhook/blessings-delete',
+const CONFIG={
+  GOOGLE_CLIENT_ID:'973721313231-0no4ivldu33he0kts8k51kn4tqd979g7.apps.googleusercontent.com',
+  API_AUTH:'https://mjib007.zeabur.app/webhook/auth-blessing',
+  API_GET:'https://mjib007.zeabur.app/webhook/blessings-get',
+  API_SAVE:'https://mjib007.zeabur.app/webhook/blessings-save',
+  API_DELETE:'https://mjib007.zeabur.app/webhook/blessings-delete',
 };
+let currentUser=null,myBlessing=null;
 
-// ============================================================
-// 全域狀態
-// ============================================================
-let currentUser = null;   // { googleId, displayName, email, photoUrl }
-let myBlessing = null;    // 目前使用者的祝福
-
-// ============================================================
-// Google 登入
-// ============================================================
-function initGoogleLogin() {
-  if (typeof google === 'undefined' || !google.accounts) {
-    // GIS 尚未載入，稍等重試
-    setTimeout(initGoogleLogin, 300);
-    return;
-  }
-  google.accounts.id.initialize({
-    client_id: CONFIG.GOOGLE_CLIENT_ID,
-    callback: onGoogleCredential,
-    auto_select: false,
-  });
+function toggleAbout(id){
+  document.getElementById('about-content-'+id).classList.toggle('open');
+  document.getElementById('about-arrow-'+id).classList.toggle('open');
 }
 
-function handleGoogleLogin() {
-  if (typeof google === 'undefined' || !google.accounts) {
-    showToast('Google 登入元件載入中，請稍後再試');
-    return;
-  }
-  google.accounts.id.prompt((notification) => {
-    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-      // One Tap 被擋，改用 popup
-      google.accounts.oauth2.initTokenClient({
-        client_id: CONFIG.GOOGLE_CLIENT_ID,
-        scope: 'profile email',
-        callback: async (response) => {
-          if (response.access_token) {
-            const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-              headers: { Authorization: `Bearer ${response.access_token}` }
-            });
-            const profile = await res.json();
-            loginWithProfile({
-              googleId: profile.sub,
-              displayName: profile.name,
-              email: profile.email,
-              photoUrl: profile.picture
-            });
+function initGoogleLogin(){
+  if(typeof google==='undefined'||!google.accounts){setTimeout(initGoogleLogin,300);return}
+  google.accounts.id.initialize({client_id:CONFIG.GOOGLE_CLIENT_ID,callback:onGoogleCredential,auto_select:false});
+}
+function handleGoogleLogin(){
+  if(typeof google==='undefined'||!google.accounts){showToast('Google 登入元件載入中，請稍後再試');return}
+  google.accounts.id.prompt(n=>{
+    if(n.isNotDisplayed()||n.isSkippedMoment()){
+      google.accounts.oauth2.initTokenClient({client_id:CONFIG.GOOGLE_CLIENT_ID,scope:'profile email',
+        callback:async r=>{
+          if(r.access_token){
+            const res=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+r.access_token}});
+            const p=await res.json();
+            loginWithProfile({googleId:p.sub,displayName:p.name,email:p.email,photoUrl:p.picture});
           }
         }
       }).requestAccessToken();
     }
   });
 }
+function onGoogleCredential(r){const p=parseJwt(r.credential);loginWithProfile({googleId:p.sub,displayName:p.name,email:p.email,photoUrl:p.picture})}
+function parseJwt(t){const b=t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');return JSON.parse(decodeURIComponent(atob(b).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')))}
 
-function onGoogleCredential(response) {
-  const payload = parseJwt(response.credential);
-  loginWithProfile({
-    googleId: payload.sub,
-    displayName: payload.name,
-    email: payload.email,
-    photoUrl: payload.picture
-  });
-}
-
-function parseJwt(token) {
-  const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-  return JSON.parse(decodeURIComponent(atob(base64).split('').map(c =>
-    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-  ).join('')));
-}
-
-async function loginWithProfile(profile) {
-  currentUser = profile;
-
-  // 同步到 n8n 會員系統
-  try {
-    await fetch(CONFIG.API_AUTH, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        googleId: profile.googleId,
-        displayName: profile.displayName,
-        email: profile.email
-      })
-    });
-  } catch (e) {
-    console.warn('會員同步失敗，但不影響使用', e);
-  }
-
-  // 儲存 session
-  sessionStorage.setItem('user', JSON.stringify(currentUser));
-
+async function loginWithProfile(profile){
+  currentUser=profile;
+  try{await fetch(CONFIG.API_AUTH,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({googleId:profile.googleId,displayName:profile.displayName,email:profile.email})})}catch(e){console.warn('會員同步失敗',e)}
+  sessionStorage.setItem('user',JSON.stringify(currentUser));
   showMainScreen();
 }
+function handleLogout(){currentUser=null;myBlessing=null;sessionStorage.removeItem('user');document.getElementById('screen-login').classList.remove('hidden');document.getElementById('screen-main').classList.add('hidden')}
 
-function handleLogout() {
-  currentUser = null;
-  myBlessing = null;
-  sessionStorage.removeItem('user');
-  document.getElementById('screen-login').classList.remove('hidden');
-  document.getElementById('screen-main').classList.add('hidden');
-}
-
-// ============================================================
-// 畫面切換
-// ============================================================
-async function showMainScreen() {
+async function showMainScreen(){
   document.getElementById('screen-login').classList.add('hidden');
   document.getElementById('screen-main').classList.remove('hidden');
-
-  // 設定使用者資訊
-  document.getElementById('user-name').textContent = currentUser.displayName;
-  const avatar = document.getElementById('user-avatar');
-  if (currentUser.photoUrl) {
-    avatar.src = currentUser.photoUrl;
-    avatar.style.display = '';
-  } else {
-    avatar.style.display = 'none';
-  }
-
+  document.getElementById('user-name').textContent=currentUser.displayName;
+  const a=document.getElementById('user-avatar');
+  if(currentUser.photoUrl){a.src=currentUser.photoUrl;a.style.display=''}else{a.style.display='none'}
   await loadBlessings();
 }
 
-// ============================================================
-// 讀取祝福
-// ============================================================
-async function loadBlessings() {
-  const loading = document.getElementById('loading');
-  const wall = document.getElementById('ema-wall');
-  const empty = document.getElementById('empty-state');
-  const grid = document.getElementById('ema-grid');
-
-  loading.classList.remove('hidden');
-  wall.classList.add('hidden');
-  empty.classList.add('hidden');
-
-  try {
-    const res = await fetch(CONFIG.API_GET);
-    const data = await res.json();
-
+async function loadBlessings(){
+  const loading=document.getElementById('loading'),wall=document.getElementById('ema-wall'),empty=document.getElementById('empty-state'),grid=document.getElementById('ema-grid');
+  loading.classList.remove('hidden');wall.classList.add('hidden');empty.classList.add('hidden');
+  try{
+    const res=await fetch(CONFIG.API_GET),data=await res.json();
     loading.classList.add('hidden');
-
-    if (!data.blessings || data.blessings.length === 0) {
-      empty.classList.remove('hidden');
-      grid.innerHTML = '';
-      myBlessing = null;
-      updateFormState();
-      return;
-    }
-
-    // 渲染繪馬
-    grid.innerHTML = '';
-    myBlessing = null;
-
-    data.blessings.forEach((b, i) => {
-      const isOwn = b.googleId === currentUser.googleId;
-      if (isOwn) myBlessing = b;
-
-      const wrapper = document.createElement('div');
-      wrapper.className = 'ema-card-wrapper';
-      wrapper.style.animationDelay = `${i * 0.05}s`;
-
-      wrapper.innerHTML = `
-        <div class="ema-string"></div>
-        <div class="ema-card" style="animation-delay: ${i * 0.08}s">
-          <div class="ema-message">${escapeHtml(b.message)}</div>
-          <div class="ema-author">— ${escapeHtml(b.displayName)}</div>
-          ${isOwn ? '<div class="ema-own-badge">✦ 我的繪馬</div>' : ''}
-        </div>
-      `;
-
-      grid.appendChild(wrapper);
+    if(!data.blessings||data.blessings.length===0){empty.classList.remove('hidden');grid.innerHTML='';myBlessing=null;updateFormState();return}
+    grid.innerHTML='';myBlessing=null;
+    data.blessings.forEach((b,i)=>{
+      const isOwn=b.googleId===currentUser.googleId;
+      if(isOwn)myBlessing=b;
+      const w=document.createElement('div');w.className='ema-card-wrapper';
+      w.innerHTML=`<div class="ema-string"></div><div class="ema-card" style="animation-delay:${i*0.08}s"><div class="ema-message">${escapeHtml(b.message)}</div><div class="ema-author">— ${escapeHtml(b.displayName)}</div>${isOwn?'<div class="ema-own-badge">✦ 我的繪馬</div>':''}</div>`;
+      grid.appendChild(w);
     });
-
-    wall.classList.remove('hidden');
-    updateFormState();
-
-  } catch (e) {
-    loading.classList.add('hidden');
-    showToast('載入祈福牆失敗，請稍後再試');
-    console.error(e);
-  }
+    wall.classList.remove('hidden');updateFormState();
+  }catch(e){loading.classList.add('hidden');showToast('載入祈福牆失敗，請稍後再試');console.error(e)}
 }
 
-// ============================================================
-// 表單狀態
-// ============================================================
-function updateFormState() {
-  const input = document.getElementById('blessing-input');
-  const btn = document.getElementById('submit-btn');
-  const label = document.getElementById('form-label');
-  const actions = document.getElementById('my-blessing-actions');
-
-  if (myBlessing) {
-    input.value = myBlessing.message;
-    btn.textContent = '修改繪馬';
-    label.textContent = '修改您的祝福';
-    actions.classList.remove('hidden');
-  } else {
-    input.value = '';
-    btn.textContent = '繫上繪馬';
-    label.textContent = '寫下您的新年祝福';
-    actions.classList.add('hidden');
-  }
+function updateFormState(){
+  const input=document.getElementById('blessing-input'),btn=document.getElementById('submit-btn'),label=document.getElementById('form-label'),actions=document.getElementById('my-blessing-actions');
+  if(myBlessing){input.value=myBlessing.message;btn.textContent='修改繪馬';label.textContent='修改您的祝福';actions.classList.remove('hidden')}
+  else{input.value='';btn.textContent='繫上繪馬';label.textContent='寫下您的新年祝福';actions.classList.add('hidden')}
   updateCharCount();
 }
+function handleInput(){const i=document.getElementById('blessing-input');i.value=i.value.replace(/[\r\n]/g,'');updateCharCount()}
+function updateCharCount(){const i=document.getElementById('blessing-input'),c=document.getElementById('char-count'),l=i.value.length;c.textContent=l+' / 30';c.className=l>=28?'char-count warn':'char-count'}
 
-function handleInput() {
-  const input = document.getElementById('blessing-input');
-  // 過濾換行符，祝福語只允許單行
-  input.value = input.value.replace(/[\r\n]/g, '');
-  updateCharCount();
+async function handleSubmit(){
+  const input=document.getElementById('blessing-input'),msg=input.value.trim(),btn=document.getElementById('submit-btn');
+  if(!msg){showToast('請寫下您的祝福 🙏');return}
+  if(msg.length>30){showToast('祝福語不能超過 30 字');return}
+  btn.disabled=true;btn.textContent='祈願中...';
+  try{
+    const res=await fetch(CONFIG.API_SAVE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({googleId:currentUser.googleId,displayName:currentUser.displayName,message:msg})});
+    const data=await res.json();
+    if(data.success){showToast(data.action==='updated'?'繪馬已更新 ✨':'繪馬已繫上 🎍');await loadBlessings()}else{showToast(data.error||'操作失敗')}
+  }catch(e){showToast('儲存失敗，請稍後再試');console.error(e)}
+  btn.disabled=false;updateFormState();
 }
 
-function updateCharCount() {
-  const input = document.getElementById('blessing-input');
-  const counter = document.getElementById('char-count');
-  const len = input.value.length;
-  counter.textContent = `${len} / 30`;
-  counter.className = len >= 28 ? 'char-count warn' : 'char-count';
+async function handleDelete(){
+  if(!confirm('確定要取下您的繪馬嗎？'))return;
+  try{
+    const res=await fetch(CONFIG.API_DELETE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({googleId:currentUser.googleId})});
+    const data=await res.json();
+    if(data.success){showToast('繪馬已取下 🍃');myBlessing=null;await loadBlessings()}else{showToast(data.error||'刪除失敗')}
+  }catch(e){showToast('刪除失敗，請稍後再試');console.error(e)}
 }
 
-// ============================================================
-// 儲存祝福
-// ============================================================
-async function handleSubmit() {
-  const input = document.getElementById('blessing-input');
-  const message = input.value.trim();
-  const btn = document.getElementById('submit-btn');
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function createPetals(){const c=document.getElementById('petals-container'),n=window.innerWidth<600?5:10;for(let i=0;i<n;i++){const p=document.createElement('div');p.className='petal';p.style.left=Math.random()*100+'vw';p.style.animationDuration=(7+Math.random()*8)+'s';p.style.animationDelay=(Math.random()*12)+'s';p.style.width=(7+Math.random()*7)+'px';p.style.height=p.style.width;c.appendChild(p)}}
 
-  if (!message) {
-    showToast('請寫下您的祝福 🙏');
-    return;
-  }
-  if (message.length > 30) {
-    showToast('祝福語不能超過 30 字');
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = '祈願中...';
-
-  try {
-    const res = await fetch(CONFIG.API_SAVE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        googleId: currentUser.googleId,
-        displayName: currentUser.displayName,
-        message: message
-      })
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      showToast(data.action === 'updated' ? '繪馬已更新 ✨' : '繪馬已繫上 🎍');
-      await loadBlessings();
-    } else {
-      showToast(data.error || '操作失敗');
-    }
-  } catch (e) {
-    showToast('儲存失敗，請稍後再試');
-    console.error(e);
-  }
-
-  btn.disabled = false;
-  updateFormState();
-}
-
-// ============================================================
-// 刪除祝福
-// ============================================================
-async function handleDelete() {
-  if (!confirm('確定要取下您的繪馬嗎？')) return;
-
-  try {
-    const res = await fetch(CONFIG.API_DELETE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        googleId: currentUser.googleId
-      })
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      showToast('繪馬已取下 🍃');
-      myBlessing = null;
-      await loadBlessings();
-    } else {
-      showToast(data.error || '刪除失敗');
-    }
-  } catch (e) {
-    showToast('刪除失敗，請稍後再試');
-    console.error(e);
-  }
-}
-
-// ============================================================
-// Toast 通知
-// ============================================================
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-// ============================================================
-// 工具
-// ============================================================
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// ============================================================
-// 櫻花花瓣
-// ============================================================
-function createPetals() {
-  const container = document.getElementById('petals-container');
-  const count = window.innerWidth < 600 ? 8 : 15;
-
-  for (let i = 0; i < count; i++) {
-    const petal = document.createElement('div');
-    petal.className = 'petal';
-    petal.style.left = Math.random() * 100 + 'vw';
-    petal.style.animationDuration = (6 + Math.random() * 8) + 's';
-    petal.style.animationDelay = (Math.random() * 10) + 's';
-    petal.style.width = (8 + Math.random() * 8) + 'px';
-    petal.style.height = petal.style.width;
-    container.appendChild(petal);
-  }
-}
-
-// ============================================================
-// 初始化
-// ============================================================
-window.addEventListener('DOMContentLoaded', () => {
-  createPetals();
-  initGoogleLogin();
-
-  // 檢查是否有 session
-  const saved = sessionStorage.getItem('user');
-  if (saved) {
-    currentUser = JSON.parse(saved);
-    showMainScreen();
-  }
+window.addEventListener('DOMContentLoaded',()=>{
+  createPetals();initGoogleLogin();
+  const s=sessionStorage.getItem('user');
+  if(s){currentUser=JSON.parse(s);showMainScreen()}
 });
 </script>
-
 </body>
 </html>
