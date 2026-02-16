@@ -67,24 +67,25 @@ body::after{content:'';position:fixed;inset:0;opacity:0.02;background-image:url(
 .ema-submit-btn:disabled{background:#aaa;cursor:not-allowed;box-shadow:none;transform:none}
 .my-actions{text-align:center;margin-bottom:8px;position:relative;z-index:1}
 
-/* 新增：彩色繪馬主題 */
-.ema-theme-gold { background: linear-gradient(145deg, #E8C96E, #D4B456, #C8A24A); }
-.ema-theme-red { background: linear-gradient(145deg, #E58C86, #D1443A, #A8302A); }
-.ema-theme-green { background: linear-gradient(145deg, #A8C69F, #7E9C75, #5A7053); }
-.ema-theme-blue { background: linear-gradient(145deg, #93B5CF, #5B8AAD, #3E5E78); }
-.ema-theme-purple { background: linear-gradient(145deg, #B296C7, #8A6DA3, #654E7A); }
-.ema-theme-pink { background: linear-gradient(145deg, #F8C3CD, #E87A90, #D05A6E); }
+/* About Section */
+.about-section{max-width:640px;margin:0 auto;padding:0 20px 24px;position:relative;z-index:1}
+.about-card{background:var(--paper);border:1px solid rgba(200,169,81,0.25);border-radius:6px;padding:22px 22px 18px;box-shadow:0 2px 12px rgba(44,24,16,0.06);position:relative;overflow:hidden}
+.about-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--vermillion),var(--gold),var(--vermillion))}
+.about-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;-webkit-user-select:none}
+.about-toggle-title{display:flex;align-items:center;gap:8px;font-size:0.9rem;font-weight:700;color:var(--ink)}
+.about-toggle-title .icon{font-size:1.1rem}
+.about-arrow{font-size:0.65rem;color:var(--ink-light);transition:transform 0.3s;flex-shrink:0}
+.about-arrow.open{transform:rotate(180deg)}
+.about-content{max-height:0;overflow:hidden;transition:max-height 0.4s ease,opacity 0.3s ease;opacity:0}
+.about-content.open{max-height:600px;opacity:1}
+.about-body{padding-top:14px;font-family:'Zen Maru Gothic',sans-serif;font-size:0.8rem;line-height:1.85;color:var(--ink-light)}
+.about-body p{margin-bottom:10px}
+.about-body p:last-child{margin-bottom:0}
+.about-body strong{color:var(--ink);font-weight:700}
+.about-body .hl{color:var(--vermillion-dark);font-weight:500}
+.about-divider{width:36px;height:1px;background:var(--gold-light);margin:12px 0}
 
-/* 深色背景時的文字適應 */
-.ema-theme-red, .ema-theme-green, .ema-theme-blue, .ema-theme-purple, .ema-theme-pink { color: #fff; }
-.ema-theme-red .ema-message, .ema-theme-green .ema-message, .ema-theme-blue .ema-message, .ema-theme-purple .ema-message, .ema-theme-pink .ema-message { 
-    color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.3); 
-}
-.ema-theme-red .ema-author, .ema-theme-green .ema-author, .ema-theme-blue .ema-author, .ema-theme-purple .ema-author, .ema-theme-pink .ema-author { 
-    color: rgba(255,255,255,0.85); 
-}
-
-/* Wall & Grid */
+/* Wall */
 .wall-section{padding:8px 16px 50px;max-width:1000px;margin:0 auto;position:relative;z-index:1}
 .wall-title{text-align:center;font-size:1.1rem;font-weight:700;color:var(--ink-light);margin-bottom:20px;letter-spacing:0.08em}
 .wall-title span{display:inline-block;padding:0 18px;position:relative}
@@ -97,28 +98,74 @@ body::after{content:'';position:fixed;inset:0;opacity:0.02;background-image:url(
 /* Ema Card */
 .ema-card-wrapper{display:flex;flex-direction:column;align-items:center}
 .ema-string{width:2px;height:18px;background:linear-gradient(180deg,var(--rope),var(--wood));margin-bottom:-2px}
-.ema-card{position:relative;width:200px;min-height:148px;padding:22px 14px 14px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:4px;box-shadow:0 4px 12px rgba(92,74,30,0.2),inset 0 1px 0 rgba(255,255,255,0.15);clip-path:polygon(0% 12%,50% 0%,100% 12%,100% 100%,0% 100%);animation:fadeHang 0.6s ease-out both;transition:transform 0.3s}
+.ema-card{position:relative;width:200px;min-height:148px;padding:22px 14px 14px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(145deg,#E8C96E 0%,#D4B456 20%,#E8C96E 40%,#C8A24A 60%,#DEB668 80%,#D4B456 100%);border-radius:4px;box-shadow:0 4px 12px rgba(92,74,30,0.2),inset 0 1px 0 rgba(255,255,255,0.15);clip-path:polygon(0% 12%,50% 0%,100% 12%,100% 100%,0% 100%);animation:fadeHang 0.6s ease-out both;transition:transform 0.3s}
 .ema-card:hover{transform:rotate(-1deg) translateY(-2px)}
 .ema-card::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(95deg,transparent,transparent 6px,rgba(139,105,20,0.05) 6px,rgba(139,105,20,0.05) 7px);pointer-events:none;clip-path:polygon(0% 12%,50% 0%,100% 12%,100% 100%,0% 100%)}
 .ema-card::after{content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);width:7px;height:7px;background:var(--cream);border-radius:50%;border:1.5px solid var(--wood-dark);box-shadow:inset 0 1px 2px rgba(0,0,0,0.15)}
 .ema-message{font-size:0.92rem;font-weight:700;color:var(--ink);line-height:1.55;margin-top:4px;word-break:break-word;text-shadow:0 0.5px 0 rgba(255,255,255,0.2)}
 .ema-author{font-family:'Zen Maru Gothic',sans-serif;font-size:0.65rem;color:var(--wood-dark);margin-top:8px;opacity:0.7}
-.ema-own-badge{position:absolute;bottom:5px;right:7px;font-size:0.5rem;font-family:'Zen Maru Gothic',sans-serif;opacity:0.85}
-
-/* Animations & UI */
+.ema-own-badge{position:absolute;bottom:5px;right:7px;font-size:0.5rem;color:var(--vermillion);font-family:'Zen Maru Gothic',sans-serif;opacity:0.8}
 @keyframes fadeHang{from{opacity:0;transform:translateY(-16px) rotate(2deg)}to{opacity:1;transform:translateY(0) rotate(0deg)}}
+.ema-card-wrapper:nth-child(1) .ema-card{animation-delay:.05s}
+.ema-card-wrapper:nth-child(2) .ema-card{animation-delay:.1s}
+.ema-card-wrapper:nth-child(3) .ema-card{animation-delay:.15s}
+.ema-card-wrapper:nth-child(4) .ema-card{animation-delay:.2s}
+.ema-card-wrapper:nth-child(5) .ema-card{animation-delay:.25s}
+.ema-card-wrapper:nth-child(6) .ema-card{animation-delay:.3s}
+.ema-card-wrapper:nth-child(7) .ema-card{animation-delay:.35s}
+.ema-card-wrapper:nth-child(8) .ema-card{animation-delay:.4s}
+
+/* States */
 .empty-state{text-align:center;padding:32px 20px;font-family:'Zen Maru Gothic',sans-serif;color:var(--ink-light);opacity:0.6}
+.empty-state .empty-icon{font-size:2.2rem;margin-bottom:10px}
 .loading{text-align:center;padding:32px;z-index:1;position:relative}
 .spinner{display:inline-block;width:28px;height:28px;border:3px solid var(--gold-light);border-top-color:var(--vermillion);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* Toast */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);padding:10px 24px;background:var(--ink);color:var(--cream);font-family:'Zen Maru Gothic',sans-serif;font-size:0.85rem;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.25);z-index:1000;opacity:0;transition:all 0.4s cubic-bezier(0.16,1,0.3,1);pointer-events:none;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* Mobile Adaptation */
+/* Footer */
+.footer{text-align:center;padding:16px;font-family:'Zen Maru Gothic',sans-serif;font-size:0.65rem;color:var(--ink-light);opacity:0.35;position:relative;z-index:1}
+
+/* Petals */
+.petal{position:fixed;top:-20px;width:12px;height:12px;background:radial-gradient(ellipse at center,#FFB7C5 0%,#FF9CAD 60%,transparent 70%);border-radius:50% 0 50% 50%;opacity:0;pointer-events:none;z-index:0;animation:fall linear infinite}
+@keyframes fall{0%{opacity:0;transform:translateX(0) rotate(0deg)}10%{opacity:0.5}90%{opacity:0.3}100%{opacity:0;transform:translateX(60px) rotate(360deg);top:100vh}}
+
+.hidden{display:none!important}
+
+/* ===== Mobile ===== */
 @media(max-width:480px){
-  .ema-grid{gap:12px}
-  .ema-card{width:145px;min-height:118px;padding:16px 8px 10px}
-  .ema-message{font-size:0.78rem}
+  .torii-header{padding:24px 16px 16px}
+  .torii-gate{padding:0 32px}
+  .torii-pillars{width:7px}
+  .torii-pillars.left{left:5px}.torii-pillars.right{right:5px}
+  .torii-gate::before{height:8px;left:-10px;right:-10px}
+  .torii-gate::after{height:4px;top:16px}
+  .header-title{padding-top:28px}
+  .login-card{padding:28px 18px}
+  .login-section{padding:28px 16px}
+  .ema-form-section{padding:18px 10px 10px}
+  .ema-form-card{width:250px;min-height:170px;padding:22px 14px 14px}
+  .about-section{padding:0 14px 18px}
+  .about-card{padding:16px 16px 14px}
+  .about-toggle-title{font-size:0.82rem;gap:6px}
+  .about-body{font-size:0.75rem;line-height:1.75}
+  .wall-section{padding:6px 10px 36px}
+  .ema-grid{gap:12px}
+  .ema-card{width:145px;min-height:118px;padding:16px 8px 10px}
+  .ema-message{font-size:0.78rem}
+  .ema-author{font-size:0.55rem}
+  .ema-string{height:12px}
+  .ema-card::after{top:10px;width:6px;height:6px}
+  .user-bar{gap:8px;padding:8px 10px}
+  .user-info span{max-width:90px;font-size:0.75rem}
+}
+@media(min-width:481px) and (max-width:768px){
+  .ema-form-card{width:280px}
+  .ema-card{width:175px;min-height:132px}
+  .ema-grid{gap:16px}
 }
 </style>
 </head>
@@ -127,184 +174,249 @@ body::after{content:'';position:fixed;inset:0;opacity:0.02;background-image:url(
 <div id="petals-container"></div>
 <div id="toast" class="toast"></div>
 
+<!-- ===== LOGIN ===== -->
 <div id="screen-login">
-  <div class="torii-header">
-    <div class="torii-gate">
-      <div class="torii-pillars left"></div>
-      <div class="torii-pillars right"></div>
-      <h1 class="header-title">新年祈福牆</h1>
-      <p class="header-subtitle">書寫心願 · 繫上繪馬 · 祈願成就</p>
-    </div>
-  </div>
-  <div class="login-section">
-    <div class="login-card">
-      <h2>登入以許下心願</h2>
-      <button class="google-btn" onclick="handleGoogleLogin()">
-        Google 帳號登入
-      </button>
-    </div>
-  </div>
+  <div class="torii-header">
+    <div class="torii-gate">
+      <div class="torii-pillars left"></div>
+      <div class="torii-pillars right"></div>
+      <h1 class="header-title">新年祈福牆</h1>
+      <p class="header-subtitle">書寫心願 · 繫上繪馬 · 祈願成就</p>
+    </div>
+    <div class="shimenawa">
+      <div class="shimenawa-line"></div>
+      <span class="shimenawa-tassel">🎍</span>
+      <div class="shimenawa-line"></div>
+    </div>
+  </div>
+
+  <div class="login-section">
+    <div class="login-card">
+      <h2>登入以許下心願</h2>
+      <p>使用 Google 帳號登入，<br>在祈福牆上留下您的新年祝福</p>
+      <button class="google-btn" onclick="handleGoogleLogin()">
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Google 帳號登入
+      </button>
+    </div>
+  </div>
+
+  <!-- 登入頁也能看繪馬說明 -->
+  <div class="about-section">
+    <div class="about-card">
+      <div class="about-toggle" onclick="toggleAbout('login')">
+        <div class="about-toggle-title">
+          <span class="icon">🏮</span>
+          <span>關於繪馬 — 千年祈願的傳統</span>
+        </div>
+        <span id="about-arrow-login" class="about-arrow">▼</span>
+      </div>
+      <div id="about-content-login" class="about-content">
+        <div class="about-body">
+          <p><strong>繪馬（絵馬，えま）</strong>是日本神社中用來書寫願望的木製小牌。參拜者將心願寫在繪馬上，繫於神社的架子上，祈求神明保佑願望實現。</p>
+          <div class="about-divider"></div>
+          <p>繪馬的起源可追溯至<span class="hl">奈良時代（710-794年）</span>。古代日本人相信馬是神明的坐騎，因此以活馬獻給神社作為祈願供品。後來因為活馬珍貴且不易飼養，漸漸改用繪有馬匹圖案的木板取代，「繪馬」一詞由此而來。</p>
+          <div class="about-divider"></div>
+          <p>到了<span class="hl">江戶時代（1603-1868年）</span>，繪馬逐漸普及至庶民階層，形狀也固定為我們現在熟悉的五角形木牌。人們在正面繪製圖案，背面寫下心願，舉凡學業、健康、戀愛、事業，各種祈願都能透過繪馬向神明傳達。</p>
+          <div class="about-divider"></div>
+          <p>本祈福牆靈感取自這份延續千年的祈願文化。在新年之際，邀請您寫下心中的祝福，讓美好的願望在這面數位繪馬牆上匯聚 🌸</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
+<!-- ===== MAIN ===== -->
 <div id="screen-main" class="hidden">
-  <div class="user-bar">
-    <div class="user-info">
-      <img id="user-avatar" class="user-avatar" src="" alt="">
-      <span id="user-name"></span>
-    </div>
-    <button class="btn-sm danger" onclick="handleLogout()">登出</button>
-  </div>
+  <div class="user-bar">
+    <div class="user-info">
+      <img id="user-avatar" class="user-avatar" src="" alt="">
+      <span id="user-name"></span>
+    </div>
+    <button class="btn-sm danger" onclick="handleLogout()">登出</button>
+  </div>
 
-  <div class="ema-form-section">
-    <div class="ema-form-card">
-      <div class="ema-form-label" id="form-label">寫下您的新年祝福</div>
-      <textarea id="blessing-input" class="ema-textarea" maxlength="30" placeholder="在此寫下心願..." oninput="handleInput()"></textarea>
-      <div id="char-count" class="char-count">0 / 30</div>
-      <button id="submit-btn" class="ema-submit-btn" onclick="handleSubmit()">繫上繪馬</button>
-    </div>
-  </div>
+  <div class="torii-header">
+    <div class="torii-gate">
+      <div class="torii-pillars left"></div>
+      <div class="torii-pillars right"></div>
+      <h1 class="header-title">新年祈福牆</h1>
+      <p class="header-subtitle">書寫心願 · 繫上繪馬 · 祈願成就</p>
+    </div>
+    <div class="shimenawa">
+      <div class="shimenawa-line"></div>
+      <span class="shimenawa-tassel">🎍</span>
+      <div class="shimenawa-line"></div>
+    </div>
+  </div>
 
-  <div id="my-blessing-actions" class="my-actions hidden">
-    <button class="btn-sm danger" onclick="handleDelete()">🗑 取下我的繪馬</button>
-  </div>
+  <div class="ema-form-section">
+    <div class="ema-form-card">
+      <div class="ema-form-label" id="form-label">寫下您的新年祝福</div>
+      <textarea id="blessing-input" class="ema-textarea" maxlength="30" placeholder="在此寫下心願..." oninput="handleInput()"></textarea>
+      <div id="char-count" class="char-count">0 / 30</div>
+      <button id="submit-btn" class="ema-submit-btn" onclick="handleSubmit()">繫上繪馬</button>
+    </div>
+  </div>
 
-  <div class="wall-section">
-    <div class="wall-title"><span>繪馬祈福牆</span></div>
-    <div id="loading" class="loading"><div class="spinner"></div></div>
-    <div id="ema-wall" class="hidden">
-      <div class="ema-rope">
-        <div id="ema-grid" class="ema-grid"></div>
-      </div>
-    </div>
-    <div id="empty-state" class="empty-state hidden">
-      <p>尚無祝福，成為第一位許願的人吧！</p>
-    </div>
-  </div>
+  <div id="my-blessing-actions" class="my-actions hidden">
+    <button class="btn-sm danger" onclick="handleDelete()">🗑 取下我的繪馬</button>
+  </div>
+
+  <!-- 主頁繪馬說明 -->
+  <div class="about-section">
+    <div class="about-card">
+      <div class="about-toggle" onclick="toggleAbout('main')">
+        <div class="about-toggle-title">
+          <span class="icon">🏮</span>
+          <span>關於繪馬 — 千年祈願的傳統</span>
+        </div>
+        <span id="about-arrow-main" class="about-arrow">▼</span>
+      </div>
+      <div id="about-content-main" class="about-content">
+        <div class="about-body">
+          <p><strong>繪馬（絵馬，えま）</strong>是日本神社中用來書寫願望的木製小牌。參拜者將心願寫在繪馬上，繫於神社的架子上，祈求神明保佑願望實現。</p>
+          <div class="about-divider"></div>
+          <p>繪馬的起源可追溯至<span class="hl">奈良時代（710-794年）</span>。古代日本人相信馬是神明的坐騎，因此以活馬獻給神社作為祈願供品。後來因為活馬珍貴且不易飼養，漸漸改用繪有馬匹圖案的木板取代，「繪馬」一詞由此而來。</p>
+          <div class="about-divider"></div>
+          <p>到了<span class="hl">江戶時代（1603-1868年）</span>，繪馬逐漸普及至庶民階層，形狀也固定為我們現在熟悉的五角形木牌。人們在正面繪製圖案，背面寫下心願，舉凡學業、健康、戀愛、事業，各種祈願都能透過繪馬向神明傳達。</p>
+          <div class="about-divider"></div>
+          <p>本祈福牆靈感取自這份延續千年的祈願文化。在新年之際，邀請您寫下心中的祝福，讓美好的願望在這面數位繪馬牆上匯聚 🌸</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wall-section">
+    <div class="wall-title"><span>繪馬祈福牆</span></div>
+    <div id="loading" class="loading"><div class="spinner"></div></div>
+    <div id="ema-wall" class="hidden">
+      <div class="ema-rope">
+        <div id="ema-grid" class="ema-grid"></div>
+      </div>
+    </div>
+    <div id="empty-state" class="empty-state hidden">
+      <div class="empty-icon">🎐</div>
+      <p>尚無祝福，成為第一位許願的人吧！</p>
+    </div>
+  </div>
+
+  <div class="footer">新年祈福牆 — 願所有心願都能實現 🌸</div>
 </div>
 
 <script>
 const CONFIG={
-  GOOGLE_CLIENT_ID:'973721313231-0no4ivldu33he0kts8k51kn4tqd979g7.apps.googleusercontent.com',
-  API_AUTH:'https://mjib007.zeabur.app/webhook/auth-blessing',
-  API_GET:'https://mjib007.zeabur.app/webhook/blessings-get',
-  API_SAVE:'https://mjib007.zeabur.app/webhook/blessings-save',
-  API_DELETE:'https://mjib007.zeabur.app/webhook/blessings-delete',
+  GOOGLE_CLIENT_ID:'973721313231-0no4ivldu33he0kts8k51kn4tqd979g7.apps.googleusercontent.com',
+  API_AUTH:'https://mjib007.zeabur.app/webhook/auth-blessing',
+  API_GET:'https://mjib007.zeabur.app/webhook/blessings-get',
+  API_SAVE:'https://mjib007.zeabur.app/webhook/blessings-save',
+  API_DELETE:'https://mjib007.zeabur.app/webhook/blessings-delete',
 };
 let currentUser=null,myBlessing=null;
 
-// 配色清單
-const THEMES = ['ema-theme-gold', 'ema-theme-red', 'ema-theme-green', 'ema-theme-blue', 'ema-theme-purple', 'ema-theme-pink'];
-
-async function loadBlessings(){
-  const loading=document.getElementById('loading'),wall=document.getElementById('ema-wall'),grid=document.getElementById('ema-grid');
-  loading.classList.remove('hidden');
-  try{
-    const res=await fetch(CONFIG.API_GET),data=await res.json();
-    loading.classList.add('hidden');
-    if(!data.blessings||data.blessings.length===0){grid.innerHTML='';return}
-    grid.innerHTML='';
-    
-    data.blessings.forEach((b,i)=>{
-      const isOwn=b.googleId===currentUser.googleId;
-      if(isOwn)myBlessing=b;
-      
-      // 這裡實作多采多姿的關鍵：根據索引值循環選取顏色
-      const themeClass = THEMES[i % THEMES.length];
-
-      const w=document.createElement('div');
-      w.className='ema-card-wrapper';
-      w.innerHTML=`
-        <div class="ema-string"></div>
-        <div class="ema-card ${themeClass}" style="animation-delay:${i*0.08}s">
-          <div class="ema-message">${escapeHtml(b.message)}</div>
-          <div class="ema-author">— ${escapeHtml(b.displayName)}</div>
-          ${isOwn?'<div class="ema-own-badge">✦ 我的繪馬</div>':''}
-        </div>`;
-      grid.appendChild(w);
-    });
-    wall.classList.remove('hidden');
-    updateFormState();
-  }catch(e){console.error(e)}
+function toggleAbout(id){
+  document.getElementById('about-content-'+id).classList.toggle('open');
+  document.getElementById('about-arrow-'+id).classList.toggle('open');
 }
 
-// 登入相關
 function initGoogleLogin(){
-  if(typeof google==='undefined'){setTimeout(initGoogleLogin,300);return}
-  google.accounts.id.initialize({client_id:CONFIG.GOOGLE_CLIENT_ID,callback:onGoogleCredential});
+  if(typeof google==='undefined'||!google.accounts){setTimeout(initGoogleLogin,300);return}
+  google.accounts.id.initialize({client_id:CONFIG.GOOGLE_CLIENT_ID,callback:onGoogleCredential,auto_select:false});
 }
 function handleGoogleLogin(){
-  google.accounts.id.prompt();
+  if(typeof google==='undefined'||!google.accounts){showToast('Google 登入元件載入中，請稍後再試');return}
+  google.accounts.id.prompt(n=>{
+    if(n.isNotDisplayed()||n.isSkippedMoment()){
+      google.accounts.oauth2.initTokenClient({client_id:CONFIG.GOOGLE_CLIENT_ID,scope:'profile email',
+        callback:async r=>{
+          if(r.access_token){
+            const res=await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+r.access_token}});
+            const p=await res.json();
+            loginWithProfile({googleId:p.sub,displayName:p.name,email:p.email,photoUrl:p.picture});
+          }
+        }
+      }).requestAccessToken();
+    }
+  });
 }
-function onGoogleCredential(r){
-  const p=parseJwt(r.credential);
-  loginWithProfile({googleId:p.sub,displayName:p.name,email:p.email,photoUrl:p.picture});
-}
-function parseJwt(t){
-  const b=t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
-  return JSON.parse(decodeURIComponent(atob(b).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
-}
+function onGoogleCredential(r){const p=parseJwt(r.credential);loginWithProfile({googleId:p.sub,displayName:p.name,email:p.email,photoUrl:p.picture})}
+function parseJwt(t){const b=t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');return JSON.parse(decodeURIComponent(atob(b).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')))}
+
 async function loginWithProfile(profile){
-  currentUser=profile;
-  sessionStorage.setItem('user',JSON.stringify(currentUser));
-  try{await fetch(CONFIG.API_AUTH,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(profile)})}catch(e){}
-  showMainScreen();
+  currentUser=profile;
+  try{await fetch(CONFIG.API_AUTH,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({googleId:profile.googleId,displayName:profile.displayName,email:profile.email})})}catch(e){console.warn('會員同步失敗',e)}
+  sessionStorage.setItem('user',JSON.stringify(currentUser));
+  showMainScreen();
 }
-function handleLogout(){
-  currentUser=null;sessionStorage.removeItem('user');
-  document.getElementById('screen-login').classList.remove('hidden');
-  document.getElementById('screen-main').classList.add('hidden');
-}
+function handleLogout(){currentUser=null;myBlessing=null;sessionStorage.removeItem('user');document.getElementById('screen-login').classList.remove('hidden');document.getElementById('screen-main').classList.add('hidden')}
+
 async function showMainScreen(){
-  document.getElementById('screen-login').classList.add('hidden');
-  document.getElementById('screen-main').classList.remove('hidden');
-  document.getElementById('user-name').textContent=currentUser.displayName;
-  const a=document.getElementById('user-avatar');
-  if(currentUser.photoUrl){a.src=currentUser.photoUrl;a.style.display=''}else{a.style.display='none'}
-  await loadBlessings();
+  document.getElementById('screen-login').classList.add('hidden');
+  document.getElementById('screen-main').classList.remove('hidden');
+  document.getElementById('user-name').textContent=currentUser.displayName;
+  const a=document.getElementById('user-avatar');
+  if(currentUser.photoUrl){a.src=currentUser.photoUrl;a.style.display=''}else{a.style.display='none'}
+  await loadBlessings();
 }
 
-// 表單操作
+async function loadBlessings(){
+  const loading=document.getElementById('loading'),wall=document.getElementById('ema-wall'),empty=document.getElementById('empty-state'),grid=document.getElementById('ema-grid');
+  loading.classList.remove('hidden');wall.classList.add('hidden');empty.classList.add('hidden');
+  try{
+    const res=await fetch(CONFIG.API_GET),data=await res.json();
+    loading.classList.add('hidden');
+    if(!data.blessings||data.blessings.length===0){empty.classList.remove('hidden');grid.innerHTML='';myBlessing=null;updateFormState();return}
+    grid.innerHTML='';myBlessing=null;
+    data.blessings.forEach((b,i)=>{
+      const isOwn=b.googleId===currentUser.googleId;
+      if(isOwn)myBlessing=b;
+      const w=document.createElement('div');w.className='ema-card-wrapper';
+      w.innerHTML=`<div class="ema-string"></div><div class="ema-card" style="animation-delay:${i*0.08}s"><div class="ema-message">${escapeHtml(b.message)}</div><div class="ema-author">— ${escapeHtml(b.displayName)}</div>${isOwn?'<div class="ema-own-badge">✦ 我的繪馬</div>':''}</div>`;
+      grid.appendChild(w);
+    });
+    wall.classList.remove('hidden');updateFormState();
+  }catch(e){loading.classList.add('hidden');showToast('載入祈福牆失敗，請稍後再試');console.error(e)}
+}
+
 function updateFormState(){
-  const input=document.getElementById('blessing-input'),btn=document.getElementById('submit-btn'),actions=document.getElementById('my-blessing-actions');
-  if(myBlessing){input.value=myBlessing.message;btn.textContent='修改繪馬';actions.classList.remove('hidden')}
-  else{input.value='';btn.textContent='繫上繪馬';actions.classList.add('hidden')}
+  const input=document.getElementById('blessing-input'),btn=document.getElementById('submit-btn'),label=document.getElementById('form-label'),actions=document.getElementById('my-blessing-actions');
+  if(myBlessing){input.value=myBlessing.message;btn.textContent='修改繪馬';label.textContent='修改您的祝福';actions.classList.remove('hidden')}
+  else{input.value='';btn.textContent='繫上繪馬';label.textContent='寫下您的新年祝福';actions.classList.add('hidden')}
+  updateCharCount();
 }
-function handleInput(){
-  const i=document.getElementById('blessing-input');
-  i.value=i.value.replace(/[\r\n]/g,'');
-  document.getElementById('char-count').textContent = i.value.length + ' / 30';
-}
+function handleInput(){const i=document.getElementById('blessing-input');i.value=i.value.replace(/[\r\n]/g,'');updateCharCount()}
+function updateCharCount(){const i=document.getElementById('blessing-input'),c=document.getElementById('char-count'),l=i.value.length;c.textContent=l+' / 30';c.className=l>=28?'char-count warn':'char-count'}
+
 async function handleSubmit(){
-  const msg=document.getElementById('blessing-input').value.trim();
-  if(!msg)return;
-  try{
-    await fetch(CONFIG.API_SAVE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({googleId:currentUser.googleId,displayName:currentUser.displayName,message:msg})});
-    showToast('成功！');await loadBlessings();
-  }catch(e){}
-}
-async function handleDelete(){
-  if(!confirm('確定取下嗎？'))return;
-  try{
-    await fetch(CONFIG.API_DELETE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({googleId:currentUser.googleId})});
-    myBlessing=null;await loadBlessings();
-  }catch(e){}
+  const input=document.getElementById('blessing-input'),msg=input.value.trim(),btn=document.getElementById('submit-btn');
+  if(!msg){showToast('請寫下您的祝福 🙏');return}
+  if(msg.length>30){showToast('祝福語不能超過 30 字');return}
+  btn.disabled=true;btn.textContent='祈願中...';
+  try{
+    const res=await fetch(CONFIG.API_SAVE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({googleId:currentUser.googleId,displayName:currentUser.displayName,message:msg})});
+    const data=await res.json();
+    if(data.success){showToast(data.action==='updated'?'繪馬已更新 ✨':'繪馬已繫上 🎍');await loadBlessings()}else{showToast(data.error||'操作失敗')}
+  }catch(e){showToast('儲存失敗，請稍後再試');console.error(e)}
+  btn.disabled=false;updateFormState();
 }
 
-// 輔助功能
-function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
-function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
-function createPetals(){
-  const c=document.getElementById('petals-container');
-  for(let i=0;i<10;i++){
-    const p=document.createElement('div');p.className='petal';p.style.left=Math.random()*100+'vw';
-    p.style.animationDuration=(7+Math.random()*8)+'s';p.style.animationDelay=(Math.random()*10)+'s';
-    c.appendChild(p);
-  }
+async function handleDelete(){
+  if(!confirm('確定要取下您的繪馬嗎？'))return;
+  try{
+    const res=await fetch(CONFIG.API_DELETE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({googleId:currentUser.googleId})});
+    const data=await res.json();
+    if(data.success){showToast('繪馬已取下 🍃');myBlessing=null;await loadBlessings()}else{showToast(data.error||'刪除失敗')}
+  }catch(e){showToast('刪除失敗，請稍後再試');console.error(e)}
 }
+
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function createPetals(){const c=document.getElementById('petals-container'),n=window.innerWidth<600?5:10;for(let i=0;i<n;i++){const p=document.createElement('div');p.className='petal';p.style.left=Math.random()*100+'vw';p.style.animationDuration=(7+Math.random()*8)+'s';p.style.animationDelay=(Math.random()*12)+'s';p.style.width=(7+Math.random()*7)+'px';p.style.height=p.style.width;c.appendChild(p)}}
+
 window.addEventListener('DOMContentLoaded',()=>{
-  createPetals();initGoogleLogin();
-  const s=sessionStorage.getItem('user');
-  if(s){currentUser=JSON.parse(s);showMainScreen()}
+  createPetals();initGoogleLogin();
+  const s=sessionStorage.getItem('user');
+  if(s){currentUser=JSON.parse(s);showMainScreen()}
 });
 </script>
 </body>
