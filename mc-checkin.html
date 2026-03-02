@@ -542,9 +542,7 @@
                     <input 
                         type="text" 
                         id="manualInput" 
-                        placeholder="請輸入編號 (如: A001, B015)"
-                        maxlength="4"
-                        pattern="[A-Za-z][0-9]{3}"
+                        placeholder="請輸入編號或姓名"
                     >
                     <button class="btn btn-primary" id="manualBtn" onclick="manualCheckIn()">
                         ✅ 手動報到
@@ -707,8 +705,7 @@
 
         // 驗證編號格式 (A001 格式)
         function validateAttendeeId(id) {
-            const pattern = /^[A-Z][0-9]{3}$/;
-            return pattern.test(id);
+        return id.length >= 2; // 只要長度大於等於 2 即可（支援姓名與編號）;
         }
 
         // 手動輸入
@@ -924,17 +921,18 @@
             }
         });
 
-        // 輸入格式化
+        // 註釋掉這段，否則無法輸入中文姓名
+        /*
         document.getElementById('manualInput').addEventListener('input', function(e) {
             let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
             
-            // 更寬鬆的格式化：允許用戶自由輸入，只在最後限制長度
             if (value.length > 4) {
                 value = value.slice(0, 4);
             }
             
             e.target.value = value;
         });
+        */
 
         // 頁面載入時初始化
         window.addEventListener('load', () => {
