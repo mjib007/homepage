@@ -739,7 +739,7 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        編號: attendeeId,
+                        keyword: attendeeId,
                         timestamp: new Date().toISOString()
                     }),
                     signal: AbortSignal.timeout(10000) // 10秒超時
