@@ -676,29 +676,54 @@
             document.getElementById('vipCount').textContent = `${filteredData.length} 位`;
         }
 
-        // 建立貴賓項目
-        function createVipItem(vip) {
-            const isCheckedIn = vip.報到狀態 === 'OK';
-            const checkinTime = vip.報到時間 ? new Date(vip.報到時間).toLocaleString('zh-TW') : '';
+// 建立貴賓項目
+function createVipItem(vip) {
+    const isCheckedIn = vip.報到狀態 === 'OK';
+    let timeDisplay = "";
+
+    // 強化解析邏輯，處理「上午/下午」格式
+    if (isCheckedIn && vip.報到時間) {
+        try {
+            let isPM = vip.報到時間.includes('下午');
+            let cleanStr = vip.報到時間.replace('下午', '').replace('上午', '').trim();
+            let d = new Date(cleanStr);
             
-            return `
-                <div class="vip-item ${isCheckedIn ? 'checked-in' : 'not-checked-in'}">
-                    <div class="vip-info">
-                        <div class="vip-name">${vip.姓名}</div>
-                        <div class="vip-details">
-                            <div>📍 ${vip.桌次}桌 (${vip.編號}) • ${vip.單位}</div>
-                            ${vip.職稱 ? `<div>💼 ${vip.職稱}</div>` : ''}
-                        </div>
-                    </div>
-                    <div class="vip-status">
-                        <div class="status-indicator ${isCheckedIn ? 'status-present' : 'status-absent'}">
-                            ${isCheckedIn ? '已報到' : '未報到'}
-                        </div>
-                        ${checkinTime ? `<div class="checkin-time">${checkinTime}</div>` : ''}
-                    </div>
-                </div>
-            `;
+            if (isPM && d.getHours() < 12) {
+                d.setHours(d.getHours() + 12);
+            }
+
+            if (!isNaN(d.getTime())) {
+                timeDisplay = d.toLocaleTimeString('zh-TW', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    hour12: false 
+                });
+            } else {
+                timeDisplay = vip.報到時間; // 解析失敗則顯示原字串
+            }
+        } catch (e) {
+            timeDisplay = vip.報到時間;
         }
+    }
+    
+    return `
+        <div class="vip-item ${isCheckedIn ? 'checked-in' : 'not-checked-in'}">
+            <div class="vip-info">
+                <div class="vip-name">${vip.姓名}</div>
+                <div class="vip-details">
+                    <div>📍 ${vip.桌次}桌 (${vip.編號}) • ${vip.單位}</div>
+                    ${vip.職稱 ? `<div>💼 ${vip.職稱}</div>` : ''}
+                </div>
+            </div>
+            <div class="vip-status">
+                <div class="status-indicator ${isCheckedIn ? 'status-present' : 'status-absent'}">
+                    ${isCheckedIn ? '已報到' : '未報到'}
+                </div>
+                ${timeDisplay ? `<div class="checkin-time">${timeDisplay}</div>` : ''}
+            </div>
+        </div>
+    `;
+}
 
         // 篩選貴賓
         function filterVips(filter) {
