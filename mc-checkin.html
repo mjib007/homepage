@@ -38,7 +38,6 @@
             overflow-x: hidden;
         }
 
-        /* 動態背景效果 */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -69,7 +68,6 @@
             66% { transform: translate(-20px, 20px) scale(0.9); }
         }
 
-        /* 主容器 - 改為單欄布局 */
         .main-container {
             display: flex;
             justify-content: center;
@@ -80,7 +78,6 @@
             min-height: 100vh;
         }
 
-        /* 掃描區域 */
         .scan-section {
             background: var(--surface-light);
             border-radius: 24px;
@@ -107,30 +104,29 @@
             position: relative;
             z-index: 1;
             text-align: center;
-            margin-bottom: 20px; /* 從 40px 縮小到 20px */
+            margin-bottom: 20px;
         }
 
         .scan-title {
-            font-size: 2rem; /* 從 2.5rem 縮小到 2rem */
+            font-size: 2rem;
             font-weight: 900;
             background: var(--scan-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 8px; /* 從 10px 縮小到 8px */
+            margin-bottom: 8px;
             line-height: 1.2;
         }
 
         .scan-subtitle {
-            font-size: 0.95rem; /* 從 1.1rem 縮小到 0.95rem */
+            font-size: 0.95rem;
             color: var(--text-muted);
             font-weight: 300;
         }
 
-        /* 立即結果顯示區域 */
         .immediate-result {
-            margin: 15px 0; /* 從 20px 減少到 15px */
-            min-height: 60px; /* 從 100px 大幅減少到 60px */
+            margin: 15px 0;
+            min-height: 60px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -147,13 +143,12 @@
             margin: 0;
         }
 
-        /* QR掃描器 - 大幅優化 */
         #qr-reader {
             position: relative;
             z-index: 1;
             width: 100%;
             max-width: 600px;
-            margin: 0 auto 20px; /* 從 30px 減少到 20px */
+            margin: 0 auto 20px;
             border-radius: 20px;
             overflow: hidden;
             background: #000;
@@ -163,7 +158,6 @@
             background-clip: padding-box, border-box;
         }
 
-        /* 強化掃描框樣式 */
         #qr-reader video {
             width: 100% !important;
             height: 400px !important;
@@ -177,10 +171,9 @@
             border-radius: 16px;
         }
 
-        /* 掃描狀態指示器 */
         .scan-status {
             text-align: center;
-            margin-bottom: 15px; /* 從 30px 縮小到 15px */
+            margin-bottom: 15px;
         }
 
         .status-indicator {
@@ -218,11 +211,10 @@
             50% { opacity: 0.7; }
         }
 
-        /* 控制按鈕 */
         .controls {
             display: flex;
             gap: 15px;
-            margin-bottom: 20px; /* 從 30px 減少到 20px */
+            margin-bottom: 20px;
             justify-content: center;
         }
 
@@ -301,17 +293,21 @@
             gap: 12px;
         }
 
-        .manual-input input {
+        .input-wrapper {
             flex: 1;
+            position: relative;
+        }
+
+        .manual-input input {
+            width: 100%;
             padding: 16px 20px;
             font-size: 1rem;
             background: #ffffff !important;
             border: 2px solid #ddd !important;
             border-radius: 12px;
             color: #333333 !important;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Noto Sans TC', 'JetBrains Mono', monospace;
             letter-spacing: 1px;
-            text-transform: uppercase;
             position: relative;
             z-index: 10;
             pointer-events: auto;
@@ -319,7 +315,7 @@
 
         .manual-input input:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: var(--accent) !important;
             box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.2);
         }
 
@@ -329,7 +325,101 @@
             letter-spacing: normal;
         }
 
-        /* 快捷功能按鈕區域 */
+        /* ===== Autocomplete 下拉選單 ===== */
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 2px solid var(--accent);
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            max-height: 280px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .autocomplete-dropdown.show {
+            display: block;
+            animation: dropdownSlide 0.2s ease;
+        }
+
+        @keyframes dropdownSlide {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .autocomplete-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            transition: background 0.15s ease;
+            color: #333;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 1rem;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.active {
+            background: #fff0f3;
+        }
+
+        .autocomplete-item .name {
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: #1a1a2e;
+        }
+
+        .autocomplete-item .name .highlight {
+            color: var(--accent);
+            background: rgba(233, 69, 96, 0.1);
+            border-radius: 3px;
+            padding: 0 2px;
+        }
+
+        .autocomplete-item .id-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: #888;
+            background: #f0f0f0;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+        }
+
+        .autocomplete-dropdown::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .autocomplete-dropdown::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .autocomplete-dropdown::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+
+        .autocomplete-count {
+            padding: 8px 20px;
+            font-size: 0.8rem;
+            color: #999;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            background: #fafafa;
+        }
+
+        /* ===== 快捷功能按鈕區域 ===== */
         .quick-actions {
             display: flex;
             gap: 15px;
@@ -342,26 +432,15 @@
             flex: 1;
             min-width: 140px;
             font-size: 0.9rem;
+            width: 100%;
+            margin-bottom: 12px;
+            justify-content: center;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-
-        @media (max-width: 768px) {
-            .quick-actions {
-                flex-direction: column;
-            }
-            
-            .quick-actions .btn {
-                width: 100%;
-            }
-        }
-
-        /* 立即結果顯示區域 */
 
         /* 結果顯示 */
-        .result-section {
-            position: relative;
-            z-index: 1;
-        }
-
         .result {
             padding: 24px;
             border-radius: 16px;
@@ -372,14 +451,8 @@
         }
 
         @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .result.success {
@@ -414,7 +487,6 @@
             font-weight: 400;
         }
 
-        /* 載入動畫 */
         .loading {
             display: none;
             text-align: center;
@@ -436,20 +508,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* 快捷功能按鈕 */
-        .quick-actions {
-            margin-top: 30px;
-        }
-
-        .quick-actions .btn {
-            width: 100%;
-            margin-bottom: 12px;
-            justify-content: center;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
         /* 響應式設計 */
         @media (max-width: 1200px) {
             .main-container {
@@ -459,24 +517,14 @@
         }
 
         @media (max-width: 768px) {
-            .scan-title {
-                font-size: 2rem;
-            }
-            
-            .controls {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-            }
-            
-            .input-group {
-                flex-direction: column;
-            }
+            .scan-title { font-size: 2rem; }
+            .controls { flex-direction: column; }
+            .btn { width: 100%; }
+            .input-group { flex-direction: column; }
+            .quick-actions { flex-direction: column; }
+            .quick-actions .btn { width: 100%; }
         }
 
-        /* 音效提示視覺化 */
         .sound-wave {
             display: none;
             position: fixed;
@@ -501,11 +549,10 @@
     <div class="sound-wave" id="soundWave">🔊</div>
 
     <div class="main-container">
-        <!-- 主要掃描區域 -->
         <div class="scan-section">
             <div class="scan-header">
                 <h1 class="scan-title">🎪 活動報到系統</h1>
-                <p class="scan-subtitle">掃描 QR Code 或手動輸入編號進行報到</p>
+                <p class="scan-subtitle">掃描 QR Code 或手動輸入編號／姓名進行報到</p>
             </div>
 
             <div class="scan-status">
@@ -517,13 +564,11 @@
 
             <div id="qr-reader"></div>
 
-            <!-- 立即結果顯示區域 - 放在掃描器後面 -->
             <div class="immediate-result">
                 <div id="loading" class="loading">
                     <div class="spinner"></div>
                     <p>處理中，請稍候...</p>
                 </div>
-                
                 <div id="result" class="result"></div>
             </div>
 
@@ -537,20 +582,23 @@
             </div>
 
             <div class="manual-input">
-                <h3 class="manual-title">💾 手動輸入</h3>
+                <h3 class="manual-title">💾 手動輸入（編號或姓名）</h3>
                 <div class="input-group">
-                    <input 
-                        type="text" 
-                        id="manualInput" 
-                        placeholder="請輸入編號或姓名"
-                    >
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            id="manualInput" 
+                            placeholder="請輸入編號（如 A001）或姓名（如 陳）"
+                            autocomplete="off"
+                        >
+                        <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+                    </div>
                     <button class="btn btn-primary" id="manualBtn" onclick="manualCheckIn()">
                         ✅ 手動報到
                     </button>
                 </div>
             </div>
 
-            <!-- 快捷功能按鈕區域 -->
             <div class="quick-actions">
                 <button class="btn btn-secondary" onclick="openMCInterface()">
                     🎤 司儀介面
@@ -566,49 +614,195 @@
     </div>
 
     <script>
-        // 設定值
+        // ===== 賓客名單 =====
+        const GUEST_LIST = [
+            {id:"A001",name:"謝哲勝"},{id:"A002",name:"郭宏榮"},{id:"A003",name:"邱泰源"},{id:"A004",name:"張進德"},
+            {id:"A005",name:"甘添貴"},{id:"A006",name:"甘添貴夫人"},{id:"A007",name:"吳陳鐶"},{id:"A008",name:"阮富枝"},
+            {id:"A009",name:"王文宇"},{id:"A010",name:"吳永乾"},{id:"B001",name:"許兆慶"},{id:"B002",name:"林欣頤"},
+            {id:"B003",name:"邱若曄"},{id:"B004",name:"高子淵"},{id:"B005",name:"李盈佳"},{id:"B006",name:"杜欣怡"},
+            {id:"B007",name:"江承勳"},{id:"B008",name:"莊永丞"},{id:"B009",name:"許恆豪"},{id:"B010",name:"劉兆生"},
+            {id:"B011",name:"王志誠"},{id:"C001",name:"李兆環"},{id:"C002",name:"李昭澈"},{id:"C003",name:"李昭澈夫人"},
+            {id:"C004",name:"劉宜廉"},{id:"C005",name:"邱宏正"},{id:"C006",name:"林羿妙"},{id:"C007",name:"張文瀚"},
+            {id:"C008",name:"洪德仁"},{id:"C009",name:"周賢章"},{id:"C010",name:"周迺寬"},
+            {id:"D001",name:"黃健彰"},{id:"D002",name:"林洲富"},{id:"D003",name:"黃維民"},{id:"D004",name:"郭土木"},
+            {id:"D005",name:"杜怡靜"},{id:"D006",name:"吳光明"},{id:"D007",name:"王立達"},{id:"D008",name:"游悅晨"},
+            {id:"D009",name:"黃明發"},{id:"D010",name:"許文章"},
+            {id:"E001",name:"張靜怡"},{id:"E002",name:"李金松"},{id:"E003",name:"黃帥升"},{id:"E004",name:"洪志勳"},
+            {id:"E005",name:"趙文銘"},{id:"E006",name:"蔡垂良"},{id:"E007",name:"黃素慧"},{id:"E008",name:"劉素岑"},
+            {id:"E009",name:"李依珊"},{id:"E010",name:"張至穎"},
+            {id:"F001",name:"吳小燕"},{id:"F002",name:"紀振清"},{id:"F003",name:"楊智傑"},{id:"F004",name:"張永明"},
+            {id:"F005",name:"周柏瀚"},{id:"F006",name:"李福隆"},{id:"F007",name:"呂豐真"},{id:"F008",name:"陳秀峯"},
+            {id:"F009",name:"喬書漢"},{id:"F010",name:"吳文賓"},
+            {id:"G001",name:"林家祺"},{id:"G002",name:"楊國甫"},{id:"G003",name:"王國武"},{id:"G004",name:"林俊斌"},
+            {id:"G005",name:"王啟逡"},{id:"G006",name:"鄭錦鳳"},{id:"G007",name:"陳清雲"},{id:"G008",name:"許書銘"},
+            {id:"G009",name:"陳詩凡"},{id:"G010",name:"李岳樵"},
+            {id:"H001",name:"張鈺光"},{id:"H002",name:"吳光平"},{id:"H003",name:"張大為"},{id:"H004",name:"洪詩棠"},
+            {id:"H005",name:"馬躍中"},{id:"H006",name:"葉啟洲"},{id:"H007",name:"陳棻煐"},{id:"H008",name:"方元沂"},
+            {id:"H009",name:"許耀明"},{id:"H010",name:"賴瀅如"},
+            {id:"I001",name:"蔡志賢"},{id:"I002",name:"羅士傑"},{id:"I003",name:"王伯頎"},{id:"I004",name:"王彥鈞"},
+            {id:"I005",name:"吳銘軒"},{id:"I006",name:"高仁川"},{id:"I007",name:"蘇南"},{id:"I008",name:"古振暉"},
+            {id:"I009",name:"歐博翔"},{id:"I010",name:"林恩瑋"},
+            {id:"J001",name:"張麗卿"},{id:"J002",name:"陳明燦"},{id:"J003",name:"蔡佳晉"},{id:"J004",name:"蔡岳勳"},
+            {id:"J005",name:"宮文祥"},{id:"J006",name:"宋皇志"},{id:"J007",name:"劉威佐"},{id:"J008",name:"黃凱文"},
+            {id:"K001",name:"趙之敏"},{id:"K002",name:"葉詠翔"},{id:"K003",name:"郭俊麟"},{id:"K004",name:"陳志鴻"},
+            {id:"K005",name:"何叔孋"},{id:"K006",name:"陳李聰"},{id:"K007",name:"黃綉鈴"},{id:"K008",name:"趙原孫"},
+            {id:"K009",name:"鄭雲鵬"},{id:"K010",name:"張加慶"},
+            {id:"L001",name:"鄭惠佳"},{id:"L002",name:"廖建瑜"},{id:"L003",name:"鄧學仁"},{id:"L004",name:"李銀英"},
+            {id:"L005",name:"劉士豪"},{id:"L006",name:"黃鈺慧"},{id:"L007",name:"戴冬梅"},{id:"L008",name:"江泠"},
+            {id:"L009",name:"連堂凱"},{id:"L010",name:"姚淑文"},
+            {id:"M001",name:"林依依"},{id:"M002",name:"陳裕仁"},{id:"M003",name:"簡定國"},{id:"M004",name:"邱明善"},
+            {id:"M005",name:"李崇僖"},
+            {id:"N001",name:"施文捷"},{id:"N002",name:"林芯瑜"},{id:"N003",name:"蕭易知"},{id:"N004",name:"陳婉婷"},
+            {id:"N005",name:"張承仁"},{id:"N006",name:"蔡維德"},{id:"N007",name:"李詩應"},{id:"N008",name:"陳永綺"},
+            {id:"N009",name:"陳文雯"},
+            {id:"P001",name:"王逸頎"},{id:"P002",name:"張書鳳"},{id:"P003",name:"張文靜"},{id:"P004",name:"邱玟惠"},
+            {id:"P005",name:"吳秀玲"},{id:"P006",name:"沈永康"},{id:"P007",name:"翁紹仁"},{id:"P008",name:"謝一淅"},
+            {id:"P009",name:"徐慧鈴"},{id:"P010",name:"許有杉"},
+            {id:"Q001",name:"王煦棋"},{id:"Q002",name:"蔡鐘慶"},{id:"Q003",name:"陳蕙君"},{id:"Q004",name:"許献進"},
+            {id:"Q005",name:"張少騰"},{id:"Q006",name:"楊薪頻"},{id:"Q007",name:"何家瑋"},{id:"Q008",name:"王士維"},
+            {id:"Q009",name:"曾國祐"},{id:"Q010",name:"曾國祐夫人"},
+            {id:"R001",name:"錢世傑"},{id:"R002",name:"謝偉廉"},{id:"R003",name:"高敬棠"},{id:"R004",name:"周致玄"},
+            {id:"R005",name:"鄒熙華"},{id:"R006",name:"黃書炫"},{id:"R007",name:"王睿騰"},{id:"R008",name:"劉人睿"},
+            {id:"R009",name:"鄧景丰"},{id:"R010",name:"謝偉丞"},
+            {id:"S001",name:"劉文珍"},{id:"S002",name:"林慧貞"},{id:"S003",name:"蕭惠文"},{id:"S004",name:"鄭婷文"},
+            {id:"S005",name:"余文玲"},{id:"S006",name:"林淑婉"},{id:"S007",name:"侯淑津"},{id:"S008",name:"紀惠玲"},
+            {id:"S009",name:"江秀敏"},{id:"S010",name:"陳育萱"},
+            {id:"T001",name:"鄧芸芸"},{id:"T002",name:"芸芸友人"},{id:"T003",name:"芸芸友人"},{id:"T004",name:"芸芸友人"},
+            {id:"T005",name:"芸芸友人"},{id:"T006",name:"李亮君"},{id:"T007",name:"林伯威"},{id:"T008",name:"李若瑋"},
+            {id:"T009",name:"林仕傑"},
+            {id:"A011",name:"賴來焜"},{id:"A012",name:"潘維大"},{id:"A013",name:"李復甸"},{id:"A014",name:"傅文芳"},
+            {id:"A015",name:"邱聰智"},{id:"A016",name:"林美玉"},{id:"A017",name:"廖義男"},{id:"A018",name:"林秀麗"},
+            {id:"A019",name:"陳聰富"},{id:"A020",name:"郭敏能"},{id:"A021",name:"陳冲"},{id:"A022",name:"謝永誌"},
+            {id:"A023",name:"吳昭瑩"},{id:"A024",name:"朱柏松"},{id:"A025",name:"于俊明"}
+        ];
+
+        // ===== Autocomplete 邏輯 =====
+        const input = document.getElementById('manualInput');
+        const dropdown = document.getElementById('autocompleteDropdown');
+        let activeIndex = -1; // 鍵盤選取索引
+        let filteredList = [];
+
+        // 判斷是否為中文字元
+        function isChinese(str) {
+            return /[\u4e00-\u9fff]/.test(str);
+        }
+
+        // 輸入事件 → 篩選並顯示建議
+        input.addEventListener('input', function() {
+            const val = this.value.trim();
+            activeIndex = -1;
+
+            // 空值或純英數（編號模式）→ 隱藏下拉
+            if (!val || !isChinese(val)) {
+                hideDropdown();
+                return;
+            }
+
+            // 中文模式 → 過濾名單
+            filteredList = GUEST_LIST.filter(g => g.name.includes(val));
+
+            if (filteredList.length === 0) {
+                dropdown.innerHTML = '<div class="autocomplete-count">查無符合的賓客</div>';
+                dropdown.classList.add('show');
+                return;
+            }
+
+            renderDropdown(val);
+        });
+
+        function renderDropdown(keyword) {
+            let html = `<div class="autocomplete-count">找到 ${filteredList.length} 位賓客</div>`;
+
+            filteredList.forEach((guest, idx) => {
+                // 高亮匹配文字
+                const highlightedName = guest.name.replace(
+                    keyword,
+                    `<span class="highlight">${keyword}</span>`
+                );
+                html += `
+                    <div class="autocomplete-item" data-index="${idx}"
+                         onmousedown="selectGuest(${idx})">
+                        <span class="name">${highlightedName}</span>
+                        <span class="id-badge">${guest.id}</span>
+                    </div>
+                `;
+            });
+
+            dropdown.innerHTML = html;
+            dropdown.classList.add('show');
+        }
+
+        function selectGuest(idx) {
+            const guest = filteredList[idx];
+            if (!guest) return;
+            input.value = guest.name;
+            hideDropdown();
+            // 自動觸發報到
+            manualCheckIn();
+        }
+
+        function hideDropdown() {
+            dropdown.classList.remove('show');
+            dropdown.innerHTML = '';
+            activeIndex = -1;
+        }
+
+        // 鍵盤上下選取 + Enter 確認
+        input.addEventListener('keydown', function(e) {
+            if (!dropdown.classList.contains('show') || filteredList.length === 0) return;
+
+            const items = dropdown.querySelectorAll('.autocomplete-item');
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activeIndex = Math.min(activeIndex + 1, items.length - 1);
+                updateActiveItem(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeIndex = Math.max(activeIndex - 1, 0);
+                updateActiveItem(items);
+            } else if (e.key === 'Enter' && activeIndex >= 0) {
+                e.preventDefault();
+                selectGuest(activeIndex);
+            }
+        });
+
+        function updateActiveItem(items) {
+            items.forEach(item => item.classList.remove('active'));
+            if (items[activeIndex]) {
+                items[activeIndex].classList.add('active');
+                items[activeIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        // 點擊外部關閉
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.input-wrapper')) {
+                hideDropdown();
+            }
+        });
+
+        // ===== 設定值 =====
         const WEBHOOK_URL = 'https://mjib007.zeabur.app/webhook/checkin';
         
         let html5QrCode;
         let isScanning = false;
 
-        // 狀態指示器更新
         function updateStatus(type, message) {
             const indicator = document.getElementById('statusIndicator');
             indicator.className = `status-indicator status-${type}`;
-            
-            const icons = {
-                ready: '⚪',
-                scanning: '🔴',
-                processing: '🟡',
-                success: '🟢',
-                error: '🔴'
-            };
-            
-            indicator.innerHTML = `
-                <span>${icons[type] || '⚪'}</span>
-                <span>${message}</span>
-            `;
+            const icons = { ready: '⚪', scanning: '🔴', processing: '🟡', success: '🟢', error: '🔴' };
+            indicator.innerHTML = `<span>${icons[type] || '⚪'}</span><span>${message}</span>`;
         }
 
-        // 改進的掃描啟動函數 - 增大掃描框
         function startScanning() {
-            const config = {
-                fps: 10,
-                qrbox: { width: 350, height: 350 }, // 增大到 350x350
-                aspectRatio: 1.0
-            };
-
+            const config = { fps: 10, qrbox: { width: 350, height: 350 }, aspectRatio: 1.0 };
             html5QrCode = new Html5Qrcode("qr-reader");
-            
             document.getElementById('startBtn').disabled = true;
             updateStatus('processing', '正在啟動相機...');
             
             html5QrCode.start(
-                { facingMode: "environment" },
-                config,
-                onScanSuccess,
-                onScanError
+                { facingMode: "environment" }, config, onScanSuccess, onScanError
             ).then(() => {
                 isScanning = true;
                 document.getElementById('startBtn').style.display = 'none';
@@ -639,50 +833,30 @@
             }
         }
 
-        // 防抖處理掃描成功
         let lastScanTime = 0;
-        const SCAN_COOLDOWN = 2000; // 2秒冷卻時間
+        const SCAN_COOLDOWN = 2000;
 
         async function onScanSuccess(decodedText) {
-            console.log('🎯 QR Code 掃描成功！原始內容:', decodedText);
-            
             const now = Date.now();
-            if (now - lastScanTime < SCAN_COOLDOWN) {
-                console.log('⏰ 跳過掃描（冷卻時間）');
-                return; // 跳過過於頻繁的掃描
-            }
+            if (now - lastScanTime < SCAN_COOLDOWN) return;
             lastScanTime = now;
 
-            // 暫停掃描
-            if (html5QrCode && isScanning) {
-                await html5QrCode.pause();
-            }
-
+            if (html5QrCode && isScanning) await html5QrCode.pause();
             updateStatus('processing', '處理 QR Code...');
 
-            // 驗證編號格式
             let attendeeId = decodedText.trim().toUpperCase();
-            console.log('📝 處理後的內容:', attendeeId);
             
             if (!validateAttendeeId(attendeeId)) {
-                console.log('❌ 格式驗證失敗，嘗試 JSON 解析');
-                // 嘗試解析 JSON
                 try {
                     const qrData = JSON.parse(decodedText);
-                    console.log('✅ JSON 解析成功:', qrData);
                     attendeeId = qrData.編號 || qrData.id || qrData.attendee_id;
-                    console.log('📋 提取的編號:', attendeeId);
                 } catch (e) {
-                    console.error('🚫 JSON 解析失敗:', e);
                     showResult('error', '無效的 QR Code', '請確認 QR Code 格式正確');
                     resumeScanning();
                     return;
                 }
-            } else {
-                console.log('✅ 格式驗證通過');
             }
             
-            console.log('🚀 準備發送報到請求，編號:', attendeeId);
             await processCheckIn(attendeeId);
             resumeScanning();
         }
@@ -697,37 +871,40 @@
         }
 
         function onScanError(errorMessage) {
-            // 忽略掃描錯誤，只在控制台記錄
             if (errorMessage && !errorMessage.includes('No QR code found')) {
                 console.log('掃描訊息:', errorMessage);
             }
         }
 
-        // 驗證編號格式 (A001 格式)
         function validateAttendeeId(id) {
-        return id.length >= 2; // 只要長度大於等於 2 即可（支援姓名與編號）;
+            return id.length >= 2;
         }
 
-        // 手動輸入
         async function manualCheckIn() {
-            const inputValue = document.getElementById('manualInput').value.trim().toUpperCase();
+            const inputValue = document.getElementById('manualInput').value.trim();
+            hideDropdown();
 
-            if (!validateAttendeeId(inputValue)) {
-                showResult('error', '格式錯誤', '請輸入正確格式 (如: A001, B015)');
+            if (!inputValue || inputValue.length < 2) {
+                showResult('error', '輸入不足', '請輸入至少 2 個字元');
                 return;
+            }
+
+            // 判斷是中文姓名還是編號
+            let keyword = inputValue;
+            if (!isChinese(inputValue)) {
+                keyword = inputValue.toUpperCase();
             }
 
             document.getElementById('manualBtn').disabled = true;
             updateStatus('processing', '處理手動輸入...');
 
-            await processCheckIn(inputValue);
+            await processCheckIn(keyword);
 
             document.getElementById('manualInput').value = '';
             document.getElementById('manualBtn').disabled = false;
             updateStatus('ready', '系統就緒');
         }
 
-        // 統一的報到處理函數
         async function processCheckIn(attendeeId) {
             document.getElementById('loading').style.display = 'block';
             document.getElementById('result').style.display = 'none';
@@ -735,78 +912,52 @@
             try {
                 const response = await fetch(WEBHOOK_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         keyword: attendeeId,
                         timestamp: new Date().toISOString()
                     }),
-                    signal: AbortSignal.timeout(10000) // 10秒超時
+                    signal: AbortSignal.timeout(10000)
                 });
 
                 document.getElementById('loading').style.display = 'none';
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
+                if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
 
                 const result = await response.json();
                 handleCheckInResult(result);
 
             } catch (error) {
                 document.getElementById('loading').style.display = 'none';
-                
                 let errorMessage = '系統暫時無法使用';
-                if (error.name === 'TimeoutError') {
-                    errorMessage = '請求超時，請重試';
-                } else if (error.message.includes('Failed to fetch')) {
-                    errorMessage = '網路連線錯誤';
-                }
-                
+                if (error.name === 'TimeoutError') errorMessage = '請求超時，請重試';
+                else if (error.message.includes('Failed to fetch')) errorMessage = '網路連線錯誤';
                 showResult('error', '❌ 系統錯誤', errorMessage);
                 playSound('error');
                 updateStatus('error', '處理失敗');
             }
         }
 
-        // 處理報到結果
         function handleCheckInResult(result) {
-            
             if (result.status === 'success') {
                 showResult('success', '✅ 報到成功！', 
-                    `編號：${result.編號}\n` +
-                    `姓名：${result.姓名}\n` +
-                    `職稱：${result.職稱 || result['職稱'] || '未提供'}\n` +
-                    `桌次：${result.桌次 || '未指定'}\n` + 
-                    `單位：${result.單位}\n` +
-                    `時間：${result.報到時間}`
+                    `編號：${result.編號}\n姓名：${result.姓名}\n職稱：${result.職稱 || '未提供'}\n桌次：${result.桌次 || '未指定'}\n單位：${result.單位}\n時間：${result.報到時間}`
                 );
                 playSound('success');
                 updateStatus('success', '報到成功');
-                
             } else if (result.status === 'duplicate') {
                 showResult('duplicate', '⚠️ 重複報到', 
-                    `編號：${result.編號}\n` +
-                    `姓名：${result.姓名}\n` +
-                    `職稱：${result.職稱 || result['職稱'] || '未提供'}\n` +
-                    `桌次：${result.桌次 || '未指定'}\n` +
-                    `單位：${result.單位}\n` +
-                    `首次報到：${result.報到時間}`
+                    `編號：${result.編號}\n姓名：${result.姓名}\n職稱：${result.職稱 || '未提供'}\n桌次：${result.桌次 || '未指定'}\n單位：${result.單位}\n首次報到：${result.報到時間}`
                 );
                 playSound('duplicate');
                 updateStatus('ready', '重複報到');
-                
             } else {
-                showResult('error', '❌ 報到失敗', 
-                    result.message || '查無此編號，請確認是否正確'
-                );
+                showResult('error', '❌ 報到失敗', result.message || '查無此編號，請確認是否正確');
                 playSound('error');
                 updateStatus('error', '報到失敗');
             }
         }
 
-        // 顯示結果
         function showResult(type, title, detail) {
             const resultDiv = document.getElementById('result');
             resultDiv.className = `result ${type}`;
@@ -816,40 +967,25 @@
             `;
             resultDiv.style.display = 'block';
 
-            // 自動隱藏成功結果（延長顯示時間）
             if (type === 'success' || type === 'duplicate') {
-                // 添加手動關閉按鈕
                 const closeBtn = document.createElement('button');
                 closeBtn.innerHTML = '✕ 關閉';
                 closeBtn.style.cssText = `
-                    position: absolute;
-                    top: 10px;
-                    right: 15px;
-                    background: rgba(0,0,0,0.1);
-                    border: none;
-                    padding: 5px 10px;
-                    border-radius: 15px;
-                    cursor: pointer;
-                    font-size: 0.8rem;
-                    color: inherit;
+                    position: absolute; top: 10px; right: 15px;
+                    background: rgba(0,0,0,0.1); border: none;
+                    padding: 5px 10px; border-radius: 15px;
+                    cursor: pointer; font-size: 0.8rem; color: inherit;
                 `;
-                closeBtn.onclick = () => {
-                    resultDiv.style.display = 'none';
-                };
-                
+                closeBtn.onclick = () => { resultDiv.style.display = 'none'; };
                 resultDiv.style.position = 'relative';
                 resultDiv.appendChild(closeBtn);
-                
-                // 延長自動隱藏時間到 15 秒
+
                 setTimeout(() => {
-                    if (resultDiv.style.display !== 'none') {
-                        resultDiv.style.display = 'none';
-                    }
+                    if (resultDiv.style.display !== 'none') resultDiv.style.display = 'none';
                 }, 15000);
             }
         }
 
-        // 音效提示
         function playSound(type) {
             const soundWave = document.getElementById('soundWave');
             soundWave.classList.add('active');
@@ -859,28 +995,19 @@
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
-
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
 
-                const frequencies = {
-                    success: [800, 1000, 1200],
-                    duplicate: [600, 500],
-                    error: [300, 200, 300]
-                };
-
+                const frequencies = { success: [800, 1000, 1200], duplicate: [600, 500], error: [300, 200, 300] };
                 const freq = frequencies[type] || [400];
                 oscillator.frequency.setValueAtTime(freq[0], audioContext.currentTime);
-                
                 if (freq.length > 1) {
                     freq.forEach((f, i) => {
                         oscillator.frequency.setValueAtTime(f, audioContext.currentTime + (i * 0.1));
                     });
                 }
-
                 gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
-
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.5);
             } catch (error) {
@@ -888,7 +1015,6 @@
             }
         }
 
-        // 快捷功能
         function openMCInterface() {
             window.open('./mc-interface.html', '_blank', 'width=1200,height=800');
         }
@@ -901,50 +1027,34 @@
             window.open('https://mjib007.github.io/homepage/mc-guest.html', '_blank', 'width=400,height=800');
         }
 
-        // 鍵盤快捷鍵
+        // 鍵盤快捷鍵（排除 autocomplete 的 Enter）
         document.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' && document.activeElement === document.getElementById('manualInput')) {
-                manualCheckIn();
-            }
-            
-            if (event.key === 'Escape' && isScanning) {
-                stopScanning();
-            }
-            
-            if (event.ctrlKey && event.key === ' ') {
-                event.preventDefault();
-                if (isScanning) {
-                    stopScanning();
-                } else {
-                    startScanning();
+            if (event.key === 'Enter' && document.activeElement === input) {
+                // 如果 autocomplete 沒有選中項目，才觸發報到
+                if (activeIndex < 0 && !dropdown.classList.contains('show')) {
+                    manualCheckIn();
                 }
             }
-        });
-
-        // 註釋掉這段，否則無法輸入中文姓名
-        /*
-        document.getElementById('manualInput').addEventListener('input', function(e) {
-            let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            
-            if (value.length > 4) {
-                value = value.slice(0, 4);
+            if (event.key === 'Escape') {
+                if (dropdown.classList.contains('show')) {
+                    hideDropdown();
+                } else if (isScanning) {
+                    stopScanning();
+                }
             }
-            
-            e.target.value = value;
+            if (event.ctrlKey && event.key === ' ') {
+                event.preventDefault();
+                isScanning ? stopScanning() : startScanning();
+            }
         });
-        */
 
-        // 頁面載入時初始化
         window.addEventListener('load', () => {
             updateStatus('ready', '系統就緒');
             console.log('活動報到系統已啟動');
         });
 
-        // 頁面關閉時清理
         window.addEventListener('beforeunload', () => {
-            if (html5QrCode && isScanning) {
-                html5QrCode.stop();
-            }
+            if (html5QrCode && isScanning) html5QrCode.stop();
         });
     </script>
 </body>
