@@ -136,6 +136,20 @@
 
   .btn-reset:hover { border-color: var(--ink); color: var(--ink); }
 
+  .btn-fetch {
+    padding: 0.5rem 1.1rem;
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    color: white;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-fetch:hover { opacity: 0.85; }
+
+
   /* ── Stats ── */
   .stats-bar {
     padding: 0.65rem 3rem;
@@ -269,10 +283,11 @@
   </select>
   <div class="date-row">
     <span>從</span>
-    <input type="date" id="dateFrom" oninput="applyFilters()">
+    <input type="date" id="dateFrom">
     <span>至</span>
-    <input type="date" id="dateTo" oninput="applyFilters()">
+    <input type="date" id="dateTo">
   </div>
+  <button class="btn-fetch" onclick="fetchWithDate()">重新查詢</button>
   <button class="btn-reset" onclick="resetFilters()">清除篩選</button>
 </div>
 
@@ -292,9 +307,10 @@ let allEvents = [];
 let sortKey = '日期';
 let sortAsc = false;
 
-async function loadData() {
+async function loadData(dateFrom) {
+  const url = dateFrom ? `${WEBHOOK_URL}?dateFrom=${dateFrom}` : WEBHOOK_URL;
   try {
-    const res = await fetch(WEBHOOK_URL);
+    const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 
@@ -417,6 +433,18 @@ function esc(str) {
     .replace(/</g,'&lt;')
     .replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;');
+}
+
+
+function fetchWithDate() {
+  const from = document.getElementById('dateFrom').value;
+  document.getElementById('tableArea').innerHTML =
+    '<div class="status"><span class="loading-dots">資料載入中</span></div>';
+  // 清空學校選單（保留第一個「全部學校」）
+  const sel = document.getElementById('schoolSelect');
+  while (sel.options.length > 1) sel.remove(1);
+  allEvents = [];
+  loadData(from || null);
 }
 
 loadData();
