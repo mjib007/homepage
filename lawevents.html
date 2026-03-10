@@ -281,6 +281,73 @@
     th, td { padding: 0.5rem 0.5rem; }
   }
 </style>
+<script>
+// ===== 權限檢查邏輯 =====
+const PERMISSION_CONFIG = {
+  API_CHECK_PERMISSION: 'https://mjib007.zeabur.app/webhook/check-permission',
+  LOGIN_PAGE: 'https://mjib007.github.io/homepage/blessing-wall.html',
+  SYSTEM_NAME: '研討會查詢系統'  // 改成實際系統名稱
+};
+
+async function checkPermissionOnLoad() {
+  // 1. 檢查是否已登入
+  const userSession = sessionStorage.getItem('user');
+  if (!userSession) {
+    // 沒登入 → 導向登入頁
+    console.log('未登入，導向登入頁');
+    window.location.href = PERMISSION_CONFIG.LOGIN_PAGE;
+    return;
+  }
+
+  // 2. 已登入 → 檢查該系統權限
+  const currentUser = JSON.parse(userSession);
+  console.log('已登入，檢查權限...', currentUser.email);
+  
+  try {
+    const res = await fetch(PERMISSION_CONFIG.API_CHECK_PERMISSION, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: currentUser.email,
+        system: PERMISSION_CONFIG.SYSTEM_NAME
+      })
+    });
+
+    const data = await res.json();
+    console.log('權限檢查結果:', data);
+
+    // 3. 檢查結果
+    if (!data.success || !data.hasPermission) {
+      // 無權限 → 提示 + 導向
+      alert(`您無權限存取「${PERMISSION_CONFIG.SYSTEM_NAME}」\n\n請聯絡管理員申請權限`);
+      window.location.href = PERMISSION_CONFIG.LOGIN_PAGE;
+      return;
+    }
+
+    // 4. 有權限 → 顯示頁面
+    console.log('✅ 權限檢查通過，顯示頁面');
+    document.body.style.visibility = 'visible';
+    document.body.style.opacity = '1';
+
+  } catch (error) {
+    console.error('❌ 權限檢查失敗:', error);
+    alert('系統錯誤，無法驗證權限\n\n請稍後再試或聯絡管理員');
+    window.location.href = PERMISSION_CONFIG.LOGIN_PAGE;
+  }
+}
+
+// 頁面載入完成時執行檢查
+window.addEventListener('load', checkPermissionOnLoad);
+</script>
+
+<!-- 隱藏頁面直到權限檢查完成 -->
+<style>
+body {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+</style>
 </head>
 <body>
 
