@@ -670,6 +670,9 @@ async function loadData(dateFrom) {
     // 填學校選單
     const schools = data.schools || [...new Set(allEvents.map(e => e.學校).filter(Boolean))].sort();
     const sel = document.getElementById('schoolSelect');
+    // 清空舊的選項（保留第一個「全部學校」）
+    while (sel.options.length > 1) sel.remove(1);
+    // 再填新的
     schools.forEach(s => {
       const opt = document.createElement('option');
       opt.value = s; opt.textContent = s;
