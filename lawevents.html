@@ -436,7 +436,7 @@
 const AUTH_CONFIG = {
   GOOGLE_CLIENT_ID: '973721313231-0no4ivldu33he0kts8k51kn4tqd979g7.apps.googleusercontent.com',
   API_CHECK_PERMISSION: 'https://mjib007.zeabur.app/webhook/check-permission',
-  SYSTEM_NAME: '研討會查詢'  // 改成跟 Sheet 的欄位名一樣
+  SYSTEM_NAME: '研討會查詢'
 };
 
 let currentUser = null;
@@ -513,8 +513,6 @@ function handleGoogleLogin() {
 async function loginWithProfile(profile) {
   currentUser = profile;
   sessionStorage.setItem('user', JSON.stringify(currentUser));
-  
-  // 檢查權限
   await checkPermission(profile.email);
 }
 
@@ -543,7 +541,6 @@ async function checkPermission(email) {
       return;
     }
 
-    // 有權限 → 隱藏遮罩層
     hideAuthOverlay();
 
   } catch (error) {
@@ -560,7 +557,8 @@ function hideAuthOverlay() {
   const overlay = document.getElementById('auth-overlay');
   overlay.style.display = 'none';
   document.body.style.overflow = '';
-  loadData();  // ← 加這一行！
+  displayUserInfo();
+  loadData();
 }
 
 function showAuthOverlay() {
@@ -583,6 +581,21 @@ function setAuthLoading(loading) {
   document.getElementById('auth-loading').classList.toggle('hidden', !loading);
 }
 
+// 登出函數
+function handleLogout() {
+  sessionStorage.removeItem('user');
+  currentUser = null;
+  location.reload();
+}
+
+// 顯示用戶資訊
+function displayUserInfo() {
+  const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+  if (user.email) {
+    document.getElementById('userEmail').textContent = user.email;
+  }
+}
+
 // 頁面載入時檢查登入狀態
 window.addEventListener('load', async () => {
   initGoogleLogin();
@@ -590,13 +603,11 @@ window.addEventListener('load', async () => {
   const userSession = sessionStorage.getItem('user');
   
   if (!userSession) {
-    // 未登入 → 顯示登入遮罩
     console.log('未登入，顯示登入遮罩');
     showAuthOverlay();
     return;
   }
 
-  // 已登入 → 檢查權限
   currentUser = JSON.parse(userSession);
   console.log('已登入，檢查權限...', currentUser.email);
   await checkPermission(currentUser.email);
@@ -673,19 +684,15 @@ async function loadData(dateFrom) {
 
     allEvents = data.events || [];
 
-    // 填學校選單
     const schools = data.schools || [...new Set(allEvents.map(e => e.學校).filter(Boolean))].sort();
     const sel = document.getElementById('schoolSelect');
-    // 清空舊的選項（保留第一個「全部學校」）
     while (sel.options.length > 1) sel.remove(1);
-    // 再填新的
     schools.forEach(s => {
       const opt = document.createElement('option');
       opt.value = s; opt.textContent = s;
       sel.appendChild(opt);
     });
 
-    // 更新時間
     document.getElementById('headerMeta').innerHTML =
       `資料筆數：${data.total || allEvents.length}<br>更新時間：${data.generatedAt || '—'}`;
     document.getElementById('updateTime').textContent = data.generatedAt || '';
@@ -716,7 +723,6 @@ function applyFilters() {
     return true;
   });
 
-  // 排序
   result.sort((a, b) => {
     const va = a[sortKey] || '';
     const vb = b[sortKey] || '';
@@ -795,12 +801,10 @@ function esc(str) {
     .replace(/"/g,'&quot;');
 }
 
-
 function fetchWithDate() {
   const from = document.getElementById('dateFrom').value;
   document.getElementById('tableArea').innerHTML =
     '<div class="status"><span class="loading-dots">資料載入中</span></div>';
-  // 清空學校選單（保留第一個「全部學校」）
   const sel = document.getElementById('schoolSelect');
   while (sel.options.length > 1) sel.remove(1);
   allEvents = [];
