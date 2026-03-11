@@ -642,26 +642,6 @@ window.addEventListener('load', async () => {
 <script>
 const WEBHOOK_URL = 'https://mjib007.zeabur.app/webhook/get-law-events';
 
-async function loadData(dateFrom) {
-  const user = JSON.parse(sessionStorage.getItem('user') || '{}');
-  const email = user.email || 'unknown@example.com';
-  
-  const payload = {
-    email: email,
-    dateFrom: dateFrom || null
-  };
-
-  try {
-    const res = await fetch(WEBHOOK_URL, {
-      method: 'POST',  // ← 改成 POST
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)  // ← 帶上 email
-    });
-    
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    // ... 後面保持不變
-
 let allEvents = [];
 let sortKey = '日期';
 let sortAsc = false;
