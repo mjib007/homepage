@@ -611,7 +611,13 @@ window.addEventListener('load', async () => {
     法律學術活動彙整
     <small class="header-credit">（<a href="https://www.facebook.com/twlawfdn" target="_blank" rel="noopener">台灣法學基金會</a>執行長錢世傑製作）</small>
   </h1>
-  <div class="header-meta" id="headerMeta">載入中...</div>
+  <div style="display: flex; align-items: center; gap: 2rem;">
+    <div class="header-meta" id="headerMeta">載入中...</div>
+    <div style="display: flex; align-items: center; gap: 1rem; white-space: nowrap;">
+      <span id="userEmail" style="font-size: 0.85rem; color: #aaa;"></span>
+      <button id="logoutBtn" onclick="handleLogout()" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; cursor: pointer; border-radius: 4px; font-size: 0.8rem;">登出</button>
+    </div>
+  </div>
 </header>
 
 <div class="controls">
