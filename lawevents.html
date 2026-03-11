@@ -560,6 +560,7 @@ function hideAuthOverlay() {
   const overlay = document.getElementById('auth-overlay');
   overlay.style.display = 'none';
   document.body.style.overflow = '';
+  loadData();  // ← 加這一行！
 }
 
 function showAuthOverlay() {
