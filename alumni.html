@@ -364,21 +364,7 @@ async function loadData(){
     console.error(e);
     document.getElementById('categoryGrid').innerHTML = '<div class="status-msg">⚠️ 資料載入失敗，請稍後重試</div>';
     document.getElementById('updateTag').textContent = '資料載入失敗';
-    loadDemo();
   }
-}
-
-function loadDemo(){
-  alumniData = [
-    {姓名:'王小明',服務單位:'台積電',職稱:'資深工程師',入學年度:'2015',畢業年度:'2017',工作或研究領域:'半導體製造',專業領域:'軟體工程與應用開發',指導教授:'陳教授','LinkedIn / 個人連結':'','備註(讓校友更認識你)':''},
-    {姓名:'李美玲',服務單位:'中信銀行',職稱:'數位長',入學年度:'2016',畢業年度:'2018',工作或研究領域:'金融科技',專業領域:'金融科技與創新服務',指導教授:'林教授','LinkedIn / 個人連結':'https://linkedin.com','備註(讓校友更認識你)':'熟悉 Open Banking 架構'},
-    {姓名:'張大偉',服務單位:'微軟台灣',職稱:'Solution Architect',入學年度:'2016',畢業年度:'2018',工作或研究領域:'雲端服務',專業領域:'資訊基礎架構與雲端營運',指導教授:'陳教授','LinkedIn / 個人連結':'','備註(讓校友更認識你)':''},
-    {姓名:'陳怡君',服務單位:'台大醫院',職稱:'資訊主任',入學年度:'2017',畢業年度:'2019',工作或研究領域:'醫療資訊',專業領域:'數位轉型與企業資訊系統',指導教授:'王教授','LinkedIn / 個人連結':'','備註(讓校友更認識你)':'專注醫療資訊化推動'},
-    {姓名:'林俊宏',服務單位:'趨勢科技',職稱:'資安研究員',入學年度:'2018',畢業年度:'2020',工作或研究領域:'資安',專業領域:'資訊安全與風險管理',指導教授:'林教授','LinkedIn / 個人連結':'','備註(讓校友更認識你)':''},
-  ];
-  updateStats();
-  renderTab();
-  document.getElementById('updateTag').textContent = '示範資料（尚未連接 API）';
 }
 
 function updateStats(){
