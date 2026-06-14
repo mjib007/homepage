@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>福爾摩斯 — 全球情報中心</title>
+<script src="https://unpkg.com/globe.gl@2.27.2/dist/globe.gl.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+  :root {
+    --bg: #080c14;
+    --panel: #0d1520;
+    --border: #1a2d45;
+    --accent: #00c8ff;
+    --accent2: #ff4444;
+    --accent3: #ffc107;
+    --accent4: #44ff88;
+    --text: #c8d8e8;
+    --text-dim: #5a7a9a;
+    --mono: 'Share Tech Mono', monospace;
+    --sans: 'Noto Sans TC', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── 頂部標題列 ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 52px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--accent);
+    box-shadow: 0 0 12px rgba(0,200,255,0.3);
+  }
+
+  .logo-text {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  .header-center {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .status-dot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  .dot.green { background: var(--accent4); box-shadow: 0 0 6px var(--accent4); }
+  .dot.red { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); animation-delay: 0.5s; }
+  .dot.yellow { background: var(--accent3); box-shadow: 0 0 6px var(--accent3); animation-delay: 1s; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .clock {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+
+  /* ── 主體 ── */
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── 地球儀容器 ── */
+  #globe-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #globe { width: 100%; height: 100%; }
+
+  /* 掃描線效果 */
+  #globe-container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,200,255,0.015) 2px,
+      rgba(0,200,255,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* ── 右側面板 ── */
+  .side-panel {
+    width: 320px;
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .panel-section {
+    border-bottom: 1px solid var(--border);
+    padding: 16px;
+  }
+
+  .panel-section-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* 統計卡片 */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .stat-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+
+  .stat-card .num {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-card .lbl {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+  }
+
+  .num.blue { color: var(--accent); }
+  .num.red { color: var(--accent2); }
+  .num.yellow { color: var(--accent3); }
+
+  /* 篩選器 */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .filter-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+  }
+
+  .filter-btn.active, .filter-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,200,255,0.08);
+  }
+
+  .filter-btn.red.active { border-color: var(--accent2); color: var(--accent2); background: rgba(255,68,68,0.08); }
+  .filter-btn.yellow.active { border-color: var(--accent3); color: var(--accent3); background: rgba(255,193,7,0.08); }
+  .filter-btn.green.active { border-color: var(--accent4); color: var(--accent4); background: rgba(68,255,136,0.08); }
+
+  /* 情報列表 */
+  .intel-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px;
+  }
+
+  .intel-list::-webkit-scrollbar { width: 3px; }
+  .intel-list::-webkit-scrollbar-track { background: transparent; }
+  .intel-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .intel-item {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .intel-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+
+  .intel-item.critical::before { background: var(--accent2); }
+  .intel-item.warning::before { background: var(--accent3); }
+  .intel-item.info::before { background: var(--accent); }
+  .intel-item.normal::before { background: var(--accent4); }
+
+  .intel-item:hover {
+    background: rgba(0,200,255,0.05);
+    border-color: rgba(0,200,255,0.3);
+  }
+
+  .intel-item.active {
+    background: rgba(0,200,255,0.08);
+    border-color: var(--accent);
+  }
+
+  .intel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+
+  .intel-level {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+  }
+
+  .intel-level.critical { background: rgba(255,68,68,0.2); color: var(--accent2); }
+  .intel-level.warning { background: rgba(255,193,7,0.2); color: var(--accent3); }
+  .intel-level.info { background: rgba(0,200,255,0.2); color: var(--accent); }
+  .intel-level.normal { background: rgba(68,255,136,0.2); color: var(--accent4); }
+
+  .intel-time {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  .intel-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .intel-loc {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* ── 底部詳情面板 ── */
+  .detail-panel {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    width: 360px;
+    background: rgba(13,21,32,0.95);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 16px;
+    z-index: 50;
+    display: none;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 30px rgba(0,200,255,0.15);
+  }
+
+  .detail-panel.show { display: block; }
+
+  .detail-close {
+    position: absolute;
+    top: 10px; right: 12px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .detail-close:hover { color: var(--text); }
+
+  .detail-tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .detail-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    color: #fff;
+  }
+
+  .detail-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .meta-item { }
+  .meta-label { font-size: 9px; color: var(--text-dim); letter-spacing: 1px; margin-bottom: 2px; font-family: var(--mono); }
+  .meta-value { font-size: 12px; color: var(--text); }
+
+  .detail-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+
+  /* ── 左側迷你面板 ── */
+  .left-panel {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mini-card {
+    background: rgba(13,21,32,0.88);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    backdrop-filter: blur(6px);
+    min-width: 160px;
+  }
+
+  .mini-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+  }
+
+  .mini-value {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--accent);
+  }
+
+  .threat-bar {
+    display: flex;
+    gap: 3px;
+    margin-top: 6px;
+  }
+
+  .threat-seg {
+    height: 4px;
+    flex: 1;
+    border-radius: 2px;
+    background: var(--border);
+  }
+
+  .threat-seg.active.l1 { background: var(--accent4); }
+  .threat-seg.active.l2 { background: var(--accent4); }
+  .threat-seg.active.l3 { background: var(--accent3); }
+  .threat-seg.active.l4 { background: var(--accent3); }
+  .threat-seg.active.l5 { background: var(--accent2); }
+</style>
+</head>
+<body>
+
+<!-- 頂部標題列 -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🔍</div>
+    <div>
+      <div class="logo-text">HOLMES & WATSON</div>
+      <div class="logo-sub">全球情報中心 · GLOBAL INTELLIGENCE</div>
+    </div>
+  </div>
+  <div class="header-center" id="utc-time">UTC 載入中...</div>
+  <div class="header-right">
+    <div class="status-dot"><div class="dot green"></div>系統正常</div>
+    <div class="status-dot"><div class="dot red"></div>高威脅情報 3</div>
+    <div class="status-dot"><div class="dot yellow"></div>監控中 12</div>
+    <div class="clock" id="local-clock">--:--:--</div>
+  </div>
+</header>
+
+<!-- 主體 -->
+<div class="main">
+
+  <!-- 地球儀 -->
+  <div id="globe-container">
+    <div id="globe"></div>
+
+    <!-- 左側迷你面板 -->
+    <div class="left-panel">
+      <div class="mini-card">
+        <div class="mini-label">全球威脅等級</div>
+        <div class="mini-value">ELEVATED</div>
+        <div class="threat-bar">
+          <div class="threat-seg active l1"></div>
+          <div class="threat-seg active l2"></div>
+          <div class="threat-seg active l3"></div>
+          <div class="threat-seg l4"></div>
+          <div class="threat-seg l5"></div>
+        </div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-label">活躍監控案件</div>
+        <div class="mini-value" id="active-count">—</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-label">最新情報時間</div>
+        <div class="mini-value" id="latest-time">—</div>
+      </div>
+    </div>
+
+    <!-- 詳情面板 -->
+    <div class="detail-panel" id="detail-panel">
+      <button class="detail-close" onclick="closeDetail()">✕</button>
+      <div class="detail-tag" id="d-tag">— 情報編號 —</div>
+      <div class="detail-title" id="d-title">—</div>
+      <div class="detail-meta">
+        <div class="meta-item">
+          <div class="meta-label">地點</div>
+          <div class="meta-value" id="d-loc">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">等級</div>
+          <div class="meta-value" id="d-level">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">類型</div>
+          <div class="meta-value" id="d-type">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">時間</div>
+          <div class="meta-value" id="d-time">—</div>
+        </div>
+      </div>
+      <div class="detail-desc" id="d-desc">—</div>
+    </div>
+  </div>
+
+  <!-- 右側面板 -->
+  <div class="side-panel">
+    <div class="panel-section">
+      <div class="panel-section-title">情報統計</div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="num blue" id="stat-total">—</div>
+          <div class="lbl">情報總數</div>
+        </div>
+        <div class="stat-card">
+          <div class="num red" id="stat-critical">—</div>
+          <div class="lbl">高威脅</div>
+        </div>
+        <div class="stat-card">
+          <div class="num yellow" id="stat-warning">—</div>
+          <div class="lbl">需關注</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">篩選</div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterIntel('all', this)">全部</button>
+        <button class="filter-btn red" onclick="filterIntel('critical', this)">高威脅</button>
+        <button class="filter-btn yellow" onclick="filterIntel('warning', this)">需關注</button>
+        <button class="filter-btn" onclick="filterIntel('info', this)">一般</button>
+        <button class="filter-btn green" onclick="filterIntel('normal', this)">已解除</button>
+      </div>
+    </div>
+
+    <div class="panel-section-title" style="padding: 12px 16px 0; font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 2px;">
+      情報列表
+    </div>
+    <div class="intel-list" id="intel-list">
+      <!-- 動態產生 -->
+    </div>
+  </div>
+</div>
+
+<script>
+// ──────────────────────────────
+// 模擬情報資料
+// ──────────────────────────────
+const INTEL_DATA = [
+  {
+    id: 'INT-2026-001',
+    title: '境外勢力在台滲透行動偵測',
+    location: '台灣・台北',
+    lat: 25.033, lng: 121.565,
+    level: 'critical',
+    type: '境外滲透',
+    time: '2026-06-14 08:32',
+    desc: '偵測到境外情報人員以商業身份入境，疑似針對政府機關周邊蒐集情報，已啟動反制監控作業。'
+  },
+  {
+    id: 'INT-2026-002',
+    title: '東海可疑艦隊異常移動',
+    location: '東海・日本海域',
+    lat: 30.0, lng: 128.0,
+    level: 'critical',
+    type: '軍事動態',
+    time: '2026-06-13 22:15',
+    desc: '衛星影像顯示不明國籍艦隊於東海進行非常規演習，路徑逼近敏感航道，已通報相關單位。'
+  },
+  {
+    id: 'INT-2026-003',
+    title: '跨國洗錢網絡追蹤',
+    location: '香港・金融區',
+    lat: 22.28, lng: 114.16,
+    level: 'critical',
+    type: '金融犯罪',
+    time: '2026-06-13 14:00',
+    desc: '與本國案件INT-2025-089相關的資金流向追蹤至香港殼公司群，總金額逾新台幣15億元。'
+  },
+  {
+    id: 'INT-2026-004',
+    title: '北韓技術人員異常海外活動',
+    location: '中國・大連',
+    lat: 38.9, lng: 121.6,
+    level: 'warning',
+    type: '人員動態',
+    time: '2026-06-13 09:40',
+    desc: '多名北韓技術背景人員集結大連港，疑似進行技術轉移或物資採購，正進行身份比對。'
+  },
+  {
+    id: 'INT-2026-005',
+    title: '菲律賓海域毒品走私情資',
+    location: '菲律賓・馬尼拉',
+    lat: 14.5, lng: 120.97,
+    level: 'warning',
+    type: '跨國犯罪',
+    time: '2026-06-12 18:20',
+    desc: '國際刑警組織提供情資，一批以農產品掩護的毒品貨運預計途經台灣港口轉運，數量約300公斤。'
+  },
+  {
+    id: 'INT-2026-006',
+    title: '駐外人員異常接觸報告',
+    location: '德國・柏林',
+    lat: 52.52, lng: 13.40,
+    level: 'warning',
+    type: '人員安全',
+    time: '2026-06-12 11:05',
+    desc: '駐德辦事處人員報告，近日遭不明人士多次接觸並試圖套取業務資訊，已啟動安全保護措施。'
+  },
+  {
+    id: 'INT-2026-007',
+    title: '新加坡金融情資交換',
+    location: '新加坡',
+    lat: 1.35, lng: 103.82,
+    level: 'info',
+    type: '情資交換',
+    time: '2026-06-12 09:00',
+    desc: '新加坡金融監管局提供跨境詐騙集團帳戶清單，已移交相關部門比對國內案件。'
+  },
+  {
+    id: 'INT-2026-008',
+    title: '美國FBI協查請求',
+    location: '美國・華盛頓DC',
+    lat: 38.9, lng: -77.03,
+    level: 'info',
+    type: '國際協查',
+    time: '2026-06-11 21:30',
+    desc: 'FBI提出協查請求，涉及一起跨國網路詐騙案，主謀疑似與本國某企業有資金往來。'
+  },
+  {
+    id: 'INT-2026-009',
+    title: '泰國人口販運網絡監控',
+    location: '泰國・曼谷',
+    lat: 13.75, lng: 100.5,
+    level: 'warning',
+    type: '人口販運',
+    time: '2026-06-11 14:15',
+    desc: '掌握泰國人口販運組織疑似以工作機會誘騙本國公民，已與泰方警察合作展開調查。'
+  },
+  {
+    id: 'INT-2026-010',
+    title: '俄羅斯網路攻擊預警',
+    location: '俄羅斯・莫斯科',
+    lat: 55.75, lng: 37.62,
+    level: 'info',
+    type: '網路安全',
+    time: '2026-06-11 06:00',
+    desc: '盟國情報單位預警，俄方APT組織可能對亞太地區政府機關發動新一波網路間諜行動。'
+  },
+  {
+    id: 'INT-2026-011',
+    title: '南海人工島監控資料更新',
+    location: '南海・黃岩島',
+    lat: 15.1, lng: 117.8,
+    level: 'info',
+    type: '軍事動態',
+    time: '2026-06-10 16:45',
+    desc: '最新衛星影像顯示相關設施持續擴建，雷達設備有新增跡象，已更新監控資料庫。'
+  },
+  {
+    id: 'INT-2026-012',
+    title: '歐洲情報網絡例行更新',
+    location: '法國・巴黎',
+    lat: 48.85, lng: 2.35,
+    level: 'normal',
+    type: '例行更新',
+    time: '2026-06-10 10:00',
+    desc: '歐洲情報夥伴例行情資分享，本次無特殊異常，相關資料已歸檔備查。'
+  }
+];
+
+// ──────────────────────────────
+// 顏色對應
+// ──────────────────────────────
+const LEVEL_COLOR = {
+  critical: '#ff4444',
+  warning: '#ffc107',
+  info: '#00c8ff',
+  normal: '#44ff88'
+};
+
+const LEVEL_LABEL = {
+  critical: '高威脅',
+  warning: '需關注',
+  info: '一般情資',
+  normal: '已解除'
+};
+
+// ──────────────────────────────
+// 初始化統計
+// ──────────────────────────────
+let currentFilter = 'all';
+
+function initStats() {
+  document.getElementById('stat-total').textContent = INTEL_DATA.length;
+  document.getElementById('stat-critical').textContent = INTEL_DATA.filter(d => d.level === 'critical').length;
+  document.getElementById('stat-warning').textContent = INTEL_DATA.filter(d => d.level === 'warning').length;
+  document.getElementById('active-count').textContent = INTEL_DATA.filter(d => d.level !== 'normal').length;
+  document.getElementById('latest-time').textContent = INTEL_DATA[0].time.split(' ')[1];
+}
+
+// ──────────────────────────────
+// 渲染情報列表
+// ──────────────────────────────
+function renderList(filter) {
+  const list = document.getElementById('intel-list');
+  const data = filter === 'all' ? INTEL_DATA : INTEL_DATA.filter(d => d.level === filter);
+  list.innerHTML = data.map(item => `
+    <div class="intel-item ${item.level}" onclick="selectIntel('${item.id}')" id="item-${item.id}">
+      <div class="intel-header">
+        <span class="intel-level ${item.level}">${LEVEL_LABEL[item.level]}</span>
+        <span class="intel-time">${item.time.split(' ')[0]}</span>
+      </div>
+      <div class="intel-title">${item.title}</div>
+      <div class="intel-loc">📍 ${item.location}</div>
+    </div>
+  `).join('');
+}
+
+function filterIntel(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList(f);
+}
+
+// ──────────────────────────────
+// 選取情報 → 顯示詳情 + 轉動地球
+// ──────────────────────────────
+function selectIntel(id) {
+  const item = INTEL_DATA.find(d => d.id === id);
+  if (!item) return;
+
+  document.querySelectorAll('.intel-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('item-' + id);
+  if (el) el.classList.add('active');
+
+  document.getElementById('d-tag').textContent = item.id + ' · ' + item.type;
+  document.getElementById('d-title').textContent = item.title;
+  document.getElementById('d-loc').textContent = item.location;
+  document.getElementById('d-level').innerHTML = `<span style="color:${LEVEL_COLOR[item.level]}">${LEVEL_LABEL[item.level]}</span>`;
+  document.getElementById('d-type').textContent = item.type;
+  document.getElementById('d-time').textContent = item.time;
+  document.getElementById('d-desc').textContent = item.desc;
+  document.getElementById('detail-panel').classList.add('show');
+
+  // 轉動地球到該點
+  if (window.globeInstance) {
+    window.globeInstance.pointOfView({ lat: item.lat, lng: item.lng, altitude: 1.8 }, 1000);
+  }
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('show');
+  document.querySelectorAll('.intel-item').forEach(el => el.classList.remove('active'));
+}
+
+// ──────────────────────────────
+// 時鐘
+// ──────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const utc = now.toUTCString().replace('GMT', 'UTC');
+  document.getElementById('utc-time').textContent = utc;
+  document.getElementById('local-clock').textContent = now.toLocaleTimeString('zh-TW');
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ──────────────────────────────
+// 初始化 Globe
+// ──────────────────────────────
+function initGlobe() {
+  const container = document.getElementById('globe');
+
+  const globe = Globe()(container)
+    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
+    .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+    .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+    .width(container.parentElement.offsetWidth)
+    .height(container.parentElement.offsetHeight)
+
+    // 點位標記
+    .pointsData(INTEL_DATA)
+    .pointLat('lat')
+    .pointLng('lng')
+    .pointColor(d => LEVEL_COLOR[d.level])
+    .pointRadius(d => d.level === 'critical' ? 0.6 : d.level === 'warning' ? 0.45 : 0.35)
+    .pointAltitude(0.02)
+    .pointLabel(d => `
+      <div style="
+        background: rgba(13,21,32,0.92);
+        border: 1px solid ${LEVEL_COLOR[d.level]};
+        border-radius: 6px;
+        padding: 10px 14px;
+        font-family: 'Noto Sans TC', sans-serif;
+        min-width: 200px;
+        box-shadow: 0 0 20px ${LEVEL_COLOR[d.level]}44;
+      ">
+        <div style="font-size:9px; color:${LEVEL_COLOR[d.level]}; letter-spacing:1px; margin-bottom:6px;">${d.id}</div>
+        <div style="font-size:13px; color:#fff; font-weight:600; margin-bottom:6px;">${d.title}</div>
+        <div style="font-size:10px; color:#5a7a9a;">📍 ${d.location}</div>
+        <div style="font-size:10px; color:#5a7a9a;">🕐 ${d.time}</div>
+      </div>
+    `)
+    .onPointClick(d => selectIntel(d.id))
+
+    // 光環效果（高威脅）
+    .ringsData(INTEL_DATA.filter(d => d.level === 'critical'))
+    .ringLat('lat')
+    .ringLng('lng')
+    .ringColor(() => '#ff444488')
+    .ringMaxRadius(3)
+    .ringPropagationSpeed(1.5)
+    .ringRepeatPeriod(1200)
+
+    // 弧線：台灣與其他點的連線
+    .arcsData(INTEL_DATA.filter(d => d.location !== '台灣・台北').slice(0, 6))
+    .arcStartLat(25.033).arcStartLng(121.565)
+    .arcEndLat('lat').arcEndLng('lng')
+    .arcColor(d => [`rgba(0,200,255,0.6)`, `${LEVEL_COLOR[d.level]}88`])
+    .arcDashLength(0.4)
+    .arcDashGap(0.2)
+    .arcDashAnimateTime(2000)
+    .arcStroke(0.5)
+    .arcAltitudeAutoScale(0.3)
+
+    // 初始視角對準台灣
+    .pointOfView({ lat: 23.5, lng: 121, altitude: 2.2 }, 0);
+
+  // 控制器設定
+  globe.controls().autoRotate = true;
+  globe.controls().autoRotateSpeed = 0.3;
+  globe.controls().enableZoom = true;
+
+  window.globeInstance = globe;
+
+  // 響應視窗大小
+  window.addEventListener('resize', () => {
+    globe.width(container.parentElement.offsetWidth)
+         .height(container.parentElement.offsetHeight);
+  });
+}
+
+// ──────────────────────────────
+// 啟動
+// ──────────────────────────────
+initStats();
+renderList('all');
+window.addEventListener('load', initGlobe);
+</script>
+</body>
+</html>
