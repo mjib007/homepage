@@ -34,7 +34,7 @@
             text-align: center;
         }
         
-        /* 新增：工具分類標題 */
+        /* 工具分類標題 */
         .section-title {
             font-size: 18px;
             font-weight: bold;
@@ -144,12 +144,28 @@
             color: white !important;
         }
         .legal-tool-card::after {
-            content: ⚖️';
+            content: '⚖️';
             position: absolute;
             top: 8px;
             right: 8px;
             font-size: 16px;
             opacity: 0.8;
+        }
+
+        /* 情報資源色系 - 深綠情報風 */
+        .intel-tool-card {
+            border: 2px solid #065F46 !important;
+            background: #065F46 !important;
+            color: white !important;
+        }
+        .intel-tool-card:hover {
+            border-color: #047857 !important;
+            background: #047857 !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(6, 95, 70, 0.3) !important;
+        }
+        .intel-tool-card h3, .intel-tool-card p {
+            color: white !important;
         }
         
         .input-section {
@@ -361,7 +377,7 @@
             border: 1px solid #f5c6cb;
         }
         
-        /* 新增：說明區塊 */
+        /* 說明區塊 */
         .info-section {
             background: #f8f9fa;
             padding: 20px;
@@ -378,6 +394,15 @@
             color: #666;
             font-size: 14px;
             line-height: 1.6;
+        }
+
+        /* 情報資源區塊底部說明 */
+        .intel-note {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            margin-top: -15px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -551,6 +576,29 @@
                 <p>比較類似案件判決，發現判決模式與差異</p>
             </div>
         </div>
+
+        <!-- 情報資源 -->
+        <div class="section-title">
+            🌐 情報資源（外部平台）
+        </div>
+
+        <div class="options">
+            <div class="option-card intel-tool-card" onclick="openExternalTool('world-monitor')">
+                <h3>🗺️ World Monitor</h3>
+                <p>即時全球衝突、軍事動態、地緣政治監控</p>
+            </div>
+
+            <div class="option-card intel-tool-card" onclick="openExternalTool('finance-monitor')">
+                <h3>💹 Finance Monitor</h3>
+                <p>全球金融市場、央行政策、外匯即時數據</p>
+            </div>
+
+            <div class="option-card intel-tool-card" onclick="openExternalTool('tech-monitor')">
+                <h3>🤖 Tech Monitor</h3>
+                <p>AI實驗室、科技新創、網路安全情報追蹤</p>
+            </div>
+        </div>
+        <p class="intel-note">以上為第三方平台，點擊後將開啟新分頁</p>
         
         <div id="loading" class="loading">
             <div class="spinner"></div>
@@ -566,17 +614,14 @@
         function selectOption(option) {
             currentOption = option;
             
-            // 移除所有 active 狀態
             document.querySelectorAll('.option-card').forEach(card => {
                 card.classList.remove('active');
             });
             
-            // 隱藏所有輸入區域
             document.querySelectorAll('.input-section').forEach(section => {
                 section.classList.remove('show');
             });
             
-            // 根據選項顯示相應內容
             if (option === 'ai-simple' || option === 'ai') {
                 document.getElementById('caseTextSection').classList.add('show');
                 event.target.classList.add('active');
@@ -618,6 +663,18 @@
                 'comparison': {
                     url: 'https://chatgpt.com/g/g-W7bjodm4d-taiwanpan-jue-bi-jiao-fen-xi-xi-tong',
                     name: 'Taiwan判決比較分析系統'
+                },
+                'world-monitor': {
+                    url: 'https://www.worldmonitor.app/',
+                    name: 'World Monitor'
+                },
+                'finance-monitor': {
+                    url: 'https://finance.worldmonitor.app/',
+                    name: 'Finance Monitor'
+                },
+                'tech-monitor': {
+                    url: 'https://tech.worldmonitor.app/',
+                    name: 'Tech Monitor'
                 }
             };
             
@@ -870,6 +927,7 @@ A 公司董事會主席王五表示,此次收購將強化公司在 AI 領域的�
                 console.error('Error:', error);
             }
         }
+
         async function analyzeWithCorporateCase(corporateText, caseName) {
             const url = `https://mjib007.zeabur.app/webhook/corporate-investigation`;
             
