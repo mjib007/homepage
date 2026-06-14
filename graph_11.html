@@ -583,6 +583,12 @@
         </div>
 
         <div class="options">
+            <div class="option-card intel-tool-card" onclick="openExternalTool('global-intel')">
+                <h3>🌍 全球情報中心</h3>
+                <p>3D地球儀即時情報監控介面（模擬資料）</p>
+                <div style="margin-top:8px; display:inline-block; font-size:10px; background:rgba(255,193,7,0.2); color:#ffc107; border:1px solid #ffc107; border-radius:3px; padding:2px 8px; letter-spacing:1px;">⚠ 模擬資料</div>
+            </div>
+
             <div class="option-card intel-tool-card" onclick="openExternalTool('world-monitor')">
                 <h3>🗺️ World Monitor</h3>
                 <p>即時全球衝突、軍事動態、地緣政治監控</p>
@@ -598,7 +604,7 @@
                 <p>AI實驗室、科技新創、網路安全情報追蹤</p>
             </div>
         </div>
-        <p class="intel-note">以上為第三方平台，點擊後將開啟新分頁</p>
+        <p class="intel-note">以上為第三方平台，點擊後將開啟新分頁｜全球情報中心目前使用模擬資料，未來將串接即時情資</p>
         
         <div id="loading" class="loading">
             <div class="spinner"></div>
@@ -663,6 +669,10 @@
                 'comparison': {
                     url: 'https://chatgpt.com/g/g-W7bjodm4d-taiwanpan-jue-bi-jiao-fen-xi-xi-tong',
                     name: 'Taiwan判決比較分析系統'
+                },
+                'global-intel': {
+                    url: 'https://mjib007.github.io/homepage/GI.html',
+                    name: '全球情報中心'
                 },
                 'world-monitor': {
                     url: 'https://www.worldmonitor.app/',
