@@ -152,6 +152,22 @@
             opacity: 0.8;
         }
 
+        /* 概念展示色系 - 琥珀警示風 */
+        .demo-tool-card {
+            border: 2px solid #92400E !important;
+            background: #92400E !important;
+            color: white !important;
+        }
+        .demo-tool-card:hover {
+            border-color: #B45309 !important;
+            background: #B45309 !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(146, 64, 14, 0.3) !important;
+        }
+        .demo-tool-card h3, .demo-tool-card p {
+            color: white !important;
+        }
+
         /* 情報資源色系 - 深綠情報風 */
         .intel-tool-card {
             border: 2px solid #065F46 !important;
@@ -577,18 +593,26 @@
             </div>
         </div>
 
+        <!-- 概念展示 -->
+        <div class="section-title">
+            🧪 概念展示（模擬資料）
+        </div>
+
+        <div class="options">
+            <div class="option-card demo-tool-card" onclick="openExternalTool('global-intel')">
+                <h3>🌍 全球情報中心</h3>
+                <p>3D地球儀情報監控介面，展示未來整合即時情資的概念</p>
+                <div style="margin-top:8px; display:inline-block; font-size:10px; background:rgba(255,193,7,0.2); color:#ffc107; border:1px solid #ffc107; border-radius:3px; padding:2px 8px; letter-spacing:1px;">⚠ 模擬資料</div>
+            </div>
+        </div>
+        <p class="intel-note">概念展示使用模擬資料，未來將串接即時情資</p>
+
         <!-- 情報資源 -->
         <div class="section-title">
             🌐 情報資源（外部平台）
         </div>
 
         <div class="options">
-            <div class="option-card intel-tool-card" onclick="openExternalTool('global-intel')">
-                <h3>🌍 全球情報中心</h3>
-                <p>3D地球儀即時情報監控介面（模擬資料）</p>
-                <div style="margin-top:8px; display:inline-block; font-size:10px; background:rgba(255,193,7,0.2); color:#ffc107; border:1px solid #ffc107; border-radius:3px; padding:2px 8px; letter-spacing:1px;">⚠ 模擬資料</div>
-            </div>
-
             <div class="option-card intel-tool-card" onclick="openExternalTool('world-monitor')">
                 <h3>🗺️ World Monitor</h3>
                 <p>即時全球衝突、軍事動態、地緣政治監控</p>
@@ -604,7 +628,7 @@
                 <p>AI實驗室、科技新創、網路安全情報追蹤</p>
             </div>
         </div>
-        <p class="intel-note">以上為第三方平台，點擊後將開啟新分頁｜全球情報中心目前使用模擬資料，未來將串接即時情資</p>
+        <p class="intel-note">以上為第三方平台，點擊後將開啟新分頁</p>
         
         <div id="loading" class="loading">
             <div class="spinner"></div>
