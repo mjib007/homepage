@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>福爾摩斯 — 跨國資金流動追蹤</title>
+<script src="https://unpkg.com/globe.gl@2.27.2/dist/globe.gl.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+  :root {
+    --bg:#080c14;--panel:#0d1520;--border:#1a2d45;--accent:#00c8ff;
+    --red:#ff4444;--yellow:#ffc107;--green:#44ff88;--text:#c8d8e8;--text-dim:#5a7a9a;
+    --mono:'Share Tech Mono',monospace;--sans:'Noto Sans TC',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+  header{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;z-index:100;}
+  .logo{display:flex;align-items:center;gap:12px;}
+  .logo-icon{width:32px;height:32px;border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--accent);box-shadow:0 0 12px rgba(0,200,255,0.3);}
+  .logo-text{font-family:var(--mono);font-size:14px;color:var(--accent);letter-spacing:2px;}
+  .logo-sub{font-size:11px;color:var(--text-dim);letter-spacing:1px;margin-top:2px;}
+  .header-right{display:flex;align-items:center;gap:16px;}
+  .clock{font-family:var(--mono);font-size:13px;color:var(--accent);}
+  .mode-tabs{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:6px;border:1px solid var(--border);}
+  .mode-tab{font-family:var(--mono);font-size:11px;padding:5px 14px;border-radius:4px;border:none;background:transparent;color:var(--text-dim);cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;}
+  .mode-tab.active{background:var(--accent);color:var(--bg);font-weight:bold;}
+  .main{display:flex;flex:1;overflow:hidden;}
+  #globe-container{flex:1;position:relative;overflow:hidden;}
+  #globe{width:100%;height:100%;}
+  #globe-container::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,200,255,0.012) 2px,rgba(0,200,255,0.012) 4px);pointer-events:none;z-index:10;}
+  .side-panel{width:320px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+  .panel-section{border-bottom:1px solid var(--border);padding:14px 16px;}
+  .panel-title{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .panel-title::after{content:'';flex:1;height:1px;background:var(--border);}
+  .stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+  .stat-card{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center;}
+  .stat-num{font-family:var(--mono);font-size:18px;font-weight:bold;margin-bottom:3px;}
+  .stat-lbl{font-size:10px;color:var(--text-dim);}
+  .c-blue{color:var(--accent);}.c-red{color:var(--red);}.c-yellow{color:var(--yellow);}.c-green{color:var(--green);}
+  .tx-list{flex:1;overflow-y:auto;padding:10px 16px;}
+  .tx-list::-webkit-scrollbar{width:3px;}
+  .tx-list::-webkit-scrollbar-thumb{background:var(--border);}
+  .tx-item{padding:11px 12px;border:1px solid var(--border);border-radius:6px;margin-bottom:7px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;opacity:0.4;}
+  .tx-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
+  .tx-item.suspicious::before{background:var(--red);}
+  .tx-item.normal::before{background:var(--green);}
+  .tx-item.warning::before{background:var(--yellow);}
+  .tx-item.active{opacity:1;background:rgba(0,200,255,0.05);border-color:rgba(0,200,255,0.3);}
+  .tx-item.played{opacity:0.75;}
+  .tx-item:hover{opacity:1;}
+  .tx-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+  .tx-id{font-family:var(--mono);font-size:9px;color:var(--text-dim);}
+  .tx-tag{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:2px;letter-spacing:0.5px;}
+  .tx-tag.suspicious{background:rgba(255,68,68,0.2);color:var(--red);}
+  .tx-tag.normal{background:rgba(68,255,136,0.2);color:var(--green);}
+  .tx-tag.warning{background:rgba(255,193,7,0.2);color:var(--yellow);}
+  .tx-route{font-size:12px;font-weight:500;margin-bottom:4px;color:var(--text);}
+  .tx-meta{display:flex;justify-content:space-between;}
+  .tx-amount{font-family:var(--mono);font-size:11px;color:var(--yellow);}
+  .tx-time{font-family:var(--mono);font-size:10px;color:var(--text-dim);}
+  .timeline{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);width:580px;background:rgba(13,21,32,0.94);border:1px solid var(--border);border-radius:10px;padding:14px 20px;z-index:50;backdrop-filter:blur(8px);box-shadow:0 0 30px rgba(0,200,255,0.1);}
+  .tl-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .tl-label{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:1px;}
+  .tl-step{font-family:var(--mono);font-size:11px;color:var(--text);}
+  .tl-bar{width:100%;height:4px;background:var(--border);border-radius:2px;margin-bottom:14px;position:relative;cursor:pointer;}
+  .tl-progress{height:100%;background:var(--accent);border-radius:2px;transition:width 0.3s;position:relative;}
+  .tl-progress::after{content:'';position:absolute;right:-5px;top:-4px;width:12px;height:12px;background:var(--accent);border-radius:50%;box-shadow:0 0 8px var(--accent);}
+  .tl-dots{position:absolute;top:-4px;left:0;right:0;}
+  .tl-dot{width:12px;height:12px;border-radius:50%;background:var(--border);border:2px solid var(--panel);transition:all 0.3s;position:absolute;}
+  .tl-dot.done.suspicious{background:var(--red);box-shadow:0 0 6px var(--red);}
+  .tl-dot.done.warning{background:var(--yellow);box-shadow:0 0 6px var(--yellow);}
+  .tl-dot.done.normal{background:var(--green);box-shadow:0 0 6px var(--green);}
+  .tl-controls{display:flex;align-items:center;gap:10px;justify-content:center;}
+  .tl-btn{background:var(--border);border:none;color:var(--text);padding:6px 14px;border-radius:4px;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:0.5px;transition:all 0.2s;}
+  .tl-btn:hover{background:var(--accent);color:var(--bg);}
+  .tl-btn.primary{background:var(--accent);color:var(--bg);font-weight:bold;}
+  .tl-speed{font-family:var(--mono);font-size:10px;color:var(--text-dim);display:flex;align-items:center;gap:6px;}
+  .speed-btn{background:var(--border);border:1px solid transparent;color:var(--text-dim);padding:3px 8px;border-radius:3px;cursor:pointer;font-family:var(--mono);font-size:10px;}
+  .speed-btn.active{color:var(--accent);border-color:var(--accent);}
+  .top-left{position:absolute;top:16px;left:16px;z-index:50;display:flex;flex-direction:column;gap:8px;}
+  .mini-card{background:rgba(13,21,32,0.88);border:1px solid var(--border);border-radius:6px;padding:10px 14px;backdrop-filter:blur(6px);min-width:170px;}
+  .mini-label{font-family:var(--mono);font-size:9px;color:var(--text-dim);letter-spacing:1.5px;margin-bottom:4px;}
+  .mini-value{font-family:var(--mono);font-size:13px;color:var(--accent);}
+  .mini-value.red{color:var(--red);}.mini-value.yellow{color:var(--yellow);}
+  .heatmap-legend{position:absolute;bottom:110px;left:16px;background:rgba(13,21,32,0.88);border:1px solid var(--border);border-radius:6px;padding:12px 14px;z-index:50;display:none;}
+  .heatmap-legend.show{display:block;}
+  .legend-title{font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:1px;margin-bottom:8px;}
+  .legend-bar{width:140px;height:8px;border-radius:4px;background:linear-gradient(to right,rgba(0,0,255,0.3),rgba(0,255,0,0.5),rgba(255,255,0,0.7),rgba(255,68,68,0.9));margin-bottom:4px;}
+  .legend-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--text-dim);}
+  .detail-popup{position:absolute;top:16px;left:50%;transform:translateX(-50%);background:rgba(13,21,32,0.96);border:1px solid var(--accent);border-radius:8px;padding:14px 18px;z-index:60;min-width:340px;display:none;backdrop-filter:blur(8px);box-shadow:0 0 24px rgba(0,200,255,0.2);}
+  .detail-popup.show{display:block;}
+  .dp-close{position:absolute;top:8px;right:12px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:15px;}
+  .dp-tag{font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:1px;margin-bottom:6px;}
+  .dp-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:10px;}
+  .dp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+  .dp-lbl{font-size:9px;color:var(--text-dim);font-family:var(--mono);letter-spacing:1px;margin-bottom:2px;}
+  .dp-val{font-size:12px;color:var(--text);}
+  .dp-desc{font-size:11px;color:var(--text-dim);border-top:1px solid var(--border);padding-top:8px;line-height:1.6;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">💰</div>
+    <div>
+      <div class="logo-text">HOLMES & WATSON</div>
+      <div class="logo-sub">跨國資金流動追蹤系統 · FINANCIAL INTELLIGENCE</div>
+    </div>
+  </div>
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="setMode('fund')">💸 資金流動</button>
+    <button class="mode-tab" onclick="setMode('heat')">🌡️ 洗錢熱圖</button>
+  </div>
+  <div class="header-right">
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+</header>
+
+<div class="main">
+  <div id="globe-container">
+    <div id="globe"></div>
+
+    <div class="top-left">
+      <div class="mini-card">
+        <div class="mini-label">追蹤案件</div>
+        <div class="mini-value">CASE-2026-FIN-007</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-label">總涉案金額</div>
+        <div class="mini-value yellow" id="total-amount">USD 0</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-label">可疑交易</div>
+        <div class="mini-value red" id="suspicious-count">0 筆</div>
+      </div>
+    </div>
+
+    <div class="heatmap-legend" id="heatmap-legend">
+      <div class="legend-title">全球洗錢活動密度</div>
+      <div class="legend-bar"></div>
+      <div class="legend-labels"><span>低風險</span><span>中</span><span>高風險</span></div>
+    </div>
+
+    <div class="detail-popup" id="detail-popup">
+      <button class="dp-close" onclick="closeDetail()">✕</button>
+      <div class="dp-tag" id="dp-tag"></div>
+      <div class="dp-title" id="dp-title"></div>
+      <div class="dp-grid">
+        <div><div class="dp-lbl">來源國</div><div class="dp-val" id="dp-from"></div></div>
+        <div><div class="dp-lbl">目的國</div><div class="dp-val" id="dp-to"></div></div>
+        <div><div class="dp-lbl">金額</div><div class="dp-val" id="dp-amount"></div></div>
+        <div><div class="dp-lbl">時間</div><div class="dp-val" id="dp-time"></div></div>
+        <div><div class="dp-lbl">管道</div><div class="dp-val" id="dp-channel"></div></div>
+        <div><div class="dp-lbl">狀態</div><div class="dp-val" id="dp-status"></div></div>
+      </div>
+      <div class="dp-desc" id="dp-desc"></div>
+    </div>
+
+    <div class="timeline" id="timeline">
+      <div class="tl-top">
+        <div class="tl-label">⏱ 資金流動時間軸</div>
+        <div class="tl-step" id="tl-step">0 / 6</div>
+      </div>
+      <div class="tl-bar" onclick="seekTimeline(event)">
+        <div class="tl-progress" id="tl-progress" style="width:0%"></div>
+        <div class="tl-dots" id="tl-dots"></div>
+      </div>
+      <div class="tl-controls">
+        <button class="tl-btn" onclick="resetPlay()">↺ 重置</button>
+        <button class="tl-btn" onclick="prevStep()">◀ 上一筆</button>
+        <button class="tl-btn primary" id="play-btn" onclick="togglePlay()">▶ 播放</button>
+        <button class="tl-btn" onclick="nextStep()">下一筆 ▶</button>
+        <div class="tl-speed">速度：
+          <button class="speed-btn" onclick="setSpeed(1800,this)">慢</button>
+          <button class="speed-btn active" onclick="setSpeed(900,this)">中</button>
+          <button class="speed-btn" onclick="setSpeed(350,this)">快</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="side-panel">
+    <div class="panel-section">
+      <div class="panel-title">案件統計</div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num c-blue">6</div><div class="stat-lbl">涉案國家</div></div>
+        <div class="stat-card"><div class="stat-num c-yellow">6</div><div class="stat-lbl">交易筆數</div></div>
+        <div class="stat-card"><div class="stat-num c-red" id="s-suspicious">0</div><div class="stat-lbl">可疑交易</div></div>
+        <div class="stat-card"><div class="stat-num c-green" id="s-played">0</div><div class="stat-lbl">已追蹤</div></div>
+      </div>
+    </div>
+    <div class="panel-section" style="padding:10px 16px 0;">
+      <div class="panel-title">交易明細</div>
+    </div>
+    <div class="tx-list" id="tx-list"></div>
+  </div>
+</div>
+
+<script>
+const TRANSACTIONS = [
+  { id:'TXN-001', title:'台灣母公司匯款至香港控股', from:'台灣', fromLat:25.033, fromLng:121.565, to:'香港', toLat:22.28, toLng:114.16, amount:'USD 5,000,000', amountVal:5000000, time:'2026-01-08 09:15', channel:'銀行電匯 SWIFT', type:'warning', desc:'以「顧問費」名義匯出，金額異常龐大，與業務規模不相符' },
+  { id:'TXN-002', title:'香港控股轉入新加坡空殼公司', from:'香港', fromLat:22.28, fromLng:114.16, to:'新加坡', toLat:1.35, toLng:103.82, amount:'USD 4,800,000', amountVal:4800000, time:'2026-01-10 14:30', channel:'離岸帳戶轉帳', type:'suspicious', desc:'48小時內快速轉出，金額損耗僅4%，典型層轉洗錢手法' },
+  { id:'TXN-003', title:'新加坡轉入杜拜自由貿易區', from:'新加坡', fromLat:1.35, fromLng:103.82, to:'阿聯酋・杜拜', toLat:25.2, toLng:55.27, amount:'USD 4,750,000', amountVal:4750000, time:'2026-01-15 11:00', channel:'加密貨幣 USDT', type:'suspicious', desc:'改用加密貨幣轉帳規避金融監管，為已知高風險洗錢路徑' },
+  { id:'TXN-004', title:'杜拜資金流入英屬維京群島', from:'阿聯酋・杜拜', fromLat:25.2, fromLng:55.27, to:'英屬維京群島', toLat:18.43, toLng:-64.62, amount:'USD 4,700,000', amountVal:4700000, time:'2026-01-22 08:45', channel:'離岸信託帳戶', type:'suspicious', desc:'流入避稅天堂，法律追蹤難度極高，受益人身份不透明' },
+  { id:'TXN-005', title:'英屬維京群島轉投資美國房產', from:'英屬維京群島', fromLat:18.43, fromLng:-64.62, to:'美國・邁阿密', toLat:25.77, toLng:-80.19, amount:'USD 4,600,000', amountVal:4600000, time:'2026-02-03 16:20', channel:'不動產投資基金', type:'warning', desc:'以合法不動產投資名義將非法資金整合，進入洗白階段' },
+  { id:'TXN-006', title:'美國資金回流台灣關聯企業', from:'美國・邁阿密', fromLat:25.77, fromLng:-80.19, to:'台灣', toLat:25.033, toLng:121.565, amount:'USD 4,500,000', amountVal:4500000, time:'2026-02-18 10:00', channel:'外資投資名義匯入', type:'normal', desc:'資金以「合法外資」名義回台，洗錢三階段（置入、層轉、整合）完成' }
+];
+
+const HEATMAP_DATA = [
+  {lat:1.35,lng:103.82,weight:0.9},{lat:3.14,lng:101.69,weight:0.7},{lat:13.75,lng:100.5,weight:0.8},
+  {lat:10.82,lng:106.63,weight:0.75},{lat:22.28,lng:114.16,weight:1.0},{lat:25.03,lng:121.56,weight:0.6},
+  {lat:25.2,lng:55.27,weight:0.85},{lat:26.07,lng:50.55,weight:0.6},{lat:18.43,lng:-64.62,weight:0.95},
+  {lat:19.3,lng:-81.38,weight:0.9},{lat:31.95,lng:-64.67,weight:0.85},{lat:47.14,lng:9.52,weight:0.7},
+  {lat:46.82,lng:8.22,weight:0.75},{lat:40.71,lng:-74.01,weight:0.65},{lat:25.77,lng:-80.19,weight:0.7},
+  {lat:34.05,lng:-118.24,weight:0.55},{lat:51.5,lng:-0.12,weight:0.6},{lat:52.37,lng:4.9,weight:0.55},
+  {lat:55.75,lng:37.62,weight:0.7},{lat:50.45,lng:30.52,weight:0.6},{lat:35.68,lng:51.38,weight:0.65}
+];
+
+const TYPE_STYLE = {
+  suspicious:{color:['rgba(255,68,68,0.95)','rgba(255,68,68,0.1)'],stroke:0.7,dashLength:0.18,dashGap:0.1,animateTime:650},
+  warning:{color:['rgba(255,193,7,0.9)','rgba(255,193,7,0.1)'],stroke:0.5,dashLength:0.35,dashGap:0.2,animateTime:1200},
+  normal:{color:['rgba(68,255,136,0.8)','rgba(68,255,136,0.1)'],stroke:0.4,dashLength:0.65,dashGap:0.25,animateTime:2000}
+};
+
+const STATUS_LABEL={suspicious:'⚠️ 高度可疑',warning:'🔶 需關注',normal:'✅ 已確認'};
+const STATUS_COLOR={suspicious:'#ff4444',warning:'#ffc107',normal:'#44ff88'};
+
+let currentStep=-1,isPlaying=false,playTimer=null,playSpeed=900,currentMode='fund',globeInstance=null;
+
+function initGlobe(){
+  const container=document.getElementById('globe');
+  const nodes=TRANSACTIONS.reduce((acc,tx)=>{
+    if(!acc.find(p=>p.name===tx.from)) acc.push({name:tx.from,lat:tx.fromLat,lng:tx.fromLng});
+    if(!acc.find(p=>p.name===tx.to))   acc.push({name:tx.to,lat:tx.toLat,lng:tx.toLng});
+    return acc;
+  },[]);
+
+  globeInstance=Globe()(container)
+    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
+    .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+    .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+    .width(container.parentElement.offsetWidth)
+    .height(container.parentElement.offsetHeight)
+    .pointsData(nodes)
+    .pointLat('lat').pointLng('lng')
+    .pointColor(()=>'rgba(0,200,255,0.7)')
+    .pointRadius(0.45).pointAltitude(0.01)
+    .pointLabel(d=>`<div style="background:rgba(13,21,32,0.9);border:1px solid #00c8ff;border-radius:5px;padding:6px 10px;font-family:'Noto Sans TC';font-size:12px;color:#fff;">${d.name}</div>`)
+    .arcsData([])
+    .arcStartLat('fromLat').arcStartLng('fromLng')
+    .arcEndLat('toLat').arcEndLng('toLng')
+    .arcColor(d=>TYPE_STYLE[d.type]?.color)
+    .arcDashLength(d=>TYPE_STYLE[d.type]?.dashLength)
+    .arcDashGap(d=>TYPE_STYLE[d.type]?.dashGap)
+    .arcDashAnimateTime(d=>TYPE_STYLE[d.type]?.animateTime)
+    .arcStroke(d=>TYPE_STYLE[d.type]?.stroke)
+    .arcAltitudeAutoScale(0.38)
+    .arcLabel(d=>`<div style="background:rgba(13,21,32,0.92);border:1px solid ${TYPE_STYLE[d.type]?.color[0]};border-radius:5px;padding:8px 12px;font-family:'Noto Sans TC';font-size:11px;color:#c8d8e8;min-width:200px;">
+      <div style="color:${TYPE_STYLE[d.type]?.color[0]};font-size:9px;margin-bottom:4px;">${d.id} · ${STATUS_LABEL[d.type]}</div>
+      <div style="margin-bottom:3px;">${d.from} → ${d.to}</div>
+      <div style="color:#ffc107;">${d.amount}</div>
+    </div>`)
+    .onArcClick(d=>showDetail(d))
+    .heatmapsData([])
+    .heatmapPointLat('lat').heatmapPointLng('lng').heatmapPointWeight('weight')
+    .heatmapBandwidth(3).heatmapColorSaturation(2.5)
+    .heatmapBaseAltitude(0.01).heatmapTopAltitude(0.08)
+    .pointOfView({lat:20,lng:100,altitude:2.5},0);
+
+  globeInstance.controls().autoRotate=false;
+  globeInstance.controls().enableZoom=true;
+  window.addEventListener('resize',()=>{
+    globeInstance.width(container.parentElement.offsetWidth).height(container.parentElement.offsetHeight);
+  });
+}
+
+function setMode(mode){
+  currentMode=mode;
+  document.querySelectorAll('.mode-tab').forEach((b,i)=>{
+    b.classList.toggle('active',(i===0&&mode==='fund')||(i===1&&mode==='heat'));
+  });
+  document.getElementById('timeline').style.display=mode==='fund'?'block':'none';
+  document.getElementById('heatmap-legend').classList.toggle('show',mode==='heat');
+  if(mode==='heat'){
+    globeInstance.heatmapsData([{points:HEATMAP_DATA}])
+      .heatmapPointLat(d=>d.lat).heatmapPointLng(d=>d.lng).heatmapPointWeight(d=>d.weight);
+    globeInstance.arcsData([]);
+    globeInstance.pointOfView({lat:20,lng:20,altitude:2.2},1200);
+  } else {
+    globeInstance.heatmapsData([]);
+    if(currentStep>=0) globeInstance.arcsData(TRANSACTIONS.slice(0,currentStep+1));
+    globeInstance.pointOfView({lat:20,lng:100,altitude:2.5},1200);
+  }
+}
+
+function renderDots(){
+  const c=document.getElementById('tl-dots');
+  c.innerHTML=TRANSACTIONS.map((tx,i)=>{
+    const pct=(i/(TRANSACTIONS.length-1))*100;
+    return `<div class="tl-dot ${tx.type}" style="left:calc(${pct}% - 6px);top:0;" id="dot-${i}"></div>`;
+  }).join('');
+}
+
+function updateTimeline(){
+  const pct=currentStep<0?0:((currentStep+1)/TRANSACTIONS.length)*100;
+  document.getElementById('tl-progress').style.width=pct+'%';
+  document.getElementById('tl-step').textContent=`${Math.max(0,currentStep+1)} / ${TRANSACTIONS.length}`;
+  TRANSACTIONS.forEach((_,i)=>{
+    const dot=document.getElementById('dot-'+i);
+    if(dot) dot.classList.toggle('done',i<=currentStep);
+  });
+  document.querySelectorAll('.tx-item').forEach((el,i)=>{
+    el.classList.remove('active','played');
+    if(i===currentStep) el.classList.add('active');
+    else if(i<currentStep) el.classList.add('played');
+  });
+  const played=TRANSACTIONS.slice(0,currentStep+1);
+  const totalAmt=played.reduce((s,t)=>s+t.amountVal,0);
+  const suspCnt=played.filter(t=>t.type==='suspicious').length;
+  document.getElementById('total-amount').textContent='USD '+totalAmt.toLocaleString();
+  document.getElementById('suspicious-count').textContent=suspCnt+' 筆';
+  document.getElementById('s-suspicious').textContent=suspCnt;
+  document.getElementById('s-played').textContent=played.length;
+}
+
+function goToStep(step){
+  if(step<0||step>=TRANSACTIONS.length) return;
+  currentStep=step;
+  if(currentMode==='fund') globeInstance.arcsData(TRANSACTIONS.slice(0,step+1));
+  updateTimeline();
+  const tx=TRANSACTIONS[step];
+  globeInstance.pointOfView({lat:(tx.fromLat+tx.toLat)/2,lng:(tx.fromLng+tx.toLng)/2,altitude:2.3},800);
+  showDetail(tx);
+}
+
+function nextStep(){ if(currentStep<TRANSACTIONS.length-1) goToStep(currentStep+1); else stopPlay(); }
+function prevStep(){ if(currentStep>0) goToStep(currentStep-1); }
+function togglePlay(){ if(isPlaying) stopPlay(); else startPlay(); }
+
+function startPlay(){
+  if(currentStep>=TRANSACTIONS.length-1) resetPlay();
+  isPlaying=true;
+  document.getElementById('play-btn').textContent='⏸ 暫停';
+  playTimer=setInterval(()=>{ if(currentStep<TRANSACTIONS.length-1) nextStep(); else stopPlay(); },playSpeed);
+}
+
+function stopPlay(){
+  isPlaying=false;
+  clearInterval(playTimer);
+  document.getElementById('play-btn').textContent='▶ 播放';
+}
+
+function resetPlay(){
+  stopPlay();
+  currentStep=-1;
+  globeInstance.arcsData([]);
+  document.getElementById('total-amount').textContent='USD 0';
+  document.getElementById('suspicious-count').textContent='0 筆';
+  document.getElementById('s-suspicious').textContent='0';
+  document.getElementById('s-played').textContent='0';
+  updateTimeline();
+  closeDetail();
+  globeInstance.pointOfView({lat:20,lng:100,altitude:2.5},800);
+}
+
+function setSpeed(ms,btn){
+  playSpeed=ms;
+  document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(isPlaying){stopPlay();startPlay();}
+}
+
+function seekTimeline(e){
+  const pct=e.offsetX/e.currentTarget.offsetWidth;
+  goToStep(Math.max(0,Math.min(Math.round(pct*(TRANSACTIONS.length-1)),TRANSACTIONS.length-1)));
+}
+
+function showDetail(tx){
+  document.getElementById('dp-tag').textContent=tx.id+' · '+tx.time;
+  document.getElementById('dp-title').textContent=tx.title;
+  document.getElementById('dp-from').textContent=tx.from;
+  document.getElementById('dp-to').textContent=tx.to;
+  document.getElementById('dp-amount').textContent=tx.amount;
+  document.getElementById('dp-time').textContent=tx.time;
+  document.getElementById('dp-channel').textContent=tx.channel;
+  document.getElementById('dp-status').innerHTML=`<span style="color:${STATUS_COLOR[tx.type]}">${STATUS_LABEL[tx.type]}</span>`;
+  document.getElementById('dp-desc').textContent=tx.desc;
+  document.getElementById('detail-popup').classList.add('show');
+}
+
+function closeDetail(){ document.getElementById('detail-popup').classList.remove('show'); }
+
+function renderList(){
+  document.getElementById('tx-list').innerHTML=TRANSACTIONS.map((tx,i)=>`
+    <div class="tx-item ${tx.type}" id="tx-${i}" onclick="goToStep(${i})">
+      <div class="tx-header">
+        <span class="tx-id">${tx.id}</span>
+        <span class="tx-tag ${tx.type}">${STATUS_LABEL[tx.type]}</span>
+      </div>
+      <div class="tx-route">${tx.from} → ${tx.to}</div>
+      <div class="tx-meta">
+        <span class="tx-amount">${tx.amount}</span>
+        <span class="tx-time">${tx.time.split(' ')[0]}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+setInterval(()=>{ document.getElementById('clock').textContent=new Date().toLocaleTimeString('zh-TW'); },1000);
+document.getElementById('clock').textContent=new Date().toLocaleTimeString('zh-TW');
+
+renderList();
+renderDots();
+window.addEventListener('load',initGlobe);
+</script>
+</body>
+</html>
