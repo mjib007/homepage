@@ -275,8 +275,6 @@ function initGlobe() {
     .polygonSideColor(() => 'rgba(0,0,0,0)')
     .polygonStrokeColor(() => 'rgba(0,0,0,0)')
     .polygonAltitude(0.001)
-
-    // 點位（隱形，用於 hover tooltip 和點擊）
     .pointsData(DISEASE_DATA)
     .pointLat('lat').pointLng('lng')
     .pointColor(() => 'rgba(255,255,255,0)')
@@ -306,6 +304,24 @@ function initGlobe() {
   globe.controls().autoRotate = true;
   globe.controls().autoRotateSpeed = 0.2;
   globe.controls().enableZoom = true;
+
+  // 載入國家邊界 GeoJSON，疊加在熱力圖上
+  fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson')
+    .then(r => r.json())
+    .then(data => {
+      // 合併：熱力圓形 + 國家邊界
+      const borderPolygons = data.features.map(f => ({
+        geometry: f.geometry,
+        color: 'rgba(0,0,0,0)',       // 填色透明
+        isBorder: true
+      }));
+      globe.polygonsData([...polygons, ...borderPolygons])
+        .polygonGeoJsonGeometry('geometry')
+        .polygonCapColor(d => d.color)
+        .polygonSideColor(() => 'rgba(0,0,0,0)')
+        .polygonStrokeColor(d => d.isBorder ? 'rgba(100,180,255,0.25)' : 'rgba(0,0,0,0)')
+        .polygonAltitude(d => d.isBorder ? 0.002 : 0.001);
+    });
 
   window.addEventListener('resize', () => {
     globe.width(container.parentElement.offsetWidth)
