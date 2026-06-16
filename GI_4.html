@@ -309,6 +309,7 @@ function initGlobe() {
   fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson')
     .then(r => r.json())
     .then(data => {
+      console.log('GeoJSON 載入成功，國家數量:', data.features.length);
       // 合併：熱力圓形 + 國家邊界
       const borderPolygons = data.features.map(f => ({
         geometry: f.geometry,
@@ -319,7 +320,7 @@ function initGlobe() {
         .polygonGeoJsonGeometry('geometry')
         .polygonCapColor(d => d.color)
         .polygonSideColor(() => 'rgba(0,0,0,0)')
-        .polygonStrokeColor(d => d.isBorder ? 'rgba(100,180,255,0.25)' : 'rgba(0,0,0,0)')
+        .polygonStrokeColor(d => d.isBorder ? 'rgba(100,200,255,0.7)' : 'rgba(0,0,0,0)')
         .polygonAltitude(d => d.isBorder ? 0.002 : 0.001);
     });
 
