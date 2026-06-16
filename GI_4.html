@@ -92,6 +92,7 @@
   <div class="header-center" id="utc-clock">UTC —</div>
   <div class="header-right">
     <div class="dot-live"><div class="dot"></div>即時監控中</div>
+    <button id="rotate-btn" onclick="toggleRotate()" style="font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:4px;border:1px solid var(--border);background:var(--border);color:var(--text);cursor:pointer;letter-spacing:0.5px;">⏸ 暫停旋轉</button>
     <div class="clock" id="clock">--:--:--</div>
   </div>
 </header>
@@ -300,6 +301,8 @@ function initGlobe() {
 
     .pointOfView({ lat: 20, lng: 110, altitude: 2.2 }, 0);
 
+  window.globeInstance = globe;
+
   globe.controls().autoRotate = true;
   globe.controls().autoRotateSpeed = 0.2;
   globe.controls().enableZoom = true;
@@ -346,6 +349,15 @@ function showDetail(d) {
 }
 
 function closeDetail() { document.getElementById('detail-popup').classList.remove('show'); }
+
+function toggleRotate() {
+  const ctrl = window.globeInstance.controls();
+  ctrl.autoRotate = !ctrl.autoRotate;
+  const btn = document.getElementById('rotate-btn');
+  btn.textContent = ctrl.autoRotate ? '⏸ 暫停旋轉' : '▶ 開始旋轉';
+  btn.style.borderColor = ctrl.autoRotate ? 'var(--border)' : 'var(--accent)';
+  btn.style.color = ctrl.autoRotate ? 'var(--text)' : 'var(--accent)';
+}
 
 // 右側列表
 function renderList() {
