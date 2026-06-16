@@ -272,12 +272,12 @@ function initGlobe() {
     .width(container.parentElement.offsetWidth)
     .height(container.parentElement.offsetHeight)
 
-    // 點位標記（點擊顯示詳情）
+    // 點位（透明不可見，僅供點擊互動用）
     .pointsData(DISEASE_DATA)
     .pointLat('lat').pointLng('lng')
-    .pointColor(d => LEVEL_COLOR[d.level])
-    .pointRadius(d => ({ critical:0.55, high:0.42, medium:0.32, low:0.22 }[d.level]))
-    .pointAltitude(d => ({ critical:0.04, high:0.03, medium:0.02, low:0.01 }[d.level]))
+    .pointColor(() => 'rgba(0,0,0,0)')
+    .pointRadius(0.8)
+    .pointAltitude(0)
     .pointLabel(d => `
       <div style="background:rgba(13,21,32,0.93);border:1px solid ${LEVEL_COLOR[d.level]};border-radius:6px;padding:8px 12px;font-family:'Noto Sans TC';min-width:160px;box-shadow:0 0 16px ${LEVEL_COLOR[d.level]}44;">
         <div style="font-size:9px;color:${LEVEL_COLOR[d.level]};letter-spacing:1px;margin-bottom:4px;">${LEVEL_LABEL[d.level]}</div>
@@ -296,15 +296,15 @@ function initGlobe() {
     .ringPropagationSpeed(d => d.level === 'critical' ? 2.5 : 1.5)
     .ringRepeatPeriod(d => d.level === 'critical' ? 900 : 1500)
 
-    // 熱圖
+    // 熱圖（主要視覺）
     .heatmapsData([{ points: DISEASE_DATA }])
     .heatmapPointLat(d => d.lat)
     .heatmapPointLng(d => d.lng)
     .heatmapPointWeight(d => d.weight)
-    .heatmapBandwidth(3.5)
-    .heatmapColorSaturation(3)
-    .heatmapBaseAltitude(0.005)
-    .heatmapTopAltitude(0.06)
+    .heatmapBandwidth(4)
+    .heatmapColorSaturation(4)
+    .heatmapBaseAltitude(0)
+    .heatmapTopAltitude(0.02)
 
     .pointOfView({ lat: 20, lng: 110, altitude: 2.2 }, 0);
 
