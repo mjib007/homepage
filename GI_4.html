@@ -297,7 +297,6 @@ function initGlobe() {
     .ringMaxRadius(d => d.level === 'critical' ? 4 : 2.5)
     .ringPropagationSpeed(d => d.level === 'critical' ? 2 : 1.2)
     .ringRepeatPeriod(d => d.level === 'critical' ? 1000 : 1600)
-    .ringStroke(d => d.level === 'critical' ? 1.0 : 0.6)
 
     .pointOfView({ lat: 20, lng: 110, altitude: 2.2 }, 0);
 
