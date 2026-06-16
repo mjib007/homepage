@@ -224,14 +224,13 @@ function weightToColor(weight, alpha) {
 // 每個資料點生成多個半徑不同的同心圓 polygon
 function generateHeatPolygons() {
   const polygons = [];
-  const LAYERS = 5; // 同心圓層數
+  const LAYERS = 3; // 同心圓層數
 
   DISEASE_DATA.forEach(d => {
     for (let i = LAYERS; i >= 1; i--) {
       const ratio = i / LAYERS;
-      // 外層：半徑大、透明度低；內層：半徑小、透明度高
-      const radius = d.weight * 12 * ratio;  // 最大半徑12度
-      const alpha  = d.weight * (1 - ratio * 0.7) * 0.55;
+      const radius = d.weight * 4 * ratio;
+      const alpha  = d.weight * (1 - ratio * 0.6) * 0.30;
       const color  = weightToColor(d.weight, alpha);
 
       // 生成圓形 polygon 頂點（36個點）
