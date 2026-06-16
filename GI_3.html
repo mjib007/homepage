@@ -291,10 +291,11 @@ function initGlobe() {
     // 光環（極高與高風險才有）
     .ringsData(DISEASE_DATA.filter(d => d.level === 'critical' || d.level === 'high'))
     .ringLat('lat').ringLng('lng')
-    .ringColor(d => d.level === 'critical' ? '#ff444455' : '#ff8c0033')
-    .ringMaxRadius(d => d.level === 'critical' ? 4 : 2.5)
+    .ringColor(d => d.level === 'critical' ? '#ff4444cc' : '#ff8c00aa')
+    .ringMaxRadius(d => d.level === 'critical' ? 5 : 3.5)
     .ringPropagationSpeed(d => d.level === 'critical' ? 2.5 : 1.5)
     .ringRepeatPeriod(d => d.level === 'critical' ? 900 : 1500)
+    .ringStroke(d => d.level === 'critical' ? 1.2 : 0.8)
 
     // 熱圖（主要視覺）
     .heatmapsData([{ points: DISEASE_DATA }])
