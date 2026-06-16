@@ -266,9 +266,9 @@ function initGlobe() {
   const container = document.getElementById('globe');
 
   globeInstance = Globe()(container)
-    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
+    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
     .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
-    .backgroundColor('rgba(8,12,40,1)')
+    .backgroundColor('rgba(4,8,28,1)')
     .width(container.parentElement.offsetWidth)
     .height(container.parentElement.offsetHeight)
 
@@ -301,10 +301,10 @@ function initGlobe() {
     .heatmapPointLat(d => d.lat)
     .heatmapPointLng(d => d.lng)
     .heatmapPointWeight(d => d.weight)
-    .heatmapBandwidth(5)
-    .heatmapColorSaturation(8)
+    .heatmapBandwidth(6)
+    .heatmapColorSaturation(12)
     .heatmapBaseAltitude(0.02)
-    .heatmapTopAltitude(0.2)
+    .heatmapTopAltitude(0.25)
 
     .pointOfView({ lat: 20, lng: 110, altitude: 2.2 }, 0);
 
