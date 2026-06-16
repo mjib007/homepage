@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>福爾摩斯 — 全球疾病監控</title>
-<script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/dist/echarts.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/echarts-gl@1.1.2/dist/echarts-gl.min.js"></script>
+<script src="https://unpkg.com/globe.gl@2.27.2/dist/globe.gl.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
   :root {
@@ -16,7 +15,6 @@
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--bg);color:var(--text);font-family:var(--sans);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
-
   header{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;z-index:100;}
   .logo{display:flex;align-items:center;gap:12px;}
   .logo-icon{width:32px;height:32px;border:2px solid var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 12px rgba(255,68,68,0.4);}
@@ -28,29 +26,22 @@
   .dot-live{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--red);}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 6px var(--red);animation:pulse 1.5s infinite;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
-
   .main{display:flex;flex:1;overflow:hidden;}
   #globe-container{flex:1;position:relative;overflow:hidden;}
   #globe{width:100%;height:100%;}
-
-  /* 左側覆蓋面板 */
   .top-left{position:absolute;top:16px;left:16px;z-index:50;display:flex;flex-direction:column;gap:8px;}
   .mini-card{background:rgba(13,21,32,0.9);border:1px solid var(--border);border-radius:6px;padding:10px 14px;backdrop-filter:blur(6px);min-width:175px;}
   .mini-label{font-family:var(--mono);font-size:9px;color:var(--text-dim);letter-spacing:1.5px;margin-bottom:4px;}
   .mini-value{font-family:var(--mono);font-size:13px;color:var(--accent);}
   .mini-value.red{color:var(--red);}
   .mini-value.orange{color:var(--orange);}
-
-  /* 圖例 */
   .legend{position:absolute;bottom:24px;left:16px;background:rgba(13,21,32,0.9);border:1px solid var(--border);border-radius:8px;padding:14px 16px;z-index:50;backdrop-filter:blur(6px);}
   .legend-title{font-family:var(--mono);font-size:9px;color:var(--red);letter-spacing:2px;margin-bottom:10px;}
-  .legend-bar{width:180px;height:10px;border-radius:5px;background:linear-gradient(to right,#0000ff44,#00cc4488,#ffff0099,#ff8c00cc,#ff0000);margin-bottom:5px;}
+  .legend-bar{width:180px;height:10px;border-radius:5px;background:linear-gradient(to right,rgba(0,0,255,0.15),rgba(0,200,100,0.4),rgba(255,200,0,0.7),rgba(255,100,0,0.85),rgba(255,0,0,1));margin-bottom:5px;}
   .legend-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--text-dim);margin-bottom:12px;}
   .legend-items{display:flex;flex-direction:column;gap:5px;}
   .legend-item{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text-dim);}
   .legend-dot{width:10px;height:10px;border-radius:50%;}
-
-  /* 詳情彈窗 */
   .detail-popup{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(13,21,32,0.96);border:1px solid var(--red);border-radius:8px;padding:14px 18px;z-index:60;min-width:380px;display:none;backdrop-filter:blur(8px);box-shadow:0 0 24px rgba(255,68,68,0.2);}
   .detail-popup.show{display:block;}
   .dp-close{position:absolute;top:8px;right:12px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:15px;}
@@ -60,8 +51,6 @@
   .dp-lbl{font-size:9px;color:var(--text-dim);font-family:var(--mono);letter-spacing:0.5px;margin-bottom:2px;}
   .dp-val{font-size:12px;color:var(--text);}
   .dp-desc{font-size:11px;color:var(--text-dim);border-top:1px solid var(--border);padding-top:8px;line-height:1.6;}
-
-  /* 右側面板 */
   .side-panel{width:300px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
   .panel-section{border-bottom:1px solid var(--border);padding:14px 16px;}
   .panel-title{font-family:var(--mono);font-size:10px;color:var(--red);letter-spacing:2px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
@@ -92,7 +81,6 @@
 </style>
 </head>
 <body>
-
 <header>
   <div class="logo">
     <div class="logo-icon">🦠</div>
@@ -111,26 +99,12 @@
 <div class="main">
   <div id="globe-container">
     <div id="globe"></div>
-
     <div class="top-left">
-      <div class="mini-card">
-        <div class="mini-label">監控疾病</div>
-        <div class="mini-value">H5N1 禽流感</div>
-      </div>
-      <div class="mini-card">
-        <div class="mini-label">全球確診（模擬）</div>
-        <div class="mini-value red">142,780 例</div>
-      </div>
-      <div class="mini-card">
-        <div class="mini-label">極高風險地區</div>
-        <div class="mini-value orange">7 區</div>
-      </div>
-      <div class="mini-card">
-        <div class="mini-label">資料更新</div>
-        <div class="mini-value" style="font-size:11px;" id="update-time">— 模擬資料 —</div>
-      </div>
+      <div class="mini-card"><div class="mini-label">監控疾病</div><div class="mini-value">H5N1 禽流感</div></div>
+      <div class="mini-card"><div class="mini-label">全球確診（模擬）</div><div class="mini-value red">142,780 例</div></div>
+      <div class="mini-card"><div class="mini-label">極高風險地區</div><div class="mini-value orange">7 區</div></div>
+      <div class="mini-card"><div class="mini-label">資料更新</div><div class="mini-value" style="font-size:11px;" id="update-time">— 模擬資料 —</div></div>
     </div>
-
     <div class="legend">
       <div class="legend-title">🌡️ 疾病活躍度</div>
       <div class="legend-bar"></div>
@@ -142,7 +116,6 @@
         <div class="legend-item"><div class="legend-dot" style="background:var(--green);"></div>低風險（零星案例）</div>
       </div>
     </div>
-
     <div class="detail-popup" id="detail-popup">
       <button class="dp-close" onclick="closeDetail()">✕</button>
       <div class="dp-tag" id="dp-tag"></div>
@@ -178,40 +151,39 @@
 
 <script>
 // ══════════════════════════════════════════
-// 模擬資料區塊
-// 未來替換真實資料庫時，只需更新此區塊
+// 模擬資料區塊（未來替換真實資料只改這裡）
 // ══════════════════════════════════════════
 const DISEASE_DATA = [
-  { lat:22.3,  lng:114.2, weight:1.0,  region:'香港',       level:'critical', cases:12400, deaths:820, trend:'up',   firstCase:'2025-11-03', desc:'家禽市場爆發，病毒出現人傳人跡象，已啟動最高級應變。' },
-  { lat:31.2,  lng:121.5, weight:0.97, region:'上海',       level:'critical', cases:10800, deaths:640, trend:'up',   firstCase:'2025-11-18', desc:'多處醫院出現群聚感染，ICU床位緊張，境外移入與本土案例並存。' },
-  { lat:10.8,  lng:106.7, weight:0.92, region:'胡志明市',   level:'critical', cases:8900,  deaths:510, trend:'up',   firstCase:'2025-12-01', desc:'越南南部爆發中心，農村養禽戶大規模染疫，撲殺行動持續。' },
-  { lat:13.8,  lng:100.5, weight:0.90, region:'曼谷',       level:'critical', cases:7600,  deaths:430, trend:'up',   firstCase:'2025-12-10', desc:'觀光旅遊人口高度流動加速擴散，機場入境篩查已強化。' },
-  { lat:14.1,  lng:120.9, weight:0.88, region:'馬尼拉',     level:'critical', cases:6800,  deaths:390, trend:'up',   firstCase:'2025-12-15', desc:'島嶼型地形造成各省管控難度高，確診數仍持續攀升中。' },
-  { lat:3.1,   lng:101.7, weight:0.86, region:'吉隆坡',     level:'critical', cases:5900,  deaths:310, trend:'up',   firstCase:'2026-01-02', desc:'輸入性案例引發社區傳播，政府宣布進入疾病防治緊急狀態。' },
-  { lat:1.35,  lng:103.8, weight:0.85, region:'新加坡',     level:'critical', cases:4200,  deaths:180, trend:'up',   firstCase:'2026-01-10', desc:'城市國家高度都市化，擴散速度快，但醫療資源充足。' },
-  { lat:23.1,  lng:113.3, weight:0.80, region:'廣州',       level:'high',     cases:9200,  deaths:420, trend:'up',   firstCase:'2025-12-05', desc:'廣東省禽類交易市場持續出現感染源，疫情持續擴大中。' },
-  { lat:39.9,  lng:116.4, weight:0.72, region:'北京',       level:'high',     cases:3800,  deaths:160, trend:'flat', firstCase:'2026-01-15', desc:'境外移入案例為主，社區傳播受控，持續監測中。' },
-  { lat:25.0,  lng:121.5, weight:0.70, region:'台北',       level:'high',     cases:1200,  deaths:48,  trend:'up',   firstCase:'2026-01-20', desc:'香港及東南亞輸入性病例增加，社區傳播風險升高。' },
-  { lat:35.7,  lng:139.7, weight:0.65, region:'東京',       level:'high',     cases:2100,  deaths:72,  trend:'up',   firstCase:'2026-01-18', desc:'禽類進口鏈引發零星案例，防疫措施已升至第三級。' },
-  { lat:37.6,  lng:127.0, weight:0.68, region:'首爾',       level:'high',     cases:1800,  deaths:61,  trend:'flat', firstCase:'2026-01-22', desc:'韓國養雞業受衝擊，出口禁令已實施，人類感染受控中。' },
-  { lat:19.1,  lng:72.9,  weight:0.62, region:'孟買',       level:'high',     cases:5400,  deaths:340, trend:'up',   firstCase:'2025-12-28', desc:'人口密集加上禽類交易活躍，疫情擴散速度超出預期。' },
-  { lat:28.6,  lng:77.2,  weight:0.61, region:'新德里',     level:'high',     cases:4800,  deaths:290, trend:'up',   firstCase:'2026-01-05', desc:'北印度爆發多起群聚感染，農業部已下令大規模撲殺。' },
-  { lat:30.0,  lng:31.2,  weight:0.63, region:'開羅',       level:'high',     cases:3200,  deaths:210, trend:'flat', firstCase:'2025-12-20', desc:'埃及歷史上H5N1高發區域，此波疫情延續前次未完全根除的病毒株。' },
-  { lat:6.5,   lng:3.4,   weight:0.60, region:'拉哥斯',     level:'high',     cases:4100,  deaths:380, trend:'up',   firstCase:'2026-01-08', desc:'非洲西部爆發中心，醫療資源匱乏使死亡率偏高。' },
-  { lat:48.9,  lng:2.4,   weight:0.50, region:'巴黎',       level:'medium',   cases:980,   deaths:22,  trend:'flat', firstCase:'2026-02-01', desc:'旅遊輸入性案例，未見本土傳播，持續監測中。' },
-  { lat:51.5,  lng:-0.1,  weight:0.45, region:'倫敦',       level:'medium',   cases:820,   deaths:18,  trend:'flat', firstCase:'2026-02-03', desc:'機場入境檢疫發現數起確診，社區傳播風險低。' },
-  { lat:52.5,  lng:13.4,  weight:0.40, region:'柏林',       level:'medium',   cases:610,   deaths:12,  trend:'down', firstCase:'2026-01-28', desc:'確診數趨於穩定，德國禽類進口管制發揮成效。' },
-  { lat:55.8,  lng:37.6,  weight:0.45, region:'莫斯科',     level:'medium',   cases:1200,  deaths:38,  trend:'flat', firstCase:'2026-01-25', desc:'冬季候鳥遷徙帶入病毒，農場疫情受控，人類感染持平。' },
-  { lat:-23.5, lng:-46.6, weight:0.35, region:'聖保羅',     level:'medium',   cases:890,   deaths:21,  trend:'up',   firstCase:'2026-02-08', desc:'南美首例本土傳播，疫情中心追蹤至進口禽類批發市場。' },
-  { lat:19.4,  lng:-99.1, weight:0.33, region:'墨西哥城',   level:'medium',   cases:760,   deaths:18,  trend:'flat', firstCase:'2026-02-10', desc:'北美輸入性案例，墨西哥當局已強化邊境禽類管制。' },
-  { lat:40.7,  lng:-74.0, weight:0.35, region:'紐約',       level:'medium',   cases:680,   deaths:14,  trend:'up',   firstCase:'2026-02-09', desc:'東岸出現輸入性案例，衛生當局加強入境篩查。' },
-  { lat:34.0,  lng:-118.2,weight:0.32, region:'洛杉磯',     level:'medium',   cases:550,   deaths:11,  trend:'flat', firstCase:'2026-02-06', desc:'加州禽類農場發現感染，人類案例仍屬散發性。' },
-  { lat:-33.9, lng:151.2, weight:0.30, region:'雪梨',       level:'medium',   cases:420,   deaths:8,   trend:'down', firstCase:'2026-02-12', desc:'澳洲應對迅速，確診數受控，趨勢向下。' },
-  { lat:-34.6, lng:-58.4, weight:0.20, region:'布宜諾斯艾利斯', level:'low', cases:180,   deaths:3,   trend:'flat', firstCase:'2026-02-15', desc:'零星案例，尚無本土傳播跡象。' },
-  { lat:-26.2, lng:28.0,  weight:0.15, region:'約翰尼斯堡', level:'low',     cases:120,   deaths:4,   trend:'down', firstCase:'2026-02-11', desc:'南非案例受控，防疫措施有效遏制擴散。' },
-  { lat:59.9,  lng:10.8,  weight:0.12, region:'奧斯陸',     level:'low',     cases:35,    deaths:1,   trend:'flat', firstCase:'2026-02-17', desc:'北歐通報零星案例，社區傳播風險低。' },
-  { lat:64.1,  lng:-21.9, weight:0.08, region:'雷克雅維克', level:'low',     cases:12,    deaths:0,   trend:'flat', firstCase:'2026-02-20', desc:'候鳥帶入病毒，人類感染風險極低。' },
-  { lat:-36.9, lng:174.8, weight:0.10, region:'奧克蘭',     level:'low',     cases:28,    deaths:1,   trend:'down', firstCase:'2026-02-14', desc:'紐西蘭地理隔離有效，案例數量極少。' },
+  { lat:22.3,  lng:114.2, weight:1.0,  region:'香港',           level:'critical', cases:12400, deaths:820, trend:'up',   firstCase:'2025-11-03', desc:'家禽市場爆發，病毒出現人傳人跡象，已啟動最高級應變。' },
+  { lat:31.2,  lng:121.5, weight:0.97, region:'上海',           level:'critical', cases:10800, deaths:640, trend:'up',   firstCase:'2025-11-18', desc:'多處醫院出現群聚感染，ICU床位緊張，境外移入與本土案例並存。' },
+  { lat:10.8,  lng:106.7, weight:0.92, region:'胡志明市',       level:'critical', cases:8900,  deaths:510, trend:'up',   firstCase:'2025-12-01', desc:'越南南部爆發中心，農村養禽戶大規模染疫，撲殺行動持續。' },
+  { lat:13.8,  lng:100.5, weight:0.90, region:'曼谷',           level:'critical', cases:7600,  deaths:430, trend:'up',   firstCase:'2025-12-10', desc:'觀光旅遊人口高度流動加速擴散，機場入境篩查已強化。' },
+  { lat:14.1,  lng:120.9, weight:0.88, region:'馬尼拉',         level:'critical', cases:6800,  deaths:390, trend:'up',   firstCase:'2025-12-15', desc:'島嶼型地形造成各省管控難度高，確診數仍持續攀升中。' },
+  { lat:3.1,   lng:101.7, weight:0.86, region:'吉隆坡',         level:'critical', cases:5900,  deaths:310, trend:'up',   firstCase:'2026-01-02', desc:'輸入性案例引發社區傳播，政府宣布進入疾病防治緊急狀態。' },
+  { lat:1.35,  lng:103.8, weight:0.85, region:'新加坡',         level:'critical', cases:4200,  deaths:180, trend:'up',   firstCase:'2026-01-10', desc:'城市國家高度都市化，擴散速度快，但醫療資源充足。' },
+  { lat:23.1,  lng:113.3, weight:0.80, region:'廣州',           level:'high',     cases:9200,  deaths:420, trend:'up',   firstCase:'2025-12-05', desc:'廣東省禽類交易市場持續出現感染源，疫情持續擴大中。' },
+  { lat:39.9,  lng:116.4, weight:0.72, region:'北京',           level:'high',     cases:3800,  deaths:160, trend:'flat', firstCase:'2026-01-15', desc:'境外移入案例為主，社區傳播受控，持續監測中。' },
+  { lat:25.0,  lng:121.5, weight:0.70, region:'台北',           level:'high',     cases:1200,  deaths:48,  trend:'up',   firstCase:'2026-01-20', desc:'香港及東南亞輸入性病例增加，社區傳播風險升高。' },
+  { lat:35.7,  lng:139.7, weight:0.65, region:'東京',           level:'high',     cases:2100,  deaths:72,  trend:'up',   firstCase:'2026-01-18', desc:'禽類進口鏈引發零星案例，防疫措施已升至第三級。' },
+  { lat:37.6,  lng:127.0, weight:0.68, region:'首爾',           level:'high',     cases:1800,  deaths:61,  trend:'flat', firstCase:'2026-01-22', desc:'韓國養雞業受衝擊，出口禁令已實施，人類感染受控中。' },
+  { lat:19.1,  lng:72.9,  weight:0.62, region:'孟買',           level:'high',     cases:5400,  deaths:340, trend:'up',   firstCase:'2025-12-28', desc:'人口密集加上禽類交易活躍，疫情擴散速度超出預期。' },
+  { lat:28.6,  lng:77.2,  weight:0.61, region:'新德里',         level:'high',     cases:4800,  deaths:290, trend:'up',   firstCase:'2026-01-05', desc:'北印度爆發多起群聚感染，農業部已下令大規模撲殺。' },
+  { lat:30.0,  lng:31.2,  weight:0.63, region:'開羅',           level:'high',     cases:3200,  deaths:210, trend:'flat', firstCase:'2025-12-20', desc:'埃及歷史上H5N1高發區域，此波疫情延續前次未完全根除的病毒株。' },
+  { lat:6.5,   lng:3.4,   weight:0.60, region:'拉哥斯',         level:'high',     cases:4100,  deaths:380, trend:'up',   firstCase:'2026-01-08', desc:'非洲西部爆發中心，醫療資源匱乏使死亡率偏高。' },
+  { lat:48.9,  lng:2.4,   weight:0.50, region:'巴黎',           level:'medium',   cases:980,   deaths:22,  trend:'flat', firstCase:'2026-02-01', desc:'旅遊輸入性案例，未見本土傳播，持續監測中。' },
+  { lat:51.5,  lng:-0.1,  weight:0.45, region:'倫敦',           level:'medium',   cases:820,   deaths:18,  trend:'flat', firstCase:'2026-02-03', desc:'機場入境檢疫發現數起確診，社區傳播風險低。' },
+  { lat:52.5,  lng:13.4,  weight:0.40, region:'柏林',           level:'medium',   cases:610,   deaths:12,  trend:'down', firstCase:'2026-01-28', desc:'確診數趨於穩定，德國禽類進口管制發揮成效。' },
+  { lat:55.8,  lng:37.6,  weight:0.45, region:'莫斯科',         level:'medium',   cases:1200,  deaths:38,  trend:'flat', firstCase:'2026-01-25', desc:'冬季候鳥遷徙帶入病毒，農場疫情受控，人類感染持平。' },
+  { lat:-23.5, lng:-46.6, weight:0.35, region:'聖保羅',         level:'medium',   cases:890,   deaths:21,  trend:'up',   firstCase:'2026-02-08', desc:'南美首例本土傳播，疫情中心追蹤至進口禽類批發市場。' },
+  { lat:19.4,  lng:-99.1, weight:0.33, region:'墨西哥城',       level:'medium',   cases:760,   deaths:18,  trend:'flat', firstCase:'2026-02-10', desc:'北美輸入性案例，墨西哥當局已強化邊境禽類管制。' },
+  { lat:40.7,  lng:-74.0, weight:0.35, region:'紐約',           level:'medium',   cases:680,   deaths:14,  trend:'up',   firstCase:'2026-02-09', desc:'東岸出現輸入性案例，衛生當局加強入境篩查。' },
+  { lat:34.0,  lng:-118.2,weight:0.32, region:'洛杉磯',         level:'medium',   cases:550,   deaths:11,  trend:'flat', firstCase:'2026-02-06', desc:'加州禽類農場發現感染，人類案例仍屬散發性。' },
+  { lat:-33.9, lng:151.2, weight:0.30, region:'雪梨',           level:'medium',   cases:420,   deaths:8,   trend:'down', firstCase:'2026-02-12', desc:'澳洲應對迅速，確診數受控，趨勢向下。' },
+  { lat:-34.6, lng:-58.4, weight:0.20, region:'布宜諾斯艾利斯', level:'low',      cases:180,   deaths:3,   trend:'flat', firstCase:'2026-02-15', desc:'零星案例，尚無本土傳播跡象。' },
+  { lat:-26.2, lng:28.0,  weight:0.15, region:'約翰尼斯堡',     level:'low',      cases:120,   deaths:4,   trend:'down', firstCase:'2026-02-11', desc:'南非案例受控，防疫措施有效遏制擴散。' },
+  { lat:59.9,  lng:10.8,  weight:0.12, region:'奧斯陸',         level:'low',      cases:35,    deaths:1,   trend:'flat', firstCase:'2026-02-17', desc:'北歐通報零星案例，社區傳播風險低。' },
+  { lat:64.1,  lng:-21.9, weight:0.08, region:'雷克雅維克',     level:'low',      cases:12,    deaths:0,   trend:'flat', firstCase:'2026-02-20', desc:'候鳥帶入病毒，人類感染風險極低。' },
+  { lat:-36.9, lng:174.8, weight:0.10, region:'奧克蘭',         level:'low',      cases:28,    deaths:1,   trend:'down', firstCase:'2026-02-14', desc:'紐西蘭地理隔離有效，案例數量極少。' },
 ];
 
 const LEVEL_LABEL = { critical:'極高風險', high:'高風險', medium:'中風險', low:'低風險' };
@@ -219,124 +191,127 @@ const LEVEL_COLOR = { critical:'#ff4444', high:'#ff8c00', medium:'#ffc107', low:
 const TREND_HTML  = { up:'<span class="trend-up">▲ 上升</span>', down:'<span class="trend-down">▼ 下降</span>', flat:'<span class="trend-flat">▶ 持平</span>' };
 
 // ══════════════════════════════════════════
-// 初始化 ECharts GL 地球
+// 熱力圖圓形生成：用多層同心圓 polygons 模擬漸層
+// weight 決定顏色深淺，靠近的點自然融合
 // ══════════════════════════════════════════
-function initGlobe() {
-  const chart = echarts.init(document.getElementById('globe'));
+function weightToColor(weight, alpha) {
+  // 顏色漸層：低(藍綠) → 中(黃) → 高(橘) → 極高(紅)
+  let r, g, b;
+  if (weight < 0.25) {
+    const t = weight / 0.25;
+    r = Math.round(0   + t * 0);
+    g = Math.round(150 + t * 50);
+    b = Math.round(255 - t * 100);
+  } else if (weight < 0.5) {
+    const t = (weight - 0.25) / 0.25;
+    r = Math.round(0   + t * 255);
+    g = Math.round(200 + t * 55);
+    b = Math.round(155 - t * 155);
+  } else if (weight < 0.75) {
+    const t = (weight - 0.5) / 0.25;
+    r = Math.round(255);
+    g = Math.round(255 - t * 130);
+    b = Math.round(0);
+  } else {
+    const t = (weight - 0.75) / 0.25;
+    r = Math.round(255);
+    g = Math.round(125 - t * 125);
+    b = Math.round(0);
+  }
+  return `rgba(${r},${g},${b},${alpha})`;
+}
 
-  // 熱力圖資料格式：[lng, lat, weight]
-  const heatData = DISEASE_DATA.map(d => [d.lng, d.lat, d.weight]);
+// 每個資料點生成多個半徑不同的同心圓 polygon
+function generateHeatPolygons() {
+  const polygons = [];
+  const LAYERS = 5; // 同心圓層數
 
-  // 散點資料（用於點擊互動）
-  const scatterData = DISEASE_DATA.map(d => ({
-    name: d.region,
-    value: [d.lng, d.lat, d.weight * 100],
-    itemStyle: { color: LEVEL_COLOR[d.level] },
-    data: d
-  }));
+  DISEASE_DATA.forEach(d => {
+    for (let i = LAYERS; i >= 1; i--) {
+      const ratio = i / LAYERS;
+      // 外層：半徑大、透明度低；內層：半徑小、透明度高
+      const radius = d.weight * 12 * ratio;  // 最大半徑12度
+      const alpha  = d.weight * (1 - ratio * 0.7) * 0.55;
+      const color  = weightToColor(d.weight, alpha);
 
-  const option = {
-    backgroundColor: '#04081c',
-    globe: {
-      baseTexture: 'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg',
-      heightTexture: 'https://unpkg.com/three-globe/example/img/earth-topology.png',
-      displacementScale: 0.05,
-      shading: 'realistic',
-      environment: 'auto',
-      realisticMaterial: {
-        roughness: 0.9,
-        metalness: 0
-      },
-      postEffect: {
-        enable: true,
-        bloom: { enable: true, bloomIntensity: 0.1 }
-      },
-      light: {
-        main: { intensity: 5, shadow: false },
-        ambient: { intensity: 0.3 },
-        ambientCubemap: {
-          exposure: 1,
-          diffuseIntensity: 0.5
-        }
-      },
-      viewControl: {
-        autoRotate: true,
-        autoRotateSpeed: 5,
-        rotateSensitivity: 1,
-        zoomSensitivity: 1,
-        beta: 0,
-        alpha: 20,
-        distance: 180
-      },
-      layers: [{
-        type: 'blend',
-        blendTo: 'emission',
-        texture: 'https://unpkg.com/three-globe/example/img/night-sky.png'
-      }]
-    },
-    series: [
-      // 熱力圖層（核心視覺）
-      {
-        type: 'heatmap',
-        coordinateSystem: 'globe',
-        data: heatData,
-        pointSize: 18,
-        blurSize: 18,
-        minOpacity: 0.1,
-        maxOpacity: 0.9,
-      },
-      // 散點層（點擊互動）
-      {
-        type: 'scatter3D',
-        coordinateSystem: 'globe',
-        data: scatterData,
-        symbolSize: function(val) {
-          return val[2] * 0.12 + 3;
-        },
-        itemStyle: {
-          opacity: 0.85
-        },
-        label: { show: false },
-        emphasis: {
-          label: { show: false },
-          itemStyle: { opacity: 1 }
-        }
+      // 生成圓形 polygon 頂點（36個點）
+      const points = [];
+      for (let angle = 0; angle < 360; angle += 10) {
+        const rad = (angle * Math.PI) / 180;
+        const lat = d.lat + radius * Math.cos(rad);
+        const lng = d.lng + radius * Math.sin(rad) / Math.cos((d.lat * Math.PI) / 180);
+        points.push([lng, lat]);
       }
-    ],
-    visualMap: {
-      show: false,
-      min: 0,
-      max: 1,
-      inRange: {
-        color: [
-          '#0000ff',
-          '#0044ff',
-          '#0088ff',
-          '#00ccff',
-          '#00ff88',
-          '#44ff00',
-          '#aaff00',
-          '#ffff00',
-          '#ffaa00',
-          '#ff6600',
-          '#ff2200',
-          '#ff0000'
-        ]
-      },
-      seriesIndex: 0
-    }
-  };
+      points.push(points[0]); // 閉合
 
-  chart.setOption(option);
-
-  // 點擊事件
-  chart.on('click', function(params) {
-    if (params.seriesIndex === 1 && params.data && params.data.data) {
-      showDetail(params.data.data);
+      polygons.push({
+        geometry: { type: 'Polygon', coordinates: [points] },
+        color: color,
+        srcData: d,
+        layer: i
+      });
     }
   });
+  return polygons;
+}
 
-  window.addEventListener('resize', () => chart.resize());
+// ══════════════════════════════════════════
+// 初始化 Globe
+// ══════════════════════════════════════════
+function initGlobe() {
+  const container = document.getElementById('globe');
+  const polygons  = generateHeatPolygons();
+
+  const globe = Globe()(container)
+    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+    .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+    .backgroundColor('rgba(4,8,28,1)')
+    .width(container.parentElement.offsetWidth)
+    .height(container.parentElement.offsetHeight)
+
+    // 熱力 polygons（多層漸層圓）
+    .polygonsData(polygons)
+    .polygonGeoJsonGeometry('geometry')
+    .polygonCapColor(d => d.color)
+    .polygonSideColor(() => 'rgba(0,0,0,0)')
+    .polygonStrokeColor(() => 'rgba(0,0,0,0)')
+    .polygonAltitude(0.001)
+
+    // 點位（隱形，用於 hover tooltip 和點擊）
+    .pointsData(DISEASE_DATA)
+    .pointLat('lat').pointLng('lng')
+    .pointColor(() => 'rgba(255,255,255,0)')
+    .pointRadius(0.5)
+    .pointAltitude(0.002)
+    .pointLabel(d => `
+      <div style="background:rgba(13,21,32,0.93);border:1px solid ${LEVEL_COLOR[d.level]};border-radius:6px;padding:8px 12px;font-family:'Noto Sans TC';min-width:160px;box-shadow:0 0 16px ${LEVEL_COLOR[d.level]}44;">
+        <div style="font-size:9px;color:${LEVEL_COLOR[d.level]};letter-spacing:1px;margin-bottom:4px;">${LEVEL_LABEL[d.level]}</div>
+        <div style="font-size:13px;color:#fff;font-weight:600;margin-bottom:4px;">${d.region}</div>
+        <div style="font-size:10px;color:#c8d8e8;">確診：${d.cases.toLocaleString()} 例</div>
+        <div style="font-size:10px;color:#5a7a9a;">點擊查看詳情</div>
+      </div>
+    `)
+    .onPointClick(d => showDetail(d))
+
+    // 光環（極高與高風險）
+    .ringsData(DISEASE_DATA.filter(d => d.level === 'critical' || d.level === 'high'))
+    .ringLat('lat').ringLng('lng')
+    .ringColor(d => d.level === 'critical' ? '#ff4444cc' : '#ff8c00aa')
+    .ringMaxRadius(d => d.level === 'critical' ? 4 : 2.5)
+    .ringPropagationSpeed(d => d.level === 'critical' ? 2 : 1.2)
+    .ringRepeatPeriod(d => d.level === 'critical' ? 1000 : 1600)
+    .ringStroke(d => d.level === 'critical' ? 1.0 : 0.6)
+
+    .pointOfView({ lat: 20, lng: 110, altitude: 2.2 }, 0);
+
+  globe.controls().autoRotate = true;
+  globe.controls().autoRotateSpeed = 0.2;
+  globe.controls().enableZoom = true;
+
+  window.addEventListener('resize', () => {
+    globe.width(container.parentElement.offsetWidth)
+         .height(container.parentElement.offsetHeight);
+  });
 }
 
 // 詳情彈窗
@@ -346,8 +321,8 @@ function showDetail(d) {
   document.getElementById('dp-cases').textContent = d.cases.toLocaleString() + ' 例';
   document.getElementById('dp-deaths').innerHTML = `<span style="color:#ff4444">${d.deaths.toLocaleString()} 例</span>`;
   document.getElementById('dp-rate').innerHTML = `<span style="color:#ff8c00">${(d.deaths/d.cases*100).toFixed(1)}%</span>`;
-  const trendColor = d.trend === 'up' ? '#ff4444' : d.trend === 'down' ? '#44ff88' : '#5a7a9a';
-  const trendText  = d.trend === 'up' ? '▲ 持續上升' : d.trend === 'down' ? '▼ 趨勢下降' : '▶ 持平穩定';
+  const trendColor = d.trend==='up' ? '#ff4444' : d.trend==='down' ? '#44ff88' : '#5a7a9a';
+  const trendText  = d.trend==='up' ? '▲ 持續上升' : d.trend==='down' ? '▼ 趨勢下降' : '▶ 持平穩定';
   document.getElementById('dp-trend').innerHTML = `<span style="color:${trendColor}">${trendText}</span>`;
   document.getElementById('dp-first').textContent = d.firstCase;
   document.getElementById('dp-level').innerHTML = `<span style="color:${LEVEL_COLOR[d.level]}">${LEVEL_LABEL[d.level]}</span>`;
@@ -355,16 +330,13 @@ function showDetail(d) {
   document.getElementById('detail-popup').classList.add('show');
 }
 
-function closeDetail() {
-  document.getElementById('detail-popup').classList.remove('show');
-}
+function closeDetail() { document.getElementById('detail-popup').classList.remove('show'); }
 
 // 右側列表
 function renderList() {
   const sorted = [...DISEASE_DATA]
     .filter(d => d.level === 'critical' || d.level === 'high')
     .sort((a, b) => b.weight - a.weight);
-
   document.getElementById('region-list').innerHTML = sorted.map(d => `
     <div class="region-item ${d.level}" onclick='showDetail(${JSON.stringify(d)})'>
       <div class="region-header">
