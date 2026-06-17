@@ -29,6 +29,7 @@
   .auth-loading{color:var(--text-dim);font-size:0.9rem;margin-top:20px;display:flex;align-items:center;justify-content:center;gap:10px;}
   .auth-loading.hidden{display:none!important;}
   .spin{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+  @img { display:none; }
   @keyframes spin{to{transform:rotate(360deg);}}
   #google-btn-container{display:flex;justify-content:center;width:100%;}
   #google-btn-container.hidden{display:none!important;}
@@ -126,7 +127,6 @@
 </head>
 <body>
 
-<!-- 登入遮罩 -->
 <div id="authOverlay" class="auth-overlay">
   <div class="auth-modal">
     <div class="auth-logo">HOLMES & WATSON · INTELLIGENCE</div>
@@ -237,21 +237,14 @@
 // ══════════════════════════════════════════
 // 驗證設定
 // ══════════════════════════════════════════
-//  修改後的程式碼：
 const AUTH_CONFIG = {
-  // 換成跟 n8n 同一個專案的 Client ID，這樣在 Google Cloud 設定「發布」才會真正對您的網頁生效！
   GOOGLE_CLIENT_ID: '973721313231-lu7v36n3n2ekc3f9n2ioaaf62jm7gkoj.apps.googleusercontent.com', 
   CHECK_PERMISSION_URL: 'https://mjib007.zeabur.app/webhook/check-gi-permission',
   SYSTEM_NAME: '情報分析系統'
 };
 
-// ══════════════════════════════════════════
-// 資料來源設定
-// 未來只需修改這個網址即可切換資料來源
-// ══════════════════════════════════════════
 const INTEL_API_URL = 'https://mjib007.zeabur.app/webhook/get-intel-data';
 
-// 全域資料陣列（由 API 填入）
 let INTEL_DATA = [];
 
 const LEVEL_COLOR = { critical:'#ff4444', warning:'#ffc107', info:'#00c8ff', normal:'#44ff88' };
@@ -272,7 +265,6 @@ let currentFilter = 'all';
 // 載入情資資料
 // ══════════════════════════════════════════
 async function loadIntelData() {
-  // 顯示載入中狀態
   document.getElementById('intel-list').innerHTML = `
     <div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-family:var(--mono);font-size:11px;">
       <div class="spin" style="margin:0 auto 12px;width:20px;height:20px;"></div>
@@ -297,7 +289,6 @@ async function loadIntelData() {
     INTEL_DATA = result.data;
     console.log('情資載入成功，共', INTEL_DATA.length, '筆');
 
-    // 資料載入後初始化介面
     initStats();
     renderList();
     if (globeInstance) updateGlobe();
@@ -313,8 +304,8 @@ async function loadIntelData() {
   }
 }
 
-// 地球儀資料更新（資料載入後呼叫）
 function updateGlobe() {
+  // 修正：確實篩選出包含起點緯度的項目供弧線渲染
   const arcData = INTEL_DATA.filter(d => d.fromLat !== undefined && d.fromLat !== null);
   globeInstance
     .pointsData(INTEL_DATA)
@@ -361,6 +352,9 @@ async function checkPermission(email) {
     if (data.success && data.hasPermission) {
       document.getElementById('authOverlay').classList.add('hidden');
       document.getElementById('userEmailDisplay').textContent = email;
+      
+      // 修正：只有在權限驗證通過後，才啟動獲取情報資料的異步鏈！
+      await loadIntelData();
     } else {
       showAuthError(`帳號 ${email} 無「${AUTH_CONFIG.SYSTEM_NAME}」存取權限`);
       sessionStorage.removeItem('gi_user');
@@ -399,16 +393,12 @@ function handleLogout() {
 // ══════════════════════════════════════════
 function initGlobe() {
   const container = document.getElementById('globe');
-  const arcData = INTEL_DATA.filter(d => d.fromLat !== undefined);
-
   globeInstance = Globe()(container)
     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
     .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
     .backgroundColor('rgba(4,8,28,1)')
     .width(container.parentElement.offsetWidth)
     .height(container.parentElement.offsetHeight)
-    // 點位
-    .pointsData(INTEL_DATA)
     .pointLat('lat').pointLng('lng')
     .pointColor(d => LEVEL_COLOR[d.level])
     .pointRadius(d => d.level==='critical'?0.5:d.level==='warning'?0.4:0.3)
@@ -421,15 +411,11 @@ function initGlobe() {
       </div>
     `)
     .onPointClick(d => selectIntel(d.id))
-    // 光環
-    .ringsData(INTEL_DATA.filter(d => d.level==='critical'||d.level==='warning'))
     .ringLat('lat').ringLng('lng')
     .ringColor(d => d.level==='critical'?'#ff444466':'#ffc10744')
     .ringMaxRadius(d => d.level==='critical'?3:2)
     .ringPropagationSpeed(d => d.level==='critical'?2:1.2)
     .ringRepeatPeriod(d => d.level==='critical'?1000:1600)
-    // 弧線
-    .arcsData(arcData)
     .arcStartLat(d=>d.fromLat).arcStartLng(d=>d.fromLng)
     .arcEndLat(d=>d.toLat).arcEndLng(d=>d.toLng)
     .arcColor(d=>ARC_STYLE[d.arcType]?.color)
@@ -445,7 +431,6 @@ function initGlobe() {
   globeInstance.controls().enableZoom = true;
   window.globeInstance = globeInstance;
 
-  // 載入國家邊界
   fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson')
     .then(r=>r.json())
     .then(data=>{
@@ -510,7 +495,7 @@ function renderList() {
     <div class="intel-item ${item.level}" id="item-${item.id}" onclick="selectIntel('${item.id}')">
       <div class="intel-header">
         <span class="intel-level ${item.level}">${LEVEL_LABEL[item.level]}</span>
-        <span class="intel-time">${item.time.split(' ')[0]}</span>
+        <span class="intel-time">${item.time ? item.time.split(' ')[0] : '—'}</span>
       </div>
       <div class="intel-title">${item.title}</div>
       <div class="intel-loc">📍 ${item.location}</div>
@@ -518,7 +503,6 @@ function renderList() {
   `).join('');
 }
 
-//  修改後的程式碼：
 function initStats() {
   document.getElementById('stat-total').textContent = INTEL_DATA.length;
   document.getElementById('stat-critical').textContent = INTEL_DATA.filter(d=>d.level==='critical').length;
@@ -526,9 +510,8 @@ function initStats() {
   document.getElementById('active-count').textContent = INTEL_DATA.filter(d=>d.level!=='normal').length+' 筆';
   document.getElementById('critical-count').textContent = INTEL_DATA.filter(d=>d.level==='critical').length+' 筆';
   
-  // 增加防呆：有資料才去切字串，沒資料就顯示符號，避免網頁崩潰
   if (INTEL_DATA && INTEL_DATA.length > 0 && INTEL_DATA[0].time) {
-    document.getElementById('latest-time').textContent = INTEL_DATA[0].time.split(' ')[1];
+    document.getElementById('latest-time').textContent = INTEL_DATA[0].time.split(' ')[1] || '--:--:--';
   } else {
     document.getElementById('latest-time').textContent = '--:--:--';
   }
@@ -545,15 +528,18 @@ updateClock();
 
 window.addEventListener('load', async () => {
   initGoogleLogin();
+  // 先啟動地球儀畫布（呈現空資料）
+  initGlobe();
+  
   const session = sessionStorage.getItem('gi_user');
   if(session) {
     const user = JSON.parse(session);
+    // 如果本地有快取 Session 則自動跑驗證，驗證成功後 checkPermission 會自己去調用 loadIntelData()
     await checkPermission(user.email);
+  } else {
+    // 沒快取 Session 則靜態等待使用者手動點 Google 登入按鈕
+    console.log('系統提示：等待授權登入中...');
   }
-  // 先啟動地球儀（空資料），登入後再載入情資
-  initGlobe();
-  // 載入情資資料
-  await loadIntelData();
 });
 </script>
 </body>
