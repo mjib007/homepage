@@ -237,8 +237,10 @@
 // ══════════════════════════════════════════
 // 驗證設定
 // ══════════════════════════════════════════
+//  修改後的程式碼：
 const AUTH_CONFIG = {
-  GOOGLE_CLIENT_ID: '973721313231-0no4ivldu33he0kts8k51kn4tqd979g7.apps.googleusercontent.com',
+  // 換成跟 n8n 同一個專案的 Client ID，這樣在 Google Cloud 設定「發布」才會真正對您的網頁生效！
+  GOOGLE_CLIENT_ID: '973721313231-lu7v36n3n2ekc3f9n2ioaaf62jm7gkoj.apps.googleusercontent.com', 
   CHECK_PERMISSION_URL: 'https://mjib007.zeabur.app/webhook/check-gi-permission',
   SYSTEM_NAME: '情報分析系統'
 };
