@@ -282,7 +282,11 @@ async function loadIntelData() {
   document.getElementById('stat-warning').textContent = '—';
 
   try {
-    const res = await fetch(INTEL_API_URL);
+    const res = await fetch(INTEL_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: getUserEmail() })
+    });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const result = await res.json();
 
