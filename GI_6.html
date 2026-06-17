@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>福爾摩斯 — 全球情報中心</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://unpkg.com/globe.gl@2.27.2/dist/globe.gl.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+  :root {
+    --bg:#080c14;--panel:#0d1520;--border:#1a2d45;--accent:#00c8ff;
+    --red:#ff4444;--yellow:#ffc107;--green:#44ff88;--orange:#ff8c00;
+    --text:#c8d8e8;--text-dim:#5a7a9a;
+    --mono:'Share Tech Mono',monospace;--sans:'Noto Sans TC',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+
+  /* ── 登入遮罩 ── */
+  .auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);z-index:9999;display:flex;justify-content:center;align-items:center;}
+  .auth-overlay.hidden{display:none!important;}
+  .auth-modal{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:48px 40px;text-align:center;max-width:420px;width:90%;box-shadow:0 0 60px rgba(0,200,255,0.1);display:flex;flex-direction:column;align-items:center;}
+  .auth-logo{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:4px;margin-bottom:16px;}
+  .auth-title{font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:8px;}
+  .auth-sub{color:var(--text-dim);font-size:0.9rem;margin-bottom:32px;line-height:1.6;}
+  .auth-error{color:var(--red);font-size:0.85rem;margin-top:16px;padding:10px;background:rgba(255,68,68,0.1);border-radius:8px;border:1px solid rgba(255,68,68,0.2);}
+  .auth-error.hidden{display:none;}
+  .auth-loading{color:var(--text-dim);font-size:0.9rem;margin-top:20px;display:flex;align-items:center;justify-content:center;gap:10px;}
+  .auth-loading.hidden{display:none!important;}
+  .spin{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  #google-btn-container{display:flex;justify-content:center;width:100%;}
+  #google-btn-container.hidden{display:none!important;}
+
+  /* ── Header ── */
+  header{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;z-index:100;}
+  .logo{display:flex;align-items:center;gap:12px;}
+  .logo-icon{width:32px;height:32px;border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--accent);box-shadow:0 0 12px rgba(0,200,255,0.3);}
+  .logo-text{font-family:var(--mono);font-size:14px;color:var(--accent);letter-spacing:2px;}
+  .logo-sub{font-size:11px;color:var(--text-dim);letter-spacing:1px;margin-top:2px;}
+  .header-right{display:flex;align-items:center;gap:12px;}
+  .user-email{font-family:var(--mono);font-size:11px;color:var(--text-dim);}
+  .logout-btn{padding:5px 12px;background:transparent;border:1px solid var(--border);color:var(--text-dim);border-radius:4px;cursor:pointer;font-size:11px;font-family:var(--mono);transition:all 0.2s;}
+  .logout-btn:hover{border-color:var(--red);color:var(--red);}
+  .clock{font-family:var(--mono);font-size:13px;color:var(--accent);}
+  .dot-live{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+  #rotate-btn{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:4px;border:1px solid var(--border);background:var(--border);color:var(--text);cursor:pointer;letter-spacing:0.5px;}
+
+  /* ── 主體 ── */
+  .main{display:flex;flex:1;overflow:hidden;}
+  #globe-container{flex:1;position:relative;overflow:hidden;}
+  #globe{width:100%;height:100%;}
+  #globe-container::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,200,255,0.01) 2px,rgba(0,200,255,0.01) 4px);pointer-events:none;z-index:10;}
+
+  /* ── 左側面板 ── */
+  .top-left{position:absolute;top:16px;left:16px;z-index:50;display:flex;flex-direction:column;gap:8px;}
+  .mini-card{background:rgba(13,21,32,0.9);border:1px solid var(--border);border-radius:6px;padding:10px 14px;backdrop-filter:blur(6px);min-width:175px;}
+  .mini-label{font-family:var(--mono);font-size:9px;color:var(--text-dim);letter-spacing:1.5px;margin-bottom:4px;}
+  .mini-value{font-family:var(--mono);font-size:13px;color:var(--accent);}
+  .mini-value.red{color:var(--red);}
+  .mini-value.yellow{color:var(--yellow);}
+
+  /* ── 圖例 ── */
+  .legend{position:absolute;bottom:24px;left:16px;background:rgba(13,21,32,0.9);border:1px solid var(--border);border-radius:8px;padding:14px 16px;z-index:50;backdrop-filter:blur(6px);}
+  .legend-title{font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:2px;margin-bottom:10px;}
+  .legend-items{display:flex;flex-direction:column;gap:6px;}
+  .legend-item{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--text-dim);}
+  .legend-dot{width:10px;height:10px;border-radius:50%;}
+  .legend-line{width:24px;height:3px;border-radius:2px;}
+
+  /* ── 詳情彈窗 ── */
+  .detail-panel{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(13,21,32,0.96);border:1px solid var(--accent);border-radius:8px;padding:16px 18px;z-index:60;min-width:360px;display:none;backdrop-filter:blur(8px);box-shadow:0 0 24px rgba(0,200,255,0.15);}
+  .detail-panel.show{display:block;}
+  .dp-close{position:absolute;top:8px;right:12px;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:15px;}
+  .dp-tag{font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:1px;margin-bottom:6px;}
+  .dp-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:10px;}
+  .dp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px;}
+  .dp-lbl{font-size:9px;color:var(--text-dim);font-family:var(--mono);letter-spacing:0.5px;margin-bottom:2px;}
+  .dp-val{font-size:12px;color:var(--text);}
+  .dp-desc{font-size:11px;color:var(--text-dim);border-top:1px solid var(--border);padding-top:8px;line-height:1.6;}
+
+  /* ── 右側面板 ── */
+  .side-panel{width:320px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+  .panel-section{border-bottom:1px solid var(--border);padding:14px 16px;}
+  .panel-title{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:2px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .panel-title::after{content:'';flex:1;height:1px;background:var(--border);}
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .stat-card{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 8px;text-align:center;}
+  .stat-num{font-family:var(--mono);font-size:20px;font-weight:bold;margin-bottom:3px;}
+  .stat-lbl{font-size:10px;color:var(--text-dim);}
+  .c-blue{color:var(--accent);}.c-red{color:var(--red);}.c-yellow{color:var(--yellow);}
+
+  /* 篩選 */
+  .filters{display:flex;flex-wrap:wrap;gap:6px;}
+  .filter-btn{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;transition:all 0.2s;}
+  .filter-btn.active,.filter-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,200,255,0.08);}
+  .filter-btn.red.active{border-color:var(--red);color:var(--red);background:rgba(255,68,68,0.08);}
+  .filter-btn.yellow.active{border-color:var(--yellow);color:var(--yellow);background:rgba(255,193,7,0.08);}
+  .filter-btn.green.active{border-color:var(--green);color:var(--green);background:rgba(68,255,136,0.08);}
+
+  /* 情報列表 */
+  .intel-list{flex:1;overflow-y:auto;padding:10px 16px;}
+  .intel-list::-webkit-scrollbar{width:3px;}
+  .intel-list::-webkit-scrollbar-thumb{background:var(--border);}
+  .intel-item{padding:11px 12px;border:1px solid var(--border);border-radius:6px;margin-bottom:7px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+  .intel-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
+  .intel-item.critical::before{background:var(--red);}
+  .intel-item.warning::before{background:var(--yellow);}
+  .intel-item.info::before{background:var(--accent);}
+  .intel-item.normal::before{background:var(--green);}
+  .intel-item:hover{background:rgba(0,200,255,0.05);border-color:rgba(0,200,255,0.3);}
+  .intel-item.active{background:rgba(0,200,255,0.08);border-color:var(--accent);}
+  .intel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+  .intel-level{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:2px;letter-spacing:0.5px;}
+  .intel-level.critical{background:rgba(255,68,68,0.2);color:var(--red);}
+  .intel-level.warning{background:rgba(255,193,7,0.2);color:var(--yellow);}
+  .intel-level.info{background:rgba(0,200,255,0.2);color:var(--accent);}
+  .intel-level.normal{background:rgba(68,255,136,0.2);color:var(--green);}
+  .intel-time{font-family:var(--mono);font-size:9px;color:var(--text-dim);}
+  .intel-title{font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px;line-height:1.4;}
+  .intel-loc{font-family:var(--mono);font-size:10px;color:var(--text-dim);}
+</style>
+</head>
+<body>
+
+<!-- 登入遮罩 -->
+<div id="authOverlay" class="auth-overlay">
+  <div class="auth-modal">
+    <div class="auth-logo">HOLMES & WATSON · INTELLIGENCE</div>
+    <div class="auth-title">全球情報中心</div>
+    <div class="auth-sub">請使用授權的 Google 帳號登入<br>以驗證使用權限</div>
+    <div id="google-btn-container"></div>
+    <div id="authError" class="auth-error hidden"></div>
+    <div id="authLoading" class="auth-loading hidden">
+      <div class="spin"></div><span>驗證中，請稍候...</span>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🔍</div>
+    <div>
+      <div class="logo-text">HOLMES & WATSON</div>
+      <div class="logo-sub">全球情報中心 · GLOBAL INTELLIGENCE</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="dot-live"><div class="dot"></div>系統正常</div>
+    <button id="rotate-btn" onclick="toggleRotate()">⏸ 暫停旋轉</button>
+    <span id="userEmailDisplay" class="user-email"></span>
+    <button class="logout-btn" onclick="handleLogout()">登出</button>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+</header>
+
+<div class="main">
+  <div id="globe-container">
+    <div id="globe"></div>
+
+    <div class="top-left">
+      <div class="mini-card">
+        <div class="mini-label">全球威脅等級</div>
+        <div class="mini-value">ELEVATED</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-label">活躍情資</div>
+        <div class="mini-value red" id="active-count">—</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-label">高威脅情報</div>
+        <div class="mini-value yellow" id="critical-count">—</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-label">最新情報時間</div>
+        <div class="mini-value" style="font-size:11px;" id="latest-time">—</div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-title">圖例</div>
+      <div class="legend-items">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red);box-shadow:0 0 4px var(--red);"></div>高威脅情報</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--yellow);"></div>需關注情報</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent);"></div>一般情資</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green);"></div>已解除</div>
+        <div class="legend-item"><div class="legend-line" style="background:rgba(255,68,68,0.8);"></div>網路攻擊</div>
+        <div class="legend-item"><div class="legend-line" style="background:rgba(255,140,0,0.8);"></div>軍事動態</div>
+        <div class="legend-item"><div class="legend-line" style="background:rgba(255,193,7,0.8);"></div>金融犯罪</div>
+        <div class="legend-item"><div class="legend-line" style="background:rgba(0,200,255,0.8);"></div>人員移動</div>
+        <div class="legend-item"><div class="legend-line" style="background:rgba(68,255,136,0.8);"></div>國際協查</div>
+      </div>
+    </div>
+
+    <div class="detail-panel" id="detail-panel">
+      <button class="dp-close" onclick="closeDetail()">✕</button>
+      <div class="dp-tag" id="dp-tag"></div>
+      <div class="dp-title" id="dp-title"></div>
+      <div class="dp-grid">
+        <div><div class="dp-lbl">地點</div><div class="dp-val" id="dp-loc"></div></div>
+        <div><div class="dp-lbl">等級</div><div class="dp-val" id="dp-level"></div></div>
+        <div><div class="dp-lbl">類型</div><div class="dp-val" id="dp-type"></div></div>
+        <div><div class="dp-lbl">時間</div><div class="dp-val" id="dp-time"></div></div>
+      </div>
+      <div class="dp-desc" id="dp-desc"></div>
+    </div>
+  </div>
+
+  <div class="side-panel">
+    <div class="panel-section">
+      <div class="panel-title">情報統計</div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num c-blue" id="stat-total">—</div><div class="stat-lbl">情報總數</div></div>
+        <div class="stat-card"><div class="stat-num c-red" id="stat-critical">—</div><div class="stat-lbl">高威脅</div></div>
+        <div class="stat-card"><div class="stat-num c-yellow" id="stat-warning">—</div><div class="stat-lbl">需關注</div></div>
+      </div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-title">篩選</div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterIntel('all',this)">全部</button>
+        <button class="filter-btn red" onclick="filterIntel('critical',this)">高威脅</button>
+        <button class="filter-btn yellow" onclick="filterIntel('warning',this)">需關注</button>
+        <button class="filter-btn" onclick="filterIntel('info',this)">一般</button>
+        <button class="filter-btn green" onclick="filterIntel('normal',this)">已解除</button>
+      </div>
+    </div>
+    <div class="panel-section" style="padding:10px 16px 0;"><div class="panel-title">情報列表</div></div>
+    <div class="intel-list" id="intel-list"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// 驗證設定
+// ══════════════════════════════════════════
+const AUTH_CONFIG = {
+  GOOGLE_CLIENT_ID: '973721313231-0no4ivldu33he0kts8k51kn4tqd979g7.apps.googleusercontent.com',
+  CHECK_PERMISSION_URL: 'https://mjib007.zeabur.app/webhook/check-gi-permission',
+  SYSTEM_NAME: '情報分析系統'
+};
+
+// ══════════════════════════════════════════
+// 資料來源設定
+// 未來只需修改這個網址即可切換資料來源
+// ══════════════════════════════════════════
+const INTEL_API_URL = 'https://mjib007.zeabur.app/webhook/get-intel-data';
+
+// 全域資料陣列（由 API 填入）
+let INTEL_DATA = [];
+
+const LEVEL_COLOR = { critical:'#ff4444', warning:'#ffc107', info:'#00c8ff', normal:'#44ff88' };
+const LEVEL_LABEL = { critical:'高威脅', warning:'需關注', info:'一般情資', normal:'已解除' };
+const ARC_STYLE = {
+  cyber:       { color:['rgba(255,68,68,0.95)','rgba(255,68,68,0.1)'],   stroke:0.5, dashLength:0.15, dashGap:0.08, animateTime:700 },
+  military:    { color:['rgba(255,120,0,0.9)','rgba(255,68,68,0.1)'],    stroke:0.7, dashLength:0.45, dashGap:0.15, animateTime:1100 },
+  financial:   { color:['rgba(255,193,7,0.9)','rgba(255,193,7,0.1)'],   stroke:0.5, dashLength:0.3,  dashGap:0.2,  animateTime:1700 },
+  personnel:   { color:['rgba(0,200,255,0.8)','rgba(0,200,255,0.1)'],   stroke:0.4, dashLength:0.6,  dashGap:0.3,  animateTime:2400 },
+  crime:       { color:['rgba(255,150,0,0.8)','rgba(255,68,68,0.1)'],   stroke:0.5, dashLength:0.35, dashGap:0.2,  animateTime:1500 },
+  cooperation: { color:['rgba(68,255,136,0.8)','rgba(68,255,136,0.1)'], stroke:0.4, dashLength:0.8,  dashGap:0.1,  animateTime:2800 }
+};
+
+let globeInstance = null;
+let currentFilter = 'all';
+
+// ══════════════════════════════════════════
+// 載入情資資料
+// ══════════════════════════════════════════
+async function loadIntelData() {
+  // 顯示載入中狀態
+  document.getElementById('intel-list').innerHTML = `
+    <div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-family:var(--mono);font-size:11px;">
+      <div class="spin" style="margin:0 auto 12px;width:20px;height:20px;"></div>
+      載入情資資料中...
+    </div>
+  `;
+  document.getElementById('stat-total').textContent = '—';
+  document.getElementById('stat-critical').textContent = '—';
+  document.getElementById('stat-warning').textContent = '—';
+
+  try {
+    const res = await fetch(INTEL_API_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const result = await res.json();
+
+    if (!result.success || !result.data) throw new Error('資料格式錯誤');
+
+    INTEL_DATA = result.data;
+    console.log('情資載入成功，共', INTEL_DATA.length, '筆');
+
+    // 資料載入後初始化介面
+    initStats();
+    renderList();
+    if (globeInstance) updateGlobe();
+
+  } catch (err) {
+    console.error('情資載入失敗:', err);
+    document.getElementById('intel-list').innerHTML = `
+      <div style="text-align:center;padding:40px 20px;color:var(--red);font-family:var(--mono);font-size:11px;">
+        ⚠️ 情資載入失敗<br>
+        <span style="color:var(--text-dim);margin-top:8px;display:block;">${err.message}</span>
+      </div>
+    `;
+  }
+}
+
+// 地球儀資料更新（資料載入後呼叫）
+function updateGlobe() {
+  const arcData = INTEL_DATA.filter(d => d.fromLat !== undefined && d.fromLat !== null);
+  globeInstance
+    .pointsData(INTEL_DATA)
+    .arcsData(arcData)
+    .ringsData(INTEL_DATA.filter(d => d.level==='critical'||d.level==='warning'));
+}
+
+// ══════════════════════════════════════════
+// Google 登入
+// ══════════════════════════════════════════
+function initGoogleLogin() {
+  if (typeof google === 'undefined' || !google.accounts) { setTimeout(initGoogleLogin, 300); return; }
+  google.accounts.id.initialize({
+    client_id: AUTH_CONFIG.GOOGLE_CLIENT_ID,
+    callback: onGoogleCredential,
+    auto_select: false
+  });
+  google.accounts.id.renderButton(document.getElementById('google-btn-container'), { theme:'outline', size:'large', width:280 });
+}
+
+async function onGoogleCredential(response) {
+  const payload = parseJwt(response.credential);
+  const user = { email: payload.email, name: payload.name };
+  sessionStorage.setItem('gi_user', JSON.stringify(user));
+  await checkPermission(user.email);
+}
+
+function parseJwt(token) {
+  const base64Url = token.split('.')[1];
+  const base64 = base64Url.replace(/-/g,'+').replace(/_/g,'/');
+  return JSON.parse(decodeURIComponent(atob(base64).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+}
+
+async function checkPermission(email) {
+  setAuthLoading(true);
+  document.getElementById('authError').classList.add('hidden');
+  try {
+    const res = await fetch(AUTH_CONFIG.CHECK_PERMISSION_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, system: AUTH_CONFIG.SYSTEM_NAME })
+    });
+    const data = await res.json();
+    if (data.success && data.hasPermission) {
+      document.getElementById('authOverlay').classList.add('hidden');
+      document.getElementById('userEmailDisplay').textContent = email;
+    } else {
+      showAuthError(`帳號 ${email} 無「${AUTH_CONFIG.SYSTEM_NAME}」存取權限`);
+      sessionStorage.removeItem('gi_user');
+    }
+  } catch(e) {
+    showAuthError('系統驗證失敗，請稍後再試');
+    sessionStorage.removeItem('gi_user');
+  } finally {
+    setAuthLoading(false);
+  }
+}
+
+function setAuthLoading(show) {
+  document.getElementById('authLoading').classList.toggle('hidden', !show);
+  document.getElementById('google-btn-container').classList.toggle('hidden', show);
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function handleLogout() {
+  sessionStorage.removeItem('gi_user');
+  location.reload();
+}
+
+// ══════════════════════════════════════════
+// Globe 初始化
+// ══════════════════════════════════════════
+function initGlobe() {
+  const container = document.getElementById('globe');
+  const arcData = INTEL_DATA.filter(d => d.fromLat !== undefined);
+
+  globeInstance = Globe()(container)
+    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+    .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+    .backgroundColor('rgba(4,8,28,1)')
+    .width(container.parentElement.offsetWidth)
+    .height(container.parentElement.offsetHeight)
+    // 點位
+    .pointsData(INTEL_DATA)
+    .pointLat('lat').pointLng('lng')
+    .pointColor(d => LEVEL_COLOR[d.level])
+    .pointRadius(d => d.level==='critical'?0.5:d.level==='warning'?0.4:0.3)
+    .pointAltitude(0.02)
+    .pointLabel(d => `
+      <div style="background:rgba(13,21,32,0.93);border:1px solid ${LEVEL_COLOR[d.level]};border-radius:6px;padding:8px 12px;font-family:'Noto Sans TC';min-width:160px;box-shadow:0 0 12px ${LEVEL_COLOR[d.level]}44;">
+        <div style="font-size:9px;color:${LEVEL_COLOR[d.level]};letter-spacing:1px;margin-bottom:4px;">${LEVEL_LABEL[d.level]}</div>
+        <div style="font-size:13px;color:#fff;font-weight:600;margin-bottom:3px;">${d.title}</div>
+        <div style="font-size:10px;color:#5a7a9a;">📍 ${d.location}</div>
+      </div>
+    `)
+    .onPointClick(d => selectIntel(d.id))
+    // 光環
+    .ringsData(INTEL_DATA.filter(d => d.level==='critical'||d.level==='warning'))
+    .ringLat('lat').ringLng('lng')
+    .ringColor(d => d.level==='critical'?'#ff444466':'#ffc10744')
+    .ringMaxRadius(d => d.level==='critical'?3:2)
+    .ringPropagationSpeed(d => d.level==='critical'?2:1.2)
+    .ringRepeatPeriod(d => d.level==='critical'?1000:1600)
+    // 弧線
+    .arcsData(arcData)
+    .arcStartLat(d=>d.fromLat).arcStartLng(d=>d.fromLng)
+    .arcEndLat(d=>d.toLat).arcEndLng(d=>d.toLng)
+    .arcColor(d=>ARC_STYLE[d.arcType]?.color)
+    .arcDashLength(d=>ARC_STYLE[d.arcType]?.dashLength)
+    .arcDashGap(d=>ARC_STYLE[d.arcType]?.dashGap)
+    .arcDashAnimateTime(d=>ARC_STYLE[d.arcType]?.animateTime)
+    .arcStroke(d=>ARC_STYLE[d.arcType]?.stroke)
+    .arcAltitudeAutoScale(0.35)
+    .pointOfView({lat:23,lng:112,altitude:2.2},0);
+
+  globeInstance.controls().autoRotate = true;
+  globeInstance.controls().autoRotateSpeed = 0.2;
+  globeInstance.controls().enableZoom = true;
+  window.globeInstance = globeInstance;
+
+  // 載入國家邊界
+  fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson')
+    .then(r=>r.json())
+    .then(data=>{
+      globeInstance
+        .polygonsData(data.features)
+        .polygonGeoJsonGeometry('geometry')
+        .polygonCapColor(()=>'rgba(0,0,0,0)')
+        .polygonSideColor(()=>'rgba(0,0,0,0)')
+        .polygonStrokeColor(()=>'rgba(100,180,255,0.2)')
+        .polygonAltitude(0.001);
+    });
+
+  window.addEventListener('resize',()=>{
+    globeInstance.width(container.parentElement.offsetWidth).height(container.parentElement.offsetHeight);
+  });
+}
+
+// ══════════════════════════════════════════
+// 互動
+// ══════════════════════════════════════════
+function selectIntel(id) {
+  const item = INTEL_DATA.find(d=>d.id===id);
+  if(!item) return;
+  document.querySelectorAll('.intel-item').forEach(el=>el.classList.remove('active'));
+  const el = document.getElementById('item-'+id);
+  if(el) { el.classList.add('active'); el.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+  document.getElementById('dp-tag').textContent = item.id+' · '+item.type;
+  document.getElementById('dp-title').textContent = item.title;
+  document.getElementById('dp-loc').textContent = item.location;
+  document.getElementById('dp-level').innerHTML = `<span style="color:${LEVEL_COLOR[item.level]}">${LEVEL_LABEL[item.level]}</span>`;
+  document.getElementById('dp-type').textContent = item.type;
+  document.getElementById('dp-time').textContent = item.time;
+  document.getElementById('dp-desc').textContent = item.desc;
+  document.getElementById('detail-panel').classList.add('show');
+  globeInstance.pointOfView({lat:item.lat,lng:item.lng,altitude:1.8},1000);
+  globeInstance.controls().autoRotate = false;
+  document.getElementById('rotate-btn').textContent='▶ 開始旋轉';
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('show');
+  document.querySelectorAll('.intel-item').forEach(el=>el.classList.remove('active'));
+}
+
+function toggleRotate() {
+  const ctrl = globeInstance.controls();
+  ctrl.autoRotate = !ctrl.autoRotate;
+  const btn = document.getElementById('rotate-btn');
+  btn.textContent = ctrl.autoRotate?'⏸ 暫停旋轉':'▶ 開始旋轉';
+}
+
+function filterIntel(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+}
+
+function renderList() {
+  const data = currentFilter==='all' ? INTEL_DATA : INTEL_DATA.filter(d=>d.level===currentFilter);
+  document.getElementById('intel-list').innerHTML = data.map(item=>`
+    <div class="intel-item ${item.level}" id="item-${item.id}" onclick="selectIntel('${item.id}')">
+      <div class="intel-header">
+        <span class="intel-level ${item.level}">${LEVEL_LABEL[item.level]}</span>
+        <span class="intel-time">${item.time.split(' ')[0]}</span>
+      </div>
+      <div class="intel-title">${item.title}</div>
+      <div class="intel-loc">📍 ${item.location}</div>
+    </div>
+  `).join('');
+}
+
+function initStats() {
+  document.getElementById('stat-total').textContent = INTEL_DATA.length;
+  document.getElementById('stat-critical').textContent = INTEL_DATA.filter(d=>d.level==='critical').length;
+  document.getElementById('stat-warning').textContent = INTEL_DATA.filter(d=>d.level==='warning').length;
+  document.getElementById('active-count').textContent = INTEL_DATA.filter(d=>d.level!=='normal').length+' 筆';
+  document.getElementById('critical-count').textContent = INTEL_DATA.filter(d=>d.level==='critical').length+' 筆';
+  document.getElementById('latest-time').textContent = INTEL_DATA[0].time.split(' ')[1];
+}
+
+// ══════════════════════════════════════════
+// 啟動
+// ══════════════════════════════════════════
+function updateClock() {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('zh-TW');
+}
+setInterval(updateClock,1000);
+updateClock();
+
+window.addEventListener('load', async () => {
+  initGoogleLogin();
+  const session = sessionStorage.getItem('gi_user');
+  if(session) {
+    const user = JSON.parse(session);
+    await checkPermission(user.email);
+  }
+  // 先啟動地球儀（空資料），登入後再載入情資
+  initGlobe();
+  // 載入情資資料
+  await loadIntelData();
+});
+</script>
+</body>
+</html>
