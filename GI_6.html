@@ -305,12 +305,30 @@ async function loadIntelData() {
 }
 
 function updateGlobe() {
-  // 修正：確實篩選出包含起點緯度的項目供弧線渲染
-  const arcData = INTEL_DATA.filter(d => d.fromLat !== undefined && d.fromLat !== null);
+  // 1. 點位篩選：只有當 lat 和 lng 都有值時，才在地球上顯示點位
+  const pointsData = INTEL_DATA.filter(d => 
+    d.lat !== undefined && d.lat !== null && d.lat !== ''
+  );
+
+  // 2. 弧線篩選：嚴格檢查 4 個經緯度欄位都必須有值，才渲染弧線
+  const arcData = INTEL_DATA.filter(d => 
+    d.fromLat !== undefined && d.fromLat !== null && d.fromLat !== '' &&
+    d.fromLng !== undefined && d.fromLng !== null && d.fromLng !== '' &&
+    d.toLat !== undefined && d.toLat !== null && d.toLat !== '' &&
+    d.toLng !== undefined && d.toLng !== null && d.toLng !== ''
+  );
+
+  // 3. 脈衝光環篩選：高威脅/需關注的點位（critical 或 warning），且該點位必須有經緯度
+  const ringsData = INTEL_DATA.filter(d => 
+    (d.level === 'critical' || d.level === 'warning') &&
+    d.lat !== undefined && d.lat !== null && d.lat !== ''
+  );
+
+  // 4. 更新到地球儀實例中
   globeInstance
-    .pointsData(INTEL_DATA)
-    .arcsData(arcData)
-    .ringsData(INTEL_DATA.filter(d => d.level==='critical'||d.level==='warning'));
+    .pointsData(pointsData) // 使用篩選過、有經緯度的點位
+    .arcsData(arcData)     // 使用嚴格篩選過、四個欄位齊全的弧線
+    .ringsData(ringsData);  // 使用篩選過、有經緯度的高威脅光環
 }
 
 // ══════════════════════════════════════════
