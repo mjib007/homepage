@@ -382,6 +382,11 @@ function showAuthError(msg) {
   el.classList.remove('hidden');
 }
 
+function getUserEmail() {
+  const user = JSON.parse(sessionStorage.getItem('gi_user') || '{}');
+  return user.email || '';
+}
+
 function handleLogout() {
   sessionStorage.removeItem('gi_user');
   location.reload();
