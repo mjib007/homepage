@@ -518,13 +518,20 @@ function renderList() {
   `).join('');
 }
 
+//  修改後的程式碼：
 function initStats() {
   document.getElementById('stat-total').textContent = INTEL_DATA.length;
   document.getElementById('stat-critical').textContent = INTEL_DATA.filter(d=>d.level==='critical').length;
   document.getElementById('stat-warning').textContent = INTEL_DATA.filter(d=>d.level==='warning').length;
   document.getElementById('active-count').textContent = INTEL_DATA.filter(d=>d.level!=='normal').length+' 筆';
   document.getElementById('critical-count').textContent = INTEL_DATA.filter(d=>d.level==='critical').length+' 筆';
-  document.getElementById('latest-time').textContent = INTEL_DATA[0].time.split(' ')[1];
+  
+  // 增加防呆：有資料才去切字串，沒資料就顯示符號，避免網頁崩潰
+  if (INTEL_DATA && INTEL_DATA.length > 0 && INTEL_DATA[0].time) {
+    document.getElementById('latest-time').textContent = INTEL_DATA[0].time.split(' ')[1];
+  } else {
+    document.getElementById('latest-time').textContent = '--:--:--';
+  }
 }
 
 // ══════════════════════════════════════════
