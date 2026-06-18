@@ -420,7 +420,7 @@ function initGlobe() {
     .pointLat('lat').pointLng('lng')
     .pointColor(d => LEVEL_COLOR[d.level])
     .pointRadius(d => d.level==='critical'?0.5:d.level==='warning'?0.4:0.3)
-    .pointAltitude(0.02)
+    .pointAltitude(0)
     .pointLabel(d => `
       <div style="background:rgba(13,21,32,0.93);border:1px solid ${LEVEL_COLOR[d.level]};border-radius:6px;padding:8px 12px;font-family:'Noto Sans TC';min-width:160px;box-shadow:0 0 12px ${LEVEL_COLOR[d.level]}44;">
         <div style="font-size:9px;color:${LEVEL_COLOR[d.level]};letter-spacing:1px;margin-bottom:4px;">${LEVEL_LABEL[d.level]}</div>
