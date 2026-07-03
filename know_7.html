@@ -609,7 +609,12 @@ function fallbackCopy(button, text) {
     async function initVoiceRecording() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
+
+        // 修正：改用瀏覽器實際支援的格式錄音，不要硬指定 wav
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          ? 'audio/webm;codecs=opus'
+          : 'audio/webm';
+        mediaRecorder = new MediaRecorder(stream, { mimeType });
         
         mediaRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
@@ -618,7 +623,8 @@ function fallbackCopy(button, text) {
         };
         
         mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          // 修正：Blob 的 type 要跟實際錄音格式一致，不要標成 wav
+          const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
           audioChunks = [];
           
           await uploadAudioForTranscription(audioBlob);
@@ -666,7 +672,8 @@ function fallbackCopy(button, text) {
         const fileName = document.getElementById('noteTitle').value || '語音筆記 ' + new Date().toLocaleString();
         
         const formData = new FormData();
-        formData.append('audio_file', audioBlob, 'recording.wav');
+        // 修正：檔名改成 .webm，跟實際的 Blob 格式一致
+        formData.append('audio_file', audioBlob, 'recording.webm');
         formData.append('userId', userId);
         formData.append('fileName', fileName);
         formData.append('fileType', 'voice');
