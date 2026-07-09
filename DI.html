@@ -190,6 +190,12 @@
     color: var(--navy); margin-bottom: 8px;
   }
   .auth-modal p { color: var(--text-muted); font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
+  .auth-browser-tip {
+    background: #FFF8E8; border: 1px solid #F0DFA8; border-radius: 8px;
+    padding: 12px 14px; font-size: 12.5px; color: #8A6A1A; line-height: 1.6;
+    margin-bottom: 20px; text-align: left;
+  }
+  .auth-browser-tip b { color: #6B4E00; }
   .auth-error {
     color: #C0392B; font-size: 13px; margin-top: 16px; padding: 10px 14px;
     background: #FDECEC; border-radius: 8px; border: 1px solid #F5C6C6;
@@ -224,6 +230,11 @@
     <div class="auth-kicker">Taiwan Law Foundation</div>
     <h2>董事會出席報到系統</h2>
     <p>請使用授權的 Google 帳號登入<br>以驗證使用權限</p>
+    <div class="auth-browser-tip">
+      📱 <b>手機用戶請注意：</b>若是從LINE、Messenger等App內的連結點進來，Google登入會失敗。<br>
+      若使用<b>安卓手機</b>，點進網頁後右下方（或右上方）通常有「⋮」三個點，點選後選「<b>使用預設瀏覽器開啟</b>」（不同手機廠牌畫面可能不同）。<br>
+      若上述方法找不到，最保險的做法：<b>長按網址文字選「複製」</b>，打開手機的Safari或Chrome瀏覽器，把網址貼上開啟本頁面。
+    </div>
     <div id="googleBtnContainer"></div>
     <div id="authError" class="auth-error hidden"></div>
     <div id="authLoading" class="auth-loading hidden">
