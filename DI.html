@@ -35,7 +35,8 @@
   .topbar .kicker { font-size: 12px; letter-spacing: 2px; color: var(--ice); text-transform: uppercase; }
   .topbar .title { font-family: var(--serif); font-size: 24px; font-weight: 700; margin-top: 4px; }
   .topbar .sub { font-size: 13px; color: var(--ice); margin-top: 6px; }
-  .topbar .clock-block { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+  .topbar .clock-block { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+  .topbar .clock-row { display: flex; align-items: center; gap: 14px; }
   .topbar .clock {
     font-family: var(--serif); font-size: 16px; font-weight: 700;
     color: white; letter-spacing: 0.5px; white-space: nowrap; text-align: right;
@@ -206,12 +207,11 @@
   #googleBtnContainer { display: flex; justify-content: center; width: 100%; }
   #googleBtnContainer.hidden { display: none !important; }
   .logout-btn {
-    position: fixed; bottom: 20px; left: 24px; z-index: 60;
-    padding: 7px 14px; background: rgba(255,255,255,0.9); border: 1px solid #D7E1F5;
-    color: var(--text-muted); border-radius: 8px; cursor: pointer; font-size: 12px;
+    padding: 5px 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.3);
+    color: var(--ice); border-radius: 7px; cursor: pointer; font-size: 12px;
     font-family: var(--sans);
   }
-  .logout-btn:hover { border-color: #C0392B; color: #C0392B; }
+  .logout-btn:hover { border-color: #ffb3b3; color: #ffb3b3; }
 </style>
 </head>
 <body>
@@ -231,8 +231,6 @@
   </div>
 </div>
 
-<button class="logout-btn" onclick="handleLogout()">登出</button>
-
 <div class="topbar">
   <div class="info-block">
     <div class="kicker">財團法人台灣法學基金會</div>
@@ -240,18 +238,21 @@
     <div class="sub">民國115年7月17日下午1時・台灣法學基金會(台北市大同區長安西路82號6樓)</div>
   </div>
   <div class="clock-block">
-    <svg class="analog-clock" width="64" height="64" viewBox="0 0 100 100">
-      <circle class="face" cx="50" cy="50" r="46" />
-      <line class="tick" x1="50" y1="8" x2="50" y2="14" />
-      <line class="tick" x1="50" y1="86" x2="50" y2="92" />
-      <line class="tick" x1="8" y1="50" x2="14" y2="50" />
-      <line class="tick" x1="86" y1="50" x2="92" y2="50" />
-      <line id="hourHand" class="hand hour-hand" x1="50" y1="50" x2="50" y2="28" />
-      <line id="minuteHand" class="hand minute-hand" x1="50" y1="50" x2="50" y2="18" />
-      <line id="secondHand" class="hand second-hand" x1="50" y1="50" x2="50" y2="14" />
-      <circle class="center-dot" cx="50" cy="50" r="3" />
-    </svg>
-    <div class="clock" id="liveClock">--:--:--</div>
+    <div class="clock-row">
+      <svg class="analog-clock" width="64" height="64" viewBox="0 0 100 100">
+        <circle class="face" cx="50" cy="50" r="46" />
+        <line class="tick" x1="50" y1="8" x2="50" y2="14" />
+        <line class="tick" x1="50" y1="86" x2="50" y2="92" />
+        <line class="tick" x1="8" y1="50" x2="14" y2="50" />
+        <line class="tick" x1="86" y1="50" x2="92" y2="50" />
+        <line id="hourHand" class="hand hour-hand" x1="50" y1="50" x2="50" y2="28" />
+        <line id="minuteHand" class="hand minute-hand" x1="50" y1="50" x2="50" y2="18" />
+        <line id="secondHand" class="hand second-hand" x1="50" y1="50" x2="50" y2="14" />
+        <circle class="center-dot" cx="50" cy="50" r="3" />
+      </svg>
+      <div class="clock" id="liveClock">--:--:--</div>
+    </div>
+    <button class="logout-btn" onclick="handleLogout()">登出</button>
   </div>
 </div>
 
