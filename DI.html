@@ -153,27 +153,7 @@
     display: inline-flex; align-items: center; justify-content: center;
     margin-bottom: 6px; color: white; font-size: 14px; position: absolute; top: 10px; right: 10px;
   }
-  .delete-btn {
-    position: absolute; top: 8px; left: 8px; width: 22px; height: 22px; border-radius: 50%;
-    background: #F1F5F9; border: none; color: var(--text-muted); font-size: 13px;
-    display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
-    font-family: var(--sans); line-height: 1;
-  }
-  .delete-btn:hover { background: #FDECEC; color: #C0392B; }
-  .delete-btn:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; }
 
-  .guest-row {
-    margin-top: 30px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
-  }
-  .guest-row input {
-    padding: 10px 14px; border-radius: 8px; border: 1px solid #D7E1F5;
-    font-size: 14px; font-family: var(--sans); width: 220px;
-  }
-  .guest-row button {
-    padding: 10px 18px; border-radius: 8px; border: none; background: var(--navy);
-    color: white; font-size: 14px; cursor: pointer; font-family: var(--sans);
-  }
-  .guest-row button:hover { background: var(--teal-dk); }
 
   .reset-row { text-align: center; margin-top: 36px; }
   .reset-btn {
@@ -304,11 +284,6 @@
   <p class="hint" style="margin-top:-12px;"><span id="syncStatus">尚未同步</span>　<a href="#" onclick="loadFromSheet();return false;" style="color:var(--teal-dk);">重新同步</a></p>
 
   <div class="grid" id="cardGrid"></div>
-
-  <div class="guest-row">
-    <input type="text" id="guestName" placeholder="不在名單上？輸入姓名加入出席">
-    <button onclick="guestCheckIn()">加入</button>
-  </div>
 
   <div class="reset-row">
     <button class="reset-btn" onclick="resetAll()">清空本次出席紀錄（下次會議前使用）</button>
@@ -449,8 +424,7 @@ const CIRC = 628; // 2 * pi * 100
 const LS_KEY = "board-115-2-attendance-cloud";
 
 // checkins以編號為key：{ D001: "2026-07-17 13:02:15", ... }
-// guests為本機列席人員（不寫入Google Sheet）
-let state = { checkins: {}, guests: {}, guestOrder: [], quorum: 9, agendaIndex: 0, sidebarHidden: false };
+let state = { checkins: {}, quorum: 9, agendaIndex: 0, sidebarHidden: false };
 let quorumWasMet = false;
 let pendingIds = new Set(); // 傳送中防止連點
 
@@ -462,8 +436,6 @@ function loadLocal() {
       state.quorum = parsed.quorum || 9;
       state.agendaIndex = parsed.agendaIndex || 0;
       state.sidebarHidden = !!parsed.sidebarHidden;
-      state.guests = parsed.guests || {};
-      state.guestOrder = parsed.guestOrder || [];
     }
   } catch (e) { /* 忽略 */ }
 }
@@ -472,8 +444,7 @@ function saveLocal() {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify({
       quorum: state.quorum, agendaIndex: state.agendaIndex,
-      sidebarHidden: state.sidebarHidden,
-      guests: state.guests, guestOrder: state.guestOrder
+      sidebarHidden: state.sidebarHidden
     }));
   } catch (e) { /* 忽略 */ }
 }
@@ -542,7 +513,7 @@ async function loadFromSheet() {
 // 點選人名：呼叫Webhook切換出席
 async function toggle(memberId) {
   const member = MEMBERS.find(m => m.id === memberId);
-  if (!member) { toggleGuest(memberId); return; }
+  if (!member) return;
   if (pendingIds.has(memberId)) return; // 傳送中，忽略連點
   pendingIds.add(memberId);
   render();
@@ -570,36 +541,6 @@ async function toggle(memberId) {
   render();
 }
 
-// 列席人員僅記錄在本機，不寫入Google Sheet
-function toggleGuest(name) {
-  if (state.guests[name]) {
-    delete state.guests[name];
-  } else {
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2, "0");
-    const mm = String(now.getMinutes()).padStart(2, "0");
-    state.guests[name] = `${hh}:${mm}`;
-  }
-  saveLocal();
-  render();
-}
-
-function guestCheckIn() {
-  const input = document.getElementById("guestName");
-  const name = input.value.trim();
-  if (!name) return;
-  if (!state.guestOrder.includes(name)) state.guestOrder.push(name);
-  if (!state.guests[name]) {
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2, "0");
-    const mm = String(now.getMinutes()).padStart(2, "0");
-    state.guests[name] = `${hh}:${mm}`;
-  }
-  saveLocal();
-  input.value = "";
-  render();
-}
-
 async function resetAll() {
   if (!confirm("確定要清空本次所有出席紀錄嗎？將逐一清除Google Sheet上的出席註記，此動作無法復原。")) return;
   setSyncStatus("清除中，請稍候…", false);
@@ -613,19 +554,10 @@ async function resetAll() {
     } catch (e) { /* 個別失敗略過 */ }
   }
   state.checkins = {};
-  state.guests = {};
-  state.guestOrder = [];
   state.agendaIndex = 0;
   quorumWasMet = false;
   saveLocal();
   setSyncStatus("已清空", false);
-  render();
-}
-
-function removeGuest(name) {
-  delete state.guests[name];
-  state.guestOrder = state.guestOrder.filter(n => n !== name);
-  saveLocal();
   render();
 }
 
@@ -682,12 +614,8 @@ function render() {
 
   const grid = document.getElementById("cardGrid");
   grid.innerHTML = "";
-  const allEntries = [
-    ...MEMBERS.map(m => ({ ...m, isGuest: false })),
-    ...state.guestOrder.map(n => ({ id: n, name: n, role: "列席人員（僅本機）", isGuest: true }))
-  ];
-  allEntries.forEach(m => {
-    const timeVal = m.isGuest ? state.guests[m.name] : state.checkins[m.id];
+  MEMBERS.forEach(m => {
+    const timeVal = state.checkins[m.id];
     const done = !!timeVal;
     const isPending = pendingIds.has(m.id);
     const card = document.createElement("button");
@@ -695,28 +623,13 @@ function render() {
     card.setAttribute("aria-pressed", done ? "true" : "false");
     card.disabled = isPending;
     card.onclick = () => toggle(m.id);
-    const displayTime = m.isGuest ? timeVal : fmtTimeFromSheet(timeVal);
+    const displayTime = fmtTimeFromSheet(timeVal);
     card.innerHTML = `
-      ${m.isGuest ? '<span class="delete-btn" title="移除此人員" role="button" tabindex="0">✕</span>' : ''}
       ${done ? '<div class="checkmark">✓</div>' : ''}
       <div class="role">${m.role}</div>
       <div class="name">${m.name}</div>
       <div class="status">${isPending ? "傳送中…" : (done ? "已出席 " + displayTime : "點選確認出席")}</div>
     `;
-    if (m.isGuest) {
-      const delBtn = card.querySelector(".delete-btn");
-      delBtn.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        removeGuest(m.name);
-      });
-      delBtn.addEventListener("keydown", (ev) => {
-        if (ev.key === "Enter" || ev.key === " ") {
-          ev.preventDefault();
-          ev.stopPropagation();
-          removeGuest(m.name);
-        }
-      });
-    }
     grid.appendChild(card);
   });
 
