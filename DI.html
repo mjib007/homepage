@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>台灣法學基金會董事會出席狀況</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root {
+    --navy: #1E2761;
+    --navy-dk: #141B49;
+    --ice: #CADCFC;
+    --teal: #00B4A6;
+    --teal-dk: #00857A;
+    --bg: #F4F7FD;
+    --card: #FFFFFF;
+    --text-dk: #1E293B;
+    --text-muted: #64748B;
+    --amber: #C9A227;
+    --serif: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+    --sans: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text-dk);
+    min-height: 100vh;
+  }
+  .topbar {
+    padding: 22px 32px; background: var(--navy); color: white;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;
+  }
+  .topbar .info-block { text-align: left; }
+  .topbar .kicker { font-size: 12px; letter-spacing: 2px; color: var(--ice); text-transform: uppercase; }
+  .topbar .title { font-family: var(--serif); font-size: 24px; font-weight: 700; margin-top: 4px; }
+  .topbar .sub { font-size: 13px; color: var(--ice); margin-top: 6px; }
+  .topbar .clock-block { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+  .topbar .clock {
+    font-family: var(--serif); font-size: 16px; font-weight: 700;
+    color: white; letter-spacing: 0.5px; white-space: nowrap; text-align: right;
+  }
+  .analog-clock circle.face { fill: var(--navy-dk); stroke: var(--teal); stroke-width: 2.5; }
+  .analog-clock .tick { stroke: rgba(255,255,255,0.35); stroke-width: 1.5; }
+  .analog-clock .hand { stroke-linecap: round; }
+  .analog-clock .hour-hand { stroke: white; stroke-width: 4; }
+  .analog-clock .minute-hand { stroke: white; stroke-width: 3; }
+  .analog-clock .second-hand { stroke: var(--teal); stroke-width: 1.5; }
+  .analog-clock .center-dot { fill: var(--teal); }
+
+  .wrap { max-width: 1300px; margin: 0 auto; padding: 28px 260px 60px 32px; transition: padding 0.3s; }
+  body.no-sidebar .wrap { padding-right: 32px; }
+
+  /* Agenda sidebar */
+  .agenda-sidebar {
+    position: fixed; top: 0; right: 0; height: 100vh; width: 240px;
+    background: var(--navy-dk); color: white; padding: 28px 20px;
+    display: flex; flex-direction: column; z-index: 50;
+    box-shadow: -4px 0 16px rgba(0,0,0,0.12);
+    transition: transform 0.3s;
+  }
+  .agenda-sidebar.hidden { transform: translateX(100%); }
+  .agenda-sidebar .agenda-title {
+    font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--teal);
+    letter-spacing: 1px; margin-bottom: 18px;
+  }
+  .agenda-sidebar .agenda-list { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .agenda-item {
+    display: flex; align-items: flex-start; gap: 10px; padding: 10px 8px;
+    border-radius: 8px; font-size: 13px; line-height: 1.5; color: rgba(255,255,255,0.45);
+    transition: background 0.2s, color 0.2s;
+  }
+  .agenda-item .num {
+    width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .agenda-item.done { color: rgba(255,255,255,0.5); text-decoration: line-through; }
+  .agenda-item.done .num { background: var(--teal-dk); }
+  .agenda-item.current { background: rgba(0,180,166,0.18); color: white; font-weight: 700; }
+  .agenda-item.current .num { background: var(--teal); color: var(--navy-dk); }
+  .agenda-nav { display: flex; gap: 8px; margin-top: 16px; }
+  .agenda-nav button {
+    flex: 1; padding: 9px 0; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+    background: transparent; color: white; font-size: 12px; cursor: pointer; font-family: var(--sans);
+  }
+  .agenda-nav button:hover { background: rgba(255,255,255,0.1); }
+  .agenda-nav button:disabled { opacity: 0.3; cursor: default; }
+  .sidebar-toggle {
+    position: fixed; top: 24px; right: 24px; z-index: 60;
+    background: var(--navy-dk); color: white; border: 1px solid rgba(255,255,255,0.2);
+    width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 16px;
+  }
+  .sidebar-toggle.sidebar-open { right: 264px; }
+
+  /* Quorum celebration flash */
+  @keyframes celebrateFlash {
+    0%, 100% { background: var(--bg); }
+    50% { background: #E5F9F6; }
+  }
+  body.celebrate { animation: celebrateFlash 0.6s ease-in-out 3; }
+
+  .top-row { display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap; margin-bottom: 30px; }
+
+  .config-box { text-align: center; font-size: 14px; color: var(--text-muted); line-height: 2; }
+  .config-box input {
+    width: 56px; padding: 4px 8px; border-radius: 6px; border: 1px solid #D7E1F5;
+    font-size: 14px; text-align: center; margin: 0 6px; font-family: var(--sans);
+  }
+  .config-box .total-line { font-weight: 600; color: var(--navy); }
+
+  .gauge-wrap { position: relative; flex-shrink: 0; }
+  .gauge-label {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .gauge-label .count { font-family: var(--serif); font-size: 52px; font-weight: 700; color: var(--navy); line-height: 1; }
+  .gauge-label .total { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .gauge-label .quorum-tag {
+    margin-top: 8px; display: inline-block; padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 700; white-space: nowrap;
+  }
+  .quorum-tag.met { background: #E5F9F6; color: var(--teal-dk); }
+  .quorum-tag.not-met { background: #FDF1E3; color: #B8790A; }
+
+  .hint { text-align: center; color: var(--text-muted); font-size: 13px; margin-bottom: 20px; }
+  .hint b { color: var(--navy); }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: var(--card); border-radius: 14px; padding: 18px 16px;
+    text-align: center; cursor: pointer; border: none;
+    box-shadow: 0 2px 6px rgba(20,27,73,0.08);
+    transition: transform 0.12s, box-shadow 0.12s;
+    font-family: var(--sans); position: relative;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(20,27,73,0.14); }
+  .card:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .card .role { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+  .card .name { font-size: 19px; font-weight: 700; color: var(--navy); font-family: var(--serif); }
+  .card .status { margin-top: 10px; font-size: 12px; color: var(--text-muted); }
+  .card.done {
+    background: linear-gradient(155deg, #ECFDF9, #FFFFFF);
+    box-shadow: 0 2px 6px rgba(0,180,166,0.18);
+  }
+  .card.done .name { color: var(--teal-dk); }
+  .card.done .status { color: var(--teal-dk); font-weight: 600; }
+  .checkmark {
+    width: 24px; height: 24px; border-radius: 50%; background: var(--teal);
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 6px; color: white; font-size: 14px; position: absolute; top: 10px; right: 10px;
+  }
+  .delete-btn {
+    position: absolute; top: 8px; left: 8px; width: 22px; height: 22px; border-radius: 50%;
+    background: #F1F5F9; border: none; color: var(--text-muted); font-size: 13px;
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+    font-family: var(--sans); line-height: 1;
+  }
+  .delete-btn:hover { background: #FDECEC; color: #C0392B; }
+  .delete-btn:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; }
+
+  .guest-row {
+    margin-top: 30px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+  }
+  .guest-row input {
+    padding: 10px 14px; border-radius: 8px; border: 1px solid #D7E1F5;
+    font-size: 14px; font-family: var(--sans); width: 220px;
+  }
+  .guest-row button {
+    padding: 10px 18px; border-radius: 8px; border: none; background: var(--navy);
+    color: white; font-size: 14px; cursor: pointer; font-family: var(--sans);
+  }
+  .guest-row button:hover { background: var(--teal-dk); }
+
+  .reset-row { text-align: center; margin-top: 36px; }
+  .reset-btn {
+    background: none; border: 1px solid #D7E1F5; color: var(--text-muted);
+    padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: var(--sans);
+  }
+  .reset-btn:hover { border-color: #C0392B; color: #C0392B; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { transition: none; }
+  }
+
+  /* ===== Auth overlay ===== */
+  .auth-overlay {
+    position: fixed; inset: 0; background: rgba(10, 14, 33, 0.96);
+    z-index: 9999; display: flex; justify-content: center; align-items: center;
+  }
+  .auth-overlay.hidden { display: none !important; }
+  .auth-modal {
+    background: var(--card); border-radius: 16px; padding: 48px 40px;
+    text-align: center; max-width: 420px; width: 90%;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .auth-modal .auth-kicker {
+    font-size: 12px; letter-spacing: 3px; color: var(--teal-dk);
+    text-transform: uppercase; margin-bottom: 12px; font-weight: 700;
+  }
+  .auth-modal h2 {
+    font-family: var(--serif); font-size: 22px; font-weight: 700;
+    color: var(--navy); margin-bottom: 8px;
+  }
+  .auth-modal p { color: var(--text-muted); font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
+  .auth-error {
+    color: #C0392B; font-size: 13px; margin-top: 16px; padding: 10px 14px;
+    background: #FDECEC; border-radius: 8px; border: 1px solid #F5C6C6;
+  }
+  .auth-error.hidden { display: none; }
+  .auth-loading {
+    color: var(--text-muted); font-size: 14px; margin-top: 20px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .auth-loading.hidden { display: none !important; }
+  .auth-spin {
+    width: 16px; height: 16px; border: 2px solid #D7E1F5;
+    border-top-color: var(--teal); border-radius: 50%;
+    animation: authspin 0.8s linear infinite;
+  }
+  @keyframes authspin { to { transform: rotate(360deg); } }
+  #googleBtnContainer { display: flex; justify-content: center; width: 100%; }
+  #googleBtnContainer.hidden { display: none !important; }
+  .logout-btn {
+    position: fixed; bottom: 20px; right: 24px; z-index: 60;
+    padding: 7px 14px; background: rgba(255,255,255,0.9); border: 1px solid #D7E1F5;
+    color: var(--text-muted); border-radius: 8px; cursor: pointer; font-size: 12px;
+    font-family: var(--sans);
+  }
+  .logout-btn:hover { border-color: #C0392B; color: #C0392B; }
+</style>
+</head>
+<body>
+
+<!-- 權限登入遮罩 -->
+<div id="authOverlay" class="auth-overlay">
+  <div class="auth-modal">
+    <div class="auth-kicker">Taiwan Law Foundation</div>
+    <h2>董事會出席報到系統</h2>
+    <p>請使用授權的 Google 帳號登入<br>以驗證使用權限</p>
+    <div id="googleBtnContainer"></div>
+    <div id="authError" class="auth-error hidden"></div>
+    <div id="authLoading" class="auth-loading hidden">
+      <div class="auth-spin"></div>
+      <span>驗證中，請稍候…</span>
+    </div>
+  </div>
+</div>
+
+<button class="logout-btn" onclick="handleLogout()">登出</button>
+
+<div class="topbar">
+  <div class="info-block">
+    <div class="kicker">財團法人台灣法學基金會</div>
+    <div class="title">第四屆115年度第2次董事會議・出席狀況</div>
+    <div class="sub">民國115年7月17日下午1時・台灣法學基金會(台北市大同區長安西路82號6樓)</div>
+  </div>
+  <div class="clock-block">
+    <svg class="analog-clock" width="64" height="64" viewBox="0 0 100 100">
+      <circle class="face" cx="50" cy="50" r="46" />
+      <line class="tick" x1="50" y1="8" x2="50" y2="14" />
+      <line class="tick" x1="50" y1="86" x2="50" y2="92" />
+      <line class="tick" x1="8" y1="50" x2="14" y2="50" />
+      <line class="tick" x1="86" y1="50" x2="92" y2="50" />
+      <line id="hourHand" class="hand hour-hand" x1="50" y1="50" x2="50" y2="28" />
+      <line id="minuteHand" class="hand minute-hand" x1="50" y1="50" x2="50" y2="18" />
+      <line id="secondHand" class="hand second-hand" x1="50" y1="50" x2="50" y2="14" />
+      <circle class="center-dot" cx="50" cy="50" r="3" />
+    </svg>
+    <div class="clock" id="liveClock">--:--:--</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="top-row">
+    <div class="gauge-wrap">
+      <svg width="240" height="240" viewBox="0 0 240 240">
+        <circle cx="120" cy="120" r="100" fill="none" stroke="#E2E8F0" stroke-width="18" />
+        <circle id="gaugeArc" cx="120" cy="120" r="100" fill="none" stroke="#00B4A6" stroke-width="18"
+          stroke-linecap="round" transform="rotate(-90 120 120)"
+          stroke-dasharray="628" stroke-dashoffset="628" style="transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease;" />
+      </svg>
+      <div class="gauge-label">
+        <div class="count" id="checkedCount">0</div>
+        <div class="total" id="totalLabel">位已出席</div>
+        <div class="quorum-tag not-met" id="quorumTag">尚未達開會人數</div>
+      </div>
+    </div>
+
+    <div class="config-box">
+      <div class="total-line">本屆董事共計 17 人</div>
+      <div>開會法定人數門檻：
+        <input type="number" id="quorumInput" min="1" max="17" value="9" onchange="setQuorum(this.value)">
+        人（可依章程調整）
+      </div>
+    </div>
+  </div>
+
+  <p class="hint">由主持人／工作人員點選<b>已到場</b>的董事姓名；<b>點錯了再點一次即可取消</b></p>
+  <p class="hint" style="margin-top:-12px;"><span id="syncStatus">尚未同步</span>　<a href="#" onclick="loadFromSheet();return false;" style="color:var(--teal-dk);">重新同步</a></p>
+
+  <div class="grid" id="cardGrid"></div>
+
+  <div class="guest-row">
+    <input type="text" id="guestName" placeholder="不在名單上？輸入姓名加入出席">
+    <button onclick="guestCheckIn()">加入</button>
+  </div>
+
+  <div class="reset-row">
+    <button class="reset-btn" onclick="resetAll()">清空本次出席紀錄（下次會議前使用）</button>
+  </div>
+</div>
+
+<button class="sidebar-toggle sidebar-open" id="sidebarToggle" onclick="toggleSidebar()" title="隱藏／顯示議程進度">✕</button>
+<div class="agenda-sidebar" id="agendaSidebar">
+  <div class="agenda-title">會議議程進度</div>
+  <div class="agenda-list" id="agendaList"></div>
+  <div class="agenda-nav">
+    <button id="agendaPrev" onclick="agendaStep(-1)">◀ 上一項</button>
+    <button id="agendaNext" onclick="agendaStep(1)">下一項 ▶</button>
+  </div>
+</div>
+
+<script>
+// ====== 設定區 ======
+const N8N_BASE = "https://mjib007.zeabur.app"; // 你的n8n網址，結尾不要加斜線
+const CHECKIN_URL = N8N_BASE + "/webhook/director-checkin";
+const ATTENDEES_URL = N8N_BASE + "/webhook/director-attendees";
+
+const AUTH_CONFIG = {
+  GOOGLE_CLIENT_ID: "973721313231-0no4ivldu33he0kts8k51kn4tqd979g7.apps.googleusercontent.com",
+  API_CHECK_PERMISSION: N8N_BASE + "/webhook/check-permission",
+  SYSTEM_NAME: "董事會報到系統" // 「會員」工作表中對應的權限欄位名稱
+};
+// ====================
+
+let currentUser = null;
+
+function initGoogleLogin() {
+  if (typeof google === "undefined" || !google.accounts) {
+    setTimeout(initGoogleLogin, 300);
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: AUTH_CONFIG.GOOGLE_CLIENT_ID,
+    callback: onGoogleCredential,
+    auto_select: false
+  });
+  google.accounts.id.renderButton(
+    document.getElementById("googleBtnContainer"),
+    { theme: "outline", size: "large", width: 280 }
+  );
+}
+
+async function onGoogleCredential(response) {
+  const payload = parseJwt(response.credential);
+  currentUser = { email: payload.email, name: payload.name };
+  sessionStorage.setItem("boardUser", JSON.stringify(currentUser));
+  await checkPermission(currentUser.email);
+}
+
+function parseJwt(token) {
+  const base64Url = token.split(".")[1];
+  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  const jsonPayload = decodeURIComponent(
+    atob(base64).split("").map(c =>
+      "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join("")
+  );
+  return JSON.parse(jsonPayload);
+}
+
+async function checkPermission(email) {
+  setAuthLoading(true);
+  hideAuthError();
+  try {
+    const res = await fetch(AUTH_CONFIG.API_CHECK_PERMISSION, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, system: AUTH_CONFIG.SYSTEM_NAME })
+    });
+    const data = await res.json();
+    if (data.success && data.hasPermission) {
+      document.getElementById("authOverlay").classList.add("hidden");
+      startApp(); // 通過驗證才啟動主程式與載入資料
+    } else {
+      showAuthError(`帳號 ${email} 無「${AUTH_CONFIG.SYSTEM_NAME}」存取權限`);
+      sessionStorage.removeItem("boardUser");
+      currentUser = null;
+    }
+  } catch (e) {
+    showAuthError("系統驗證失敗，請稍後再試");
+    sessionStorage.removeItem("boardUser");
+    currentUser = null;
+  } finally {
+    setAuthLoading(false);
+  }
+}
+
+function setAuthLoading(show) {
+  document.getElementById("authLoading").classList.toggle("hidden", !show);
+  document.getElementById("googleBtnContainer").classList.toggle("hidden", show);
+}
+function showAuthError(msg) {
+  const el = document.getElementById("authError");
+  el.textContent = msg;
+  el.classList.remove("hidden");
+}
+function hideAuthError() {
+  document.getElementById("authError").classList.add("hidden");
+}
+function handleLogout() {
+  sessionStorage.removeItem("boardUser");
+  location.reload();
+}
+
+const MEMBERS = [
+  { id: "D001", name: "謝哲勝", role: "董事長" },
+  { id: "D002", name: "吳寶田", role: "副董事長" },
+  { id: "D003", name: "吳小燕", role: "副董事長" },
+  { id: "D004", name: "林家祺", role: "副董事長" },
+  { id: "D005", name: "林敏雄", role: "常務董事" },
+  { id: "D006", name: "楊岳虎", role: "董事" },
+  { id: "D007", name: "于俊明", role: "董事" },
+  { id: "D008", name: "許兆慶", role: "董事" },
+  { id: "D009", name: "錢世傑", role: "董事（執行長）" },
+  { id: "D010", name: "趙之敏", role: "董事" },
+  { id: "D011", name: "蔡鐘慶", role: "董事" },
+  { id: "D012", name: "黃維民", role: "董事" },
+  { id: "D013", name: "張靜怡", role: "董事" },
+  { id: "D014", name: "李兆環", role: "董事" },
+  { id: "D015", name: "林洲富", role: "董事" },
+  { id: "D016", name: "李金松", role: "董事" },
+  { id: "D017", name: "劉文珍", role: "董事" },
+];
+const AGENDA = [
+  "宣讀第1次董事會議紀錄",
+  "主席報告",
+  "報告事項一：115年度工作報告及經費決算",
+  "報告事項二：各中心報告（11中心）",
+  "討論事項",
+  "臨時動議／散會",
+];
+const CIRC = 628; // 2 * pi * 100
+const LS_KEY = "board-115-2-attendance-cloud";
+
+// checkins以編號為key：{ D001: "2026-07-17 13:02:15", ... }
+// guests為本機列席人員（不寫入Google Sheet）
+let state = { checkins: {}, guests: {}, guestOrder: [], quorum: 9, agendaIndex: 0, sidebarHidden: false };
+let quorumWasMet = false;
+let pendingIds = new Set(); // 傳送中防止連點
+
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      state.quorum = parsed.quorum || 9;
+      state.agendaIndex = parsed.agendaIndex || 0;
+      state.sidebarHidden = !!parsed.sidebarHidden;
+      state.guests = parsed.guests || {};
+      state.guestOrder = parsed.guestOrder || [];
+    }
+  } catch (e) { /* 忽略 */ }
+}
+
+function saveLocal() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      quorum: state.quorum, agendaIndex: state.agendaIndex,
+      sidebarHidden: state.sidebarHidden,
+      guests: state.guests, guestOrder: state.guestOrder
+    }));
+  } catch (e) { /* 忽略 */ }
+}
+
+function fmtTimeFromSheet(str) {
+  // Sheet存的是 "2026-07-17 13:02:15"，取時:分顯示
+  if (!str) return "";
+  const m = str.match(/(\d{2}):(\d{2}):\d{2}/);
+  return m ? `${m[1]}:${m[2]}` : str;
+}
+
+function speak(text) {
+  try {
+    if (!("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "zh-TW";
+    utter.rate = 0.95;
+    utter.pitch = 1;
+    window.speechSynthesis.speak(utter);
+  } catch (e) { /* 忽略 */ }
+}
+
+function celebrateQuorum() {
+  document.body.classList.remove("celebrate");
+  void document.body.offsetWidth;
+  document.body.classList.add("celebrate");
+  speak("已達開會法定人數，會議可以正式開始。");
+}
+
+function setQuorum(val) {
+  const n = Math.max(1, Math.min(17, parseInt(val, 10) || 9));
+  state.quorum = n;
+  saveLocal();
+  render();
+}
+
+function setSyncStatus(text, isError) {
+  const el = document.getElementById("syncStatus");
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = isError ? "#C0392B" : "var(--text-muted)";
+}
+
+// 從Google Sheet載入全部出席狀態
+async function loadFromSheet() {
+  setSyncStatus("同步中…", false);
+  try {
+    const res = await fetch(ATTENDEES_URL);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    const newCheckins = {};
+    (data.directors || []).forEach(d => {
+      if (d.出席狀態 === "YES") {
+        newCheckins[d.編號] = d.報到時間 || "";
+      }
+    });
+    state.checkins = newCheckins;
+    setSyncStatus("已同步 Google Sheet（" + (data.generatedAt || "") + "）", false);
+  } catch (e) {
+    setSyncStatus("⚠ 無法連線後端，請確認網路與n8n工作流已啟用", true);
+  }
+  render();
+}
+
+// 點選人名：呼叫Webhook切換出席
+async function toggle(memberId) {
+  const member = MEMBERS.find(m => m.id === memberId);
+  if (!member) { toggleGuest(memberId); return; }
+  if (pendingIds.has(memberId)) return; // 傳送中，忽略連點
+  pendingIds.add(memberId);
+  render();
+
+  const isCheckedIn = !!state.checkins[memberId];
+  const action = isCheckedIn ? "cancel" : "checkin";
+  try {
+    const res = await fetch(CHECKIN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 編號: memberId, action })
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    if (data.出席狀態 === "YES") {
+      state.checkins[memberId] = data.報到時間 || "";
+    } else {
+      delete state.checkins[memberId];
+    }
+    setSyncStatus("已寫入 Google Sheet", false);
+  } catch (e) {
+    setSyncStatus("⚠ 寫入失敗，請重試（確認n8n工作流已啟用）", true);
+  }
+  pendingIds.delete(memberId);
+  render();
+}
+
+// 列席人員僅記錄在本機，不寫入Google Sheet
+function toggleGuest(name) {
+  if (state.guests[name]) {
+    delete state.guests[name];
+  } else {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    state.guests[name] = `${hh}:${mm}`;
+  }
+  saveLocal();
+  render();
+}
+
+function guestCheckIn() {
+  const input = document.getElementById("guestName");
+  const name = input.value.trim();
+  if (!name) return;
+  if (!state.guestOrder.includes(name)) state.guestOrder.push(name);
+  if (!state.guests[name]) {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    state.guests[name] = `${hh}:${mm}`;
+  }
+  saveLocal();
+  input.value = "";
+  render();
+}
+
+async function resetAll() {
+  if (!confirm("確定要清空本次所有出席紀錄嗎？將逐一清除Google Sheet上的出席註記，此動作無法復原。")) return;
+  setSyncStatus("清除中，請稍候…", false);
+  for (const id of Object.keys(state.checkins)) {
+    try {
+      await fetch(CHECKIN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 編號: id, action: "cancel" })
+      });
+    } catch (e) { /* 個別失敗略過 */ }
+  }
+  state.checkins = {};
+  state.guests = {};
+  state.guestOrder = [];
+  state.agendaIndex = 0;
+  quorumWasMet = false;
+  saveLocal();
+  setSyncStatus("已清空", false);
+  render();
+}
+
+function removeGuest(name) {
+  delete state.guests[name];
+  state.guestOrder = state.guestOrder.filter(n => n !== name);
+  saveLocal();
+  render();
+}
+
+function toggleSidebar() {
+  state.sidebarHidden = !state.sidebarHidden;
+  saveLocal();
+  renderSidebar();
+}
+
+function agendaStep(delta) {
+  const next = state.agendaIndex + delta;
+  if (next < 0 || next >= AGENDA.length) return;
+  state.agendaIndex = next;
+  saveLocal();
+  renderAgenda();
+}
+
+function renderSidebar() {
+  const panel = document.getElementById("agendaSidebar");
+  const toggleBtn = document.getElementById("sidebarToggle");
+  if (state.sidebarHidden) {
+    panel.classList.add("hidden");
+    document.body.classList.add("no-sidebar");
+    toggleBtn.classList.remove("sidebar-open");
+    toggleBtn.textContent = "☰";
+    toggleBtn.title = "顯示議程進度";
+  } else {
+    panel.classList.remove("hidden");
+    document.body.classList.remove("no-sidebar");
+    toggleBtn.classList.add("sidebar-open");
+    toggleBtn.textContent = "✕";
+    toggleBtn.title = "隱藏議程進度";
+  }
+}
+
+function renderAgenda() {
+  const list = document.getElementById("agendaList");
+  list.innerHTML = "";
+  AGENDA.forEach((text, i) => {
+    const row = document.createElement("div");
+    let cls = "agenda-item";
+    if (i < state.agendaIndex) cls += " done";
+    if (i === state.agendaIndex) cls += " current";
+    row.className = cls;
+    row.innerHTML = `<span class="num">${i + 1}</span><span>${text}</span>`;
+    list.appendChild(row);
+  });
+  document.getElementById("agendaPrev").disabled = state.agendaIndex <= 0;
+  document.getElementById("agendaNext").disabled = state.agendaIndex >= AGENDA.length - 1;
+}
+
+function render() {
+  document.getElementById("quorumInput").value = state.quorum;
+
+  const grid = document.getElementById("cardGrid");
+  grid.innerHTML = "";
+  const allEntries = [
+    ...MEMBERS.map(m => ({ ...m, isGuest: false })),
+    ...state.guestOrder.map(n => ({ id: n, name: n, role: "列席人員（僅本機）", isGuest: true }))
+  ];
+  allEntries.forEach(m => {
+    const timeVal = m.isGuest ? state.guests[m.name] : state.checkins[m.id];
+    const done = !!timeVal;
+    const isPending = pendingIds.has(m.id);
+    const card = document.createElement("button");
+    card.className = "card" + (done ? " done" : "");
+    card.setAttribute("aria-pressed", done ? "true" : "false");
+    card.disabled = isPending;
+    card.onclick = () => toggle(m.id);
+    const displayTime = m.isGuest ? timeVal : fmtTimeFromSheet(timeVal);
+    card.innerHTML = `
+      ${m.isGuest ? '<span class="delete-btn" title="移除此人員" role="button" tabindex="0">✕</span>' : ''}
+      ${done ? '<div class="checkmark">✓</div>' : ''}
+      <div class="role">${m.role}</div>
+      <div class="name">${m.name}</div>
+      <div class="status">${isPending ? "傳送中…" : (done ? "已出席 " + displayTime : "點選確認出席")}</div>
+    `;
+    if (m.isGuest) {
+      const delBtn = card.querySelector(".delete-btn");
+      delBtn.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        removeGuest(m.name);
+      });
+      delBtn.addEventListener("keydown", (ev) => {
+        if (ev.key === "Enter" || ev.key === " ") {
+          ev.preventDefault();
+          ev.stopPropagation();
+          removeGuest(m.name);
+        }
+      });
+    }
+    grid.appendChild(card);
+  });
+
+  // 出席人數僅計算董事（Google Sheet來源），列席人員不列入法定人數
+  const count = Object.keys(state.checkins).length;
+  document.getElementById("checkedCount").textContent = count;
+
+  const pct = Math.min(1, count / state.quorum);
+  const offset = CIRC * (1 - pct);
+  const arc = document.getElementById("gaugeArc");
+  arc.setAttribute("stroke-dashoffset", offset);
+  arc.setAttribute("stroke", count >= state.quorum ? "#00B4A6" : "#C9A227");
+
+  const tag = document.getElementById("quorumTag");
+  const isMet = count >= state.quorum;
+  if (isMet) {
+    tag.textContent = "已達開會人數";
+    tag.className = "quorum-tag met";
+  } else {
+    tag.textContent = `尚差 ${state.quorum - count} 人達開會人數`;
+    tag.className = "quorum-tag not-met";
+  }
+
+  if (isMet && !quorumWasMet) {
+    celebrateQuorum();
+  }
+  quorumWasMet = isMet;
+
+  renderAgenda();
+  renderSidebar();
+}
+
+function updateClock() {
+  const now = new Date();
+  const weekday = ["日", "一", "二", "三", "四", "五", "六"][now.getDay()];
+  const y = now.getFullYear(), m = now.getMonth() + 1, d = now.getDate();
+  const hours = now.getHours(), mins = now.getMinutes(), secs = now.getSeconds();
+  const hh = String(hours).padStart(2, "0");
+  const mm = String(mins).padStart(2, "0");
+  const ss = String(secs).padStart(2, "0");
+  document.getElementById("liveClock").textContent = `${y}/${m}/${d}（週${weekday}） ${hh}:${mm}:${ss}`;
+
+  const secDeg = secs * 6;
+  const minDeg = mins * 6 + secs * 0.1;
+  const hourDeg = (hours % 12) * 30 + mins * 0.5;
+  document.getElementById("secondHand").setAttribute("transform", `rotate(${secDeg} 50 50)`);
+  document.getElementById("minuteHand").setAttribute("transform", `rotate(${minDeg} 50 50)`);
+  document.getElementById("hourHand").setAttribute("transform", `rotate(${hourDeg} 50 50)`);
+}
+
+function startApp() {
+  loadLocal();
+  render();
+  loadFromSheet();
+}
+
+window.addEventListener("load", async () => {
+  updateClock();
+  setInterval(updateClock, 1000);
+  initGoogleLogin();
+  const session = sessionStorage.getItem("boardUser");
+  if (session) {
+    currentUser = JSON.parse(session);
+    await checkPermission(currentUser.email);
+  }
+});
+</script>
+</body>
+</html>
