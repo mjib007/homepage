@@ -527,10 +527,16 @@ async function toggle(memberId) {
     const res = await fetch(CHECKIN_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 編號: memberId, action })
+      body: JSON.stringify({ 編號: memberId, action, email: currentUser ? currentUser.email : "" })
     });
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
+    if (data.status === "forbidden") {
+      setSyncStatus("⚠ 權限已失效，請重新登入", true);
+      pendingIds.delete(memberId);
+      render();
+      return;
+    }
     if (data.出席狀態 === "YES") {
       state.checkins[memberId] = data.報到時間 || "";
     } else {
@@ -552,7 +558,7 @@ async function resetAll() {
       await fetch(CHECKIN_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 編號: id, action: "cancel" })
+        body: JSON.stringify({ 編號: id, action: "cancel", email: currentUser ? currentUser.email : "" })
       });
     } catch (e) { /* 個別失敗略過 */ }
   }
