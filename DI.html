@@ -54,11 +54,12 @@
 
   /* Agenda sidebar */
   .agenda-sidebar {
-    position: fixed; top: 0; right: 0; height: 100vh; width: 240px;
+    position: fixed; top: var(--topbar-h, 100px); right: 0;
+    height: calc(100vh - var(--topbar-h, 100px)); width: 240px;
     background: var(--navy-dk); color: white; padding: 28px 20px;
     display: flex; flex-direction: column; z-index: 50;
     box-shadow: -4px 0 16px rgba(0,0,0,0.12);
-    transition: transform 0.3s;
+    transition: transform 0.3s, top 0.2s, height 0.2s;
   }
   .agenda-sidebar.hidden { transform: translateX(100%); }
   .agenda-sidebar .agenda-title {
@@ -88,9 +89,10 @@
   .agenda-nav button:hover { background: rgba(255,255,255,0.1); }
   .agenda-nav button:disabled { opacity: 0.3; cursor: default; }
   .sidebar-toggle {
-    position: fixed; top: 24px; right: 24px; z-index: 60;
+    position: fixed; top: 50%; right: 24px; transform: translateY(-50%); z-index: 60;
     background: var(--navy-dk); color: white; border: 1px solid rgba(255,255,255,0.2);
     width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 16px;
+    transition: right 0.3s;
   }
   .sidebar-toggle.sidebar-open { right: 264px; }
 
@@ -679,6 +681,14 @@ function updateClock() {
   document.getElementById("secondHand").setAttribute("transform", `rotate(${secDeg} 50 50)`);
   document.getElementById("minuteHand").setAttribute("transform", `rotate(${minDeg} 50 50)`);
   document.getElementById("hourHand").setAttribute("transform", `rotate(${hourDeg} 50 50)`);
+  updateTopbarHeight();
+}
+
+function updateTopbarHeight() {
+  const topbar = document.querySelector(".topbar");
+  if (topbar) {
+    document.documentElement.style.setProperty("--topbar-h", topbar.offsetHeight + "px");
+  }
 }
 
 function startApp() {
@@ -688,6 +698,7 @@ function startApp() {
 }
 
 window.addEventListener("load", async () => {
+  updateTopbarHeight();
   updateClock();
   setInterval(updateClock, 1000);
   initGoogleLogin();
@@ -697,6 +708,7 @@ window.addEventListener("load", async () => {
     await checkPermission(currentUser.email);
   }
 });
+window.addEventListener("resize", updateTopbarHeight);
 </script>
 </body>
 </html>
