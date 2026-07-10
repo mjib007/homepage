@@ -595,10 +595,12 @@ function addChatMessage(content, type) {
   const div = document.createElement("div");
   div.className = "chat-msg " + type;
 
-  const linkified = content.replace(
-    /(https?:\/\/[^\s<>"]+)/g,
-    '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:var(--teal-dk);text-decoration:underline;font-weight:600;">$1</a>'
-  );
+  const linkified = content
+    .replace(
+      /(https?:\/\/[^\s<>"]+)/g,
+      '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:var(--teal-dk);text-decoration:underline;font-weight:600;">$1</a>'
+    )
+    .replace(/\n/g, "<br>");
 
   if (type === "bot") {
     div.innerHTML = `<div class="chat-msg-content">${linkified}<button class="chat-voice-btn" title="語音播放">🔊</button></div>`;
