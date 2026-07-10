@@ -169,6 +169,72 @@
     .card { transition: none; }
   }
 
+  /* ===== AI會務問答 ===== */
+  .chat-btn {
+    position: fixed; bottom: 28px; right: 28px; width: 60px; height: 60px;
+    background: var(--navy); border: none; border-radius: 50%; color: white;
+    font-size: 26px; cursor: pointer; box-shadow: 0 8px 24px rgba(30,39,97,0.35);
+    z-index: 70; transition: transform 0.2s, box-shadow 0.2s;
+    display: none; align-items: center; justify-content: center;
+  }
+  .chat-btn.visible { display: flex; }
+  .chat-btn:hover { transform: scale(1.08); box-shadow: 0 10px 28px rgba(30,39,97,0.45); }
+
+  .chat-overlay {
+    position: fixed; inset: 0; background: rgba(10,14,33,0.55);
+    z-index: 200; display: none; backdrop-filter: blur(4px);
+  }
+  .chat-overlay.open { display: block; }
+
+  .chat-window {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 72vh;
+    background: var(--bg); border-radius: 22px 22px 0 0; padding: 22px 20px 18px;
+    display: flex; flex-direction: column;
+    animation: chatSlideUp 0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+  @keyframes chatSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  .chat-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px; padding-bottom: 12px; border-bottom: 2px solid #E2E8F0;
+  }
+  .chat-title { font-family: var(--serif); font-size: 17px; font-weight: 700; color: var(--navy); }
+  .chat-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted); padding: 4px; }
+  .chat-close:hover { color: var(--navy); }
+
+  .chat-messages { flex: 1; overflow-y: auto; padding: 4px 2px 10px; }
+  .chat-msg { margin-bottom: 12px; display: flex; }
+  .chat-msg.user { justify-content: flex-end; }
+  .chat-msg-content {
+    max-width: 82%; padding: 11px 15px; border-radius: 16px; font-size: 14.5px; line-height: 1.55;
+    position: relative;
+  }
+  .chat-msg.user .chat-msg-content { background: var(--navy); color: white; border-bottom-right-radius: 6px; }
+  .chat-msg.bot .chat-msg-content { background: var(--card); color: var(--text-dk); border-bottom-left-radius: 6px; box-shadow: 0 1px 4px rgba(20,27,73,0.08); padding-right: 38px; }
+  .chat-voice-btn {
+    position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--teal); border: none; color: white; font-size: 11px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .chat-voice-btn:hover { background: var(--teal-dk); }
+
+  .chat-input-row { display: flex; gap: 10px; align-items: center; padding-top: 6px; }
+  .chat-input-row input {
+    flex: 1; padding: 12px 16px; border: 2px solid #E2E8F0; border-radius: 22px;
+    font-size: 14.5px; outline: none; font-family: var(--sans);
+  }
+  .chat-input-row input:focus { border-color: var(--teal); }
+  .chat-send-btn {
+    width: 44px; height: 44px; border-radius: 50%; background: var(--teal); color: white;
+    border: none; font-size: 16px; cursor: pointer; flex-shrink: 0;
+  }
+  .chat-send-btn:hover { background: var(--teal-dk); }
+  .chat-send-btn:disabled { opacity: 0.5; cursor: default; }
+
+  @media (min-width: 700px) {
+    .chat-window { max-width: 460px; left: auto; right: 24px; bottom: 24px; border-radius: 20px; height: 65vh; box-shadow: 0 12px 40px rgba(0,0,0,0.25); }
+  }
+
   /* ===== Auth overlay ===== */
   .auth-overlay {
     position: fixed; inset: 0; background: rgba(10, 14, 33, 0.96);
@@ -269,6 +335,28 @@
   </div>
 </div>
 
+<!-- AI會務問答 -->
+<button class="chat-btn" id="chatBtn" onclick="openChat()" title="AI會務問答">🤖</button>
+<div class="chat-overlay" id="chatOverlay">
+  <div class="chat-window">
+    <div class="chat-header">
+      <div class="chat-title">🏛️ 董事會會務小助手</div>
+      <button class="chat-close" onclick="closeChat()">×</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg bot">
+        <div class="chat-msg-content">
+          您好，我是台灣法學基金會董事會會務問答小助手。可以問我基金會基本資訊，或歷次會議的提案與決議內容。
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="輸入您的問題…" onkeypress="handleChatKeyPress(event)">
+      <button class="chat-send-btn" id="chatSendBtn" onclick="sendChatMessage()">➤</button>
+    </div>
+  </div>
+</div>
+
 <div class="wrap">
   <div class="top-row">
     <div class="gauge-wrap">
@@ -319,6 +407,7 @@
 const N8N_BASE = "https://mjib007.zeabur.app"; // 你的n8n網址，結尾不要加斜線
 const CHECKIN_URL = N8N_BASE + "/webhook/director-checkin";
 const ATTENDEES_URL = N8N_BASE + "/webhook/director-attendees";
+const BOARD_CHAT_URL = N8N_BASE + "/webhook/board-chat";
 
 const AUTH_CONFIG = {
   GOOGLE_CLIENT_ID: "973721313231-0no4ivldu33he0kts8k51kn4tqd979g7.apps.googleusercontent.com",
@@ -487,6 +576,94 @@ function celebrateQuorum() {
   void document.body.offsetWidth;
   document.body.classList.add("celebrate");
   speak("已達開會法定人數，會議可以正式開始。");
+}
+
+/* ====== AI會務問答 ====== */
+function openChat() {
+  document.getElementById("chatOverlay").classList.add("open");
+  document.getElementById("chatInput").focus();
+}
+function closeChat() {
+  document.getElementById("chatOverlay").classList.remove("open");
+}
+function handleChatKeyPress(e) {
+  if (e.key === "Enter") sendChatMessage();
+}
+
+function addChatMessage(content, type) {
+  const wrap = document.getElementById("chatMessages");
+  const div = document.createElement("div");
+  div.className = "chat-msg " + type;
+
+  const linkified = content.replace(
+    /(https?:\/\/[^\s<>"]+)/g,
+    '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:var(--teal-dk);text-decoration:underline;font-weight:600;">$1</a>'
+  );
+
+  if (type === "bot") {
+    div.innerHTML = `<div class="chat-msg-content">${linkified}<button class="chat-voice-btn" title="語音播放">🔊</button></div>`;
+    const btn = div.querySelector(".chat-voice-btn");
+    btn.addEventListener("click", () => speakChatText(content, btn));
+  } else {
+    div.innerHTML = `<div class="chat-msg-content">${linkified}</div>`;
+  }
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+function speakChatText(text, btn) {
+  try {
+    if (!("speechSynthesis" in window)) return;
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      btn.textContent = "🔊";
+      return;
+    }
+    const clean = text.replace(/<[^>]*>/g, "");
+    const utter = new SpeechSynthesisUtterance(clean);
+    utter.lang = "zh-TW";
+    utter.rate = 0.95;
+    utter.pitch = 1;
+    btn.textContent = "⏹";
+    utter.onend = () => { btn.textContent = "🔊"; };
+    utter.onerror = () => { btn.textContent = "🔊"; };
+    window.speechSynthesis.speak(utter);
+  } catch (e) { /* 忽略 */ }
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById("chatInput");
+  const sendBtn = document.getElementById("chatSendBtn");
+  const message = input.value.trim();
+  if (!message) return;
+
+  addChatMessage(message, "user");
+  input.value = "";
+  sendBtn.disabled = true;
+
+  try {
+    const res = await fetch(BOARD_CHAT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message,
+        email: currentUser ? currentUser.email : "",
+        sessionId: currentUser ? currentUser.email : "guest"
+      })
+    });
+    const data = await res.json();
+    if (data.status === "forbidden") {
+      addChatMessage("⚠ 無操作權限，請確認登入帳號後再試一次。", "bot");
+    } else if (data.response) {
+      addChatMessage(data.response, "bot");
+    } else {
+      addChatMessage("抱歉，暫時無法取得回應，請稍後再試。", "bot");
+    }
+  } catch (e) {
+    addChatMessage("抱歉，AI小助手暫時無法連線，請稍後再試。", "bot");
+  } finally {
+    sendBtn.disabled = false;
+  }
 }
 
 function setQuorum(val) {
@@ -712,6 +889,7 @@ function startApp() {
   loadLocal();
   render();
   loadFromSheet();
+  document.getElementById("chatBtn").classList.add("visible");
 }
 
 window.addEventListener("load", async () => {
