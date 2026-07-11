@@ -174,10 +174,11 @@
     position: fixed; bottom: 28px; right: 28px; width: 60px; height: 60px;
     background: var(--navy); border: none; border-radius: 50%; color: white;
     font-size: 26px; cursor: pointer; box-shadow: 0 8px 24px rgba(30,39,97,0.35);
-    z-index: 70; transition: transform 0.2s, box-shadow 0.2s;
+    z-index: 55; transition: transform 0.2s, box-shadow 0.2s, right 0.3s;
     display: none; align-items: center; justify-content: center;
   }
   .chat-btn.visible { display: flex; }
+  .chat-btn.sidebar-open { right: 268px; }
   .chat-btn:hover { transform: scale(1.08); box-shadow: 0 10px 28px rgba(30,39,97,0.45); }
 
   .chat-overlay {
@@ -777,18 +778,21 @@ function agendaStep(delta) {
 function renderSidebar() {
   const panel = document.getElementById("agendaSidebar");
   const toggleBtn = document.getElementById("sidebarToggle");
+  const chatBtn = document.getElementById("chatBtn");
   if (state.sidebarHidden) {
     panel.classList.add("hidden");
     document.body.classList.add("no-sidebar");
     toggleBtn.classList.remove("sidebar-open");
     toggleBtn.textContent = "☰";
     toggleBtn.title = "顯示議程進度";
+    chatBtn.classList.remove("sidebar-open");
   } else {
     panel.classList.remove("hidden");
     document.body.classList.remove("no-sidebar");
     toggleBtn.classList.add("sidebar-open");
     toggleBtn.textContent = "✕";
     toggleBtn.title = "隱藏議程進度";
+    chatBtn.classList.add("sidebar-open");
   }
 }
 
