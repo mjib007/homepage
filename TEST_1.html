@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>資料搜尋介面（示範版）</title>
+<style>
+  :root {
+    --ink: #1c1d1f;
+    --paper: #fafaf8;
+    --line: #d8d5cd;
+    --accent: #2f5233;
+    --accent-soft: #e8efe9;
+    --muted: #6b6b66;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 32px 20px 60px;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; }
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  h1 { font-size: 22px; margin: 0; letter-spacing: 0.02em; }
+  .subtitle { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .status { font-size: 12px; color: var(--muted); }
+  .status.err { color: #a33; }
+  .controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  input[type="text"], select {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--ink);
+  }
+  input[type="text"] { flex: 1 1 240px; }
+  select { flex: 0 0 auto; }
+  input[type="text"]:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    background: #fff;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  th {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+  }
+  tbody tr:hover { background: #f3f2ee; }
+  .table-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+  .count { font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
+  .empty { padding: 40px; text-align: center; color: var(--muted); font-size: 14px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+  }
+  .badge.yes { background: #e6f4ea; color: #1e6b34; }
+  .badge.no { background: #f2f2f0; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>董事出席資料查詢（示範版）</h1>
+      <div class="subtitle">資料來源：Google Sheets「TEST」分頁，即時讀取</div>
+    </div>
+    <div id="status" class="status">讀取中…</div>
+  </header>
+
+  <div class="controls">
+    <input type="text" id="keyword" placeholder="輸入姓名、職稱、屆別關鍵字搜尋…">
+    <select id="filterTitle">
+      <option value="">全部職稱</option>
+    </select>
+    <select id="filterAttend">
+      <option value="">全部出席狀態</option>
+      <option value="YES">已出席</option>
+      <option value="EMPTY">尚未報到</option>
+    </select>
+  </div>
+
+  <div class="count" id="count"></div>
+
+  <div class="table-scroll">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>編號</th>
+          <th>姓名</th>
+          <th>職稱</th>
+          <th>屆別</th>
+          <th>會議屆次</th>
+          <th>報到時間</th>
+          <th>出席狀態</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ====== 設定區 ======
+const SHEET_ID = "1p28kc4yAF6BBkJ2dMpybC4dFGqyDSc9LbVNVuej1ds0";
+const GID = "0"; // TEST 分頁
+const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+// ====================
+
+let allRows = [];
+
+function parseCSV(text) {
+  // 簡易 CSV 解析，支援雙引號內含逗號的情況
+  const rows = [];
+  let row = [], field = "", inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++; }
+        else { inQuotes = false; }
+      } else {
+        field += c;
+      }
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ""; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ""; }
+      else if (c === '\r') { /* skip */ }
+      else field += c;
+    }
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(v => v.trim() !== ""));
+}
+
+function renderTable(rows) {
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  if (rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty">沒有符合條件的資料</td></tr>`;
+    return;
+  }
+  for (const r of rows) {
+    const tr = document.createElement("tr");
+    const attend = r["出席狀態"] === "YES"
+      ? `<span class="badge yes">已出席</span>`
+      : `<span class="badge no">尚未報到</span>`;
+    tr.innerHTML = `
+      <td>${r["編號"] || ""}</td>
+      <td>${r["姓名"] || ""}</td>
+      <td>${r["職稱"] || ""}</td>
+      <td>${r["屆別"] || ""}</td>
+      <td>${r["會議屆次"] || ""}</td>
+      <td>${r["報到時間"] || ""}</td>
+      <td>${attend}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+function applyFilters() {
+  const kw = document.getElementById("keyword").value.trim().toLowerCase();
+  const titleFilter = document.getElementById("filterTitle").value;
+  const attendFilter = document.getElementById("filterAttend").value;
+
+  const filtered = allRows.filter(r => {
+    if (titleFilter && r["職稱"] !== titleFilter) return false;
+    if (attendFilter === "YES" && r["出席狀態"] !== "YES") return false;
+    if (attendFilter === "EMPTY" && r["出席狀態"] === "YES") return false;
+    if (kw) {
+      const hay = [r["姓名"], r["職稱"], r["屆別"], r["會議屆次"]].join(" ").toLowerCase();
+      if (!hay.includes(kw)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById("count").textContent = `共 ${filtered.length} 筆（總計 ${allRows.length} 筆）`;
+  renderTable(filtered);
+}
+
+function populateTitleFilter() {
+  const titles = [...new Set(allRows.map(r => r["職稱"]).filter(Boolean))];
+  const sel = document.getElementById("filterTitle");
+  for (const t of titles) {
+    const opt = document.createElement("option");
+    opt.value = t;
+    opt.textContent = t;
+    sel.appendChild(opt);
+  }
+}
+
+async function load() {
+  const statusEl = document.getElementById("status");
+  try {
+    const res = await fetch(CSV_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    const headers = rows[0];
+    allRows = rows.slice(1).map(r => {
+      const obj = {};
+      headers.forEach((h, i) => obj[h] = r[i] || "");
+      return obj;
+    });
+    populateTitleFilter();
+    applyFilters();
+    statusEl.textContent = `已載入 ${allRows.length} 筆資料`;
+    statusEl.className = "status";
+  } catch (e) {
+    statusEl.textContent = "讀取失敗，請確認試算表分享設定（需設為「知道連結的人可檢視」）";
+    statusEl.className = "status err";
+    document.getElementById("tbody").innerHTML =
+      `<tr><td colspan="7" class="empty">無法讀取資料：${e.message}</td></tr>`;
+  }
+}
+
+document.getElementById("keyword").addEventListener("input", applyFilters);
+document.getElementById("filterTitle").addEventListener("change", applyFilters);
+document.getElementById("filterAttend").addEventListener("change", applyFilters);
+
+load();
+</script>
+</body>
+</html>
