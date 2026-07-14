@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>董事捐款查詢（限定人員）</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root {
+    --navy: #1E2761;
+    --navy-dk: #141B49;
+    --ice: #CADCFC;
+    --teal: #00B4A6;
+    --teal-dk: #00857A;
+    --bg: #F4F7FD;
+    --card: #FFFFFF;
+    --text-dk: #1E293B;
+    --text-muted: #64748B;
+    --line: #E2E8F0;
+    --serif: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+    --sans: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text-dk);
+    min-height: 100vh;
+  }
+
+  /* ===== 登入遮罩（與主系統一致的樣式） ===== */
+  .auth-overlay {
+    position: fixed; inset: 0; background: rgba(10, 14, 33, 0.96);
+    z-index: 9999; display: flex; justify-content: center; align-items: center;
+  }
+  .auth-overlay.hidden { display: none !important; }
+  .auth-modal {
+    background: var(--card); border-radius: 16px; padding: 48px 40px;
+    text-align: center; max-width: 420px; width: 90%;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .auth-modal .auth-kicker {
+    font-size: 12px; letter-spacing: 3px; color: var(--teal-dk);
+    text-transform: uppercase; margin-bottom: 12px; font-weight: 700;
+  }
+  .auth-modal h2 {
+    font-family: var(--serif); font-size: 22px; font-weight: 700;
+    color: var(--navy); margin-bottom: 8px;
+  }
+  .auth-modal p { color: var(--text-muted); font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
+  .auth-error {
+    color: #C0392B; font-size: 13px; margin-top: 16px; padding: 10px 14px;
+    background: #FDECEC; border-radius: 8px; border: 1px solid #F5C6C6;
+  }
+  .auth-error.hidden { display: none; }
+  .auth-loading {
+    color: var(--text-muted); font-size: 14px; margin-top: 20px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .auth-loading.hidden { display: none !important; }
+  .auth-spin {
+    width: 16px; height: 16px; border: 2px solid #D7E1F5;
+    border-top-color: var(--teal); border-radius: 50%;
+    animation: authspin 0.8s linear infinite;
+  }
+  @keyframes authspin { to { transform: rotate(360deg); } }
+  #googleBtnContainer { display: flex; justify-content: center; width: 100%; }
+  #googleBtnContainer.hidden { display: none !important; }
+
+  /* ===== 主畫面 ===== */
+  .topbar {
+    padding: 22px 32px; background: var(--navy); color: white;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  }
+  .topbar .kicker { font-size: 12px; letter-spacing: 2px; color: var(--ice); text-transform: uppercase; }
+  .topbar .title { font-family: var(--serif); font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .topbar .sub { font-size: 12.5px; color: var(--ice); margin-top: 6px; }
+  .topbar-actions { display: flex; align-items: center; gap: 12px; }
+  .back-link {
+    color: var(--ice); font-size: 13px; text-decoration: none; border: 1px solid rgba(255,255,255,0.3);
+    padding: 7px 14px; border-radius: 7px;
+  }
+  .back-link:hover { border-color: var(--teal); color: white; }
+  .logout-btn {
+    padding: 7px 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.3);
+    color: var(--ice); border-radius: 7px; cursor: pointer; font-size: 13px; font-family: var(--sans);
+  }
+  .logout-btn:hover { border-color: #ffb3b3; color: #ffb3b3; }
+
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 24px 60px; display: none; }
+  .wrap.visible { display: block; }
+
+  .summary-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  .summary-card {
+    flex: 1; min-width: 180px; background: var(--card); border-radius: 14px;
+    padding: 20px 22px; box-shadow: 0 2px 6px rgba(20,27,73,0.08);
+  }
+  .summary-card .label { font-size: 12.5px; color: var(--text-muted); margin-bottom: 6px; }
+  .summary-card .value { font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--navy); }
+  .summary-card .value.teal { color: var(--teal-dk); }
+
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  input[type="text"], select {
+    font-family: var(--sans); font-size: 14px; padding: 10px 14px;
+    border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text-dk);
+  }
+  input[type="text"] { flex: 1 1 240px; }
+  select { flex: 0 0 auto; }
+  input[type="text"]:focus, select:focus { outline: none; border-color: var(--teal); }
+
+  .count { font-size: 12.5px; color: var(--text-muted); margin: 4px 0 12px; }
+
+  .table-scroll {
+    overflow-x: auto; background: var(--card); border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(20,27,73,0.08);
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { background: #EEF3FC; color: var(--navy); font-weight: 700; font-size: 13px; position: sticky; top: 0; }
+  tbody tr:hover { background: #F7FAFF; }
+  td.amount { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; color: var(--navy); }
+  .empty-row td { text-align: center; padding: 40px; color: var(--text-muted); }
+
+  .status-line { text-align: center; color: var(--text-muted); font-size: 13px; margin-bottom: 16px; }
+  .status-line.err { color: #C0392B; }
+
+  .footer-note {
+    margin-top: 24px; font-size: 12px; color: var(--text-muted); text-align: center; line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+
+<!-- 登入遮罩 -->
+<div id="authOverlay" class="auth-overlay">
+  <div class="auth-modal">
+    <div class="auth-kicker">Taiwan Law Foundation</div>
+    <h2>董事捐款查詢</h2>
+    <p>本頁僅限授權人員檢視，<br>請使用授權的 Google 帳號登入。</p>
+    <div id="googleBtnContainer"></div>
+    <div id="authError" class="auth-error hidden"></div>
+    <div id="authLoading" class="auth-loading hidden">
+      <div class="auth-spin"></div>
+      <span>驗證中，請稍候…</span>
+    </div>
+  </div>
+</div>
+
+<div class="topbar">
+  <div>
+    <div class="kicker">財團法人台灣法學基金會</div>
+    <div class="title">董事捐款查詢</div>
+    <div class="sub">僅限授權人員檢視・資料即時讀取自 Google Sheet</div>
+  </div>
+  <div class="topbar-actions">
+    <a class="back-link" href="DI.html">← 返回報到系統</a>
+    <button class="logout-btn" onclick="handleLogout()">登出</button>
+  </div>
+</div>
+
+<div class="wrap" id="mainWrap">
+  <div class="status-line" id="statusLine">讀取中…</div>
+
+  <div class="summary-row">
+    <div class="summary-card">
+      <div class="label">捐款總筆數</div>
+      <div class="value" id="statCount">–</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">捐款總金額（新台幣）</div>
+      <div class="value teal" id="statTotal">–</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="keyword" placeholder="輸入姓名關鍵字搜尋…">
+    <select id="filterYear">
+      <option value="">全部年度</option>
+    </select>
+  </div>
+
+  <div class="count" id="count"></div>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>編號</th>
+          <th>姓名</th>
+          <th>年度</th>
+          <th style="text-align:right;">捐款金額</th>
+          <th>捐款日期</th>
+          <th>備註</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="footer-note">
+    本頁資料涉及財務隱私，僅提供予經授權之董事查閱，請勿轉發截圖或連結。
+  </div>
+</div>
+
+<script>
+// ====== 設定區（與主報到系統相同的 n8n 網址） ======
+const N8N_BASE = "https://mjib007.zeabur.app";
+const API_CHECK_PERMISSION = N8N_BASE + "/webhook/check-permission";
+const DONATIONS_QUERY_URL = N8N_BASE + "/webhook/donations-query";
+const GOOGLE_CLIENT_ID = "973721313231-0no4ivldu33he0kts8k51kn4tqd979g7.apps.googleusercontent.com";
+const SYSTEM_NAME = "捐款查詢權限";
+// ====================
+
+let currentUser = null;
+let allDonations = [];
+
+function initGoogleLogin() {
+  if (typeof google === "undefined" || !google.accounts) {
+    setTimeout(initGoogleLogin, 300);
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: onGoogleCredential,
+    auto_select: false
+  });
+  google.accounts.id.renderButton(
+    document.getElementById("googleBtnContainer"),
+    { theme: "outline", size: "large", width: 280 }
+  );
+}
+
+async function onGoogleCredential(response) {
+  const payload = parseJwt(response.credential);
+  currentUser = { email: payload.email, name: payload.name };
+  sessionStorage.setItem("donationUser", JSON.stringify(currentUser));
+  await checkPermission(currentUser.email);
+}
+
+function parseJwt(token) {
+  const base64Url = token.split(".")[1];
+  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  const jsonPayload = decodeURIComponent(
+    atob(base64).split("").map(c =>
+      "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join("")
+  );
+  return JSON.parse(jsonPayload);
+}
+
+async function checkPermission(email) {
+  setAuthLoading(true);
+  hideAuthError();
+  try {
+    const res = await fetch(API_CHECK_PERMISSION, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, system: SYSTEM_NAME })
+    });
+    const data = await res.json();
+    if (data.success && data.hasPermission) {
+      document.getElementById("authOverlay").classList.add("hidden");
+      document.getElementById("mainWrap").classList.add("visible");
+      loadDonations();
+    } else {
+      showAuthError(`帳號 ${email} 無「${SYSTEM_NAME}」，無法查看本頁`);
+      sessionStorage.removeItem("donationUser");
+      currentUser = null;
+    }
+  } catch (e) {
+    showAuthError("系統驗證失敗，請稍後再試");
+    sessionStorage.removeItem("donationUser");
+    currentUser = null;
+  } finally {
+    setAuthLoading(false);
+  }
+}
+
+function setAuthLoading(show) {
+  document.getElementById("authLoading").classList.toggle("hidden", !show);
+  document.getElementById("googleBtnContainer").classList.toggle("hidden", show);
+}
+function showAuthError(msg) {
+  const el = document.getElementById("authError");
+  el.textContent = msg;
+  el.classList.remove("hidden");
+}
+function hideAuthError() {
+  document.getElementById("authError").classList.add("hidden");
+}
+function handleLogout() {
+  sessionStorage.removeItem("donationUser");
+  location.reload();
+}
+
+async function loadDonations() {
+  const statusLine = document.getElementById("statusLine");
+  statusLine.textContent = "讀取中…";
+  statusLine.className = "status-line";
+  try {
+    const res = await fetch(DONATIONS_QUERY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: currentUser.email })
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    if (data.status === "forbidden") {
+      statusLine.textContent = "⚠ 無捐款查詢權限，請確認登入帳號";
+      statusLine.className = "status-line err";
+      return;
+    }
+    allDonations = data.donations || [];
+    document.getElementById("statCount").textContent = (data.statistics?.總筆數 ?? allDonations.length) + " 筆";
+    document.getElementById("statTotal").textContent =
+      "NT$ " + (data.statistics?.總金額 ?? 0).toLocaleString("zh-TW");
+    statusLine.textContent = "已載入（更新時間：" + (data.generatedAt || "") + "）";
+    populateYearFilter();
+    applyFilters();
+  } catch (e) {
+    statusLine.textContent = "⚠ 讀取失敗，請確認網路與 n8n 工作流已啟用";
+    statusLine.className = "status-line err";
+  }
+}
+
+function populateYearFilter() {
+  const years = [...new Set(allDonations.map(d => d.年度).filter(Boolean))].sort();
+  const sel = document.getElementById("filterYear");
+  sel.innerHTML = '<option value="">全部年度</option>';
+  years.forEach(y => {
+    const opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y;
+    sel.appendChild(opt);
+  });
+}
+
+function applyFilters() {
+  const kw = document.getElementById("keyword").value.trim().toLowerCase();
+  const yearFilter = document.getElementById("filterYear").value;
+
+  const filtered = allDonations.filter(d => {
+    if (yearFilter && d.年度 !== yearFilter) return false;
+    if (kw && !String(d.姓名).toLowerCase().includes(kw)) return false;
+    return true;
+  });
+
+  document.getElementById("count").textContent = `共 ${filtered.length} 筆（總計 ${allDonations.length} 筆）`;
+  renderTable(filtered);
+}
+
+function renderTable(rows) {
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  if (rows.length === 0) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">沒有符合條件的資料</td></tr>`;
+    return;
+  }
+  for (const r of rows) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.編號 || ""}</td>
+      <td>${r.姓名 || ""}</td>
+      <td>${r.年度 || ""}</td>
+      <td class="amount">${Number(r.捐款金額 || 0).toLocaleString("zh-TW")}</td>
+      <td>${r.捐款日期 || ""}</td>
+      <td>${r.備註 || ""}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+document.getElementById("keyword").addEventListener("input", applyFilters);
+document.getElementById("filterYear").addEventListener("change", applyFilters);
+
+window.addEventListener("load", async () => {
+  initGoogleLogin();
+  const session = sessionStorage.getItem("donationUser");
+  if (session) {
+    currentUser = JSON.parse(session);
+    await checkPermission(currentUser.email);
+  }
+});
+</script>
+</body>
+</html>
