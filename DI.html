@@ -287,6 +287,13 @@
     font-family: var(--sans);
   }
   .logout-btn:hover { border-color: #ffb3b3; color: #ffb3b3; }
+  .donation-btn {
+    padding: 5px 12px; background: rgba(0,180,166,0.18); border: 1px solid var(--teal);
+    color: white; border-radius: 7px; cursor: pointer; font-size: 12px;
+    font-family: var(--sans); text-decoration: none; display: none;
+  }
+  .donation-btn.visible { display: inline-block; }
+  .donation-btn:hover { background: var(--teal); }
 </style>
 </head>
 <body>
@@ -332,6 +339,7 @@
       </svg>
       <div class="clock" id="liveClock">--:--:--</div>
     </div>
+    <a id="donationBtn" class="donation-btn" href="donations.html" target="_blank" rel="noopener">💰 捐款查詢</a>
     <button class="logout-btn" onclick="handleLogout()">登出</button>
   </div>
 </div>
@@ -415,6 +423,7 @@ const AUTH_CONFIG = {
   API_CHECK_PERMISSION: N8N_BASE + "/webhook/check-permission",
   SYSTEM_NAME: "董事會報到系統" // 「會員」工作表中對應的權限欄位名稱
 };
+const DONATIONS_SYSTEM_NAME = "捐款查詢權限"; // 僅特定人員可見捐款查詢按鈕
 // ====================
 
 let currentUser = null;
@@ -466,6 +475,7 @@ async function checkPermission(email) {
     if (data.success && data.hasPermission) {
       document.getElementById("authOverlay").classList.add("hidden");
       startApp(); // 通過驗證才啟動主程式與載入資料
+      checkDonationAccess(email); // 另外檢查是否可看捐款查詢按鈕，不影響主流程
     } else {
       showAuthError(`帳號 ${email} 無「${AUTH_CONFIG.SYSTEM_NAME}」存取權限`);
       sessionStorage.removeItem("boardUser");
@@ -495,6 +505,26 @@ function hideAuthError() {
 function handleLogout() {
   sessionStorage.removeItem("boardUser");
   location.reload();
+}
+
+// 另外檢查是否具備「捐款查詢權限」，決定是否顯示捐款查詢按鈕
+async function checkDonationAccess(email) {
+  try {
+    const res = await fetch(AUTH_CONFIG.API_CHECK_PERMISSION, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, system: DONATIONS_SYSTEM_NAME })
+    });
+    const data = await res.json();
+    const btn = document.getElementById("donationBtn");
+    if (data.success && data.hasPermission) {
+      btn.classList.add("visible");
+    } else {
+      btn.classList.remove("visible");
+    }
+  } catch (e) {
+    // 查詢失敗時保持按鈕隱藏，不影響主系統使用
+  }
 }
 
 const MEMBERS = [
