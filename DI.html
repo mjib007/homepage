@@ -294,6 +294,7 @@
   }
   .donation-btn.visible { display: inline-block; }
   .donation-btn:hover { background: var(--teal); }
+  .action-row { display: flex; align-items: center; gap: 8px; }
 </style>
 </head>
 <body>
@@ -339,8 +340,10 @@
       </svg>
       <div class="clock" id="liveClock">--:--:--</div>
     </div>
-    <a id="donationBtn" class="donation-btn" href="donations.html" target="_blank" rel="noopener">💰 捐款查詢</a>
-    <button class="logout-btn" onclick="handleLogout()">登出</button>
+    <div class="action-row">
+      <a id="donationBtn" class="donation-btn" href="donations.html" target="_blank" rel="noopener">💰 捐款查詢</a>
+      <button class="logout-btn" onclick="handleLogout()">登出</button>
+    </div>
   </div>
 </div>
 
