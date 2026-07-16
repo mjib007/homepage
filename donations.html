@@ -199,7 +199,8 @@
   <div class="tab-panel" id="panel-leaderboard">
     <div class="grid-2">
       <div class="card">
-        <div class="card-title">累積捐款排行榜</div>
+        <div class="card-title">捐款排行榜</div>
+        <div class="filter-row" id="leaderboardYearChips"></div>
         <canvas id="chartLeaderboard" height="420"></canvas>
       </div>
       <div class="card">
@@ -473,13 +474,44 @@ function renderOverview() {
 
 /* ====== 排行榜 ====== */
 let chartLeaderboard = null, chartPie = null;
+let leaderboardMode = "cumulative"; // 預設顯示累積；也可切換成個別年度，例如 "113年"
+
+function leaderboardOptions() {
+  // 年度選項依實際資料動態產生，加上「累積」
+  return [...DATA.years, "累積"];
+}
+
+function buildLeaderboardChips() {
+  const wrap = document.getElementById("leaderboardYearChips");
+  wrap.innerHTML = "";
+  leaderboardOptions().forEach(opt => {
+    const key = opt === "累積" ? "cumulative" : opt;
+    const chip = document.createElement("span");
+    chip.className = "filter-chip" + (leaderboardMode === key ? " active" : "");
+    chip.textContent = opt === "累積" ? "累積" : opt;
+    chip.onclick = () => { leaderboardMode = key; renderLeaderboard(); };
+    wrap.appendChild(chip);
+  });
+}
+
 function renderLeaderboard() {
+  buildLeaderboardChips();
   const names = allNames();
-  const cumulative = names.map(n => ({ name: n, total: DATA.years.reduce((s, y) => s + ((DATA.raw[n] || {})[y] || 0), 0) })).sort((a, b) => b.total - a.total).filter(d => d.total > 0);
+
+  let rows, chartLabel;
+  if (leaderboardMode === "cumulative") {
+    rows = names.map(n => ({ name: n, total: DATA.years.reduce((s, y) => s + ((DATA.raw[n] || {})[y] || 0), 0) }));
+    chartLabel = "累積捐款";
+  } else {
+    rows = names.map(n => ({ name: n, total: (DATA.raw[n] || {})[leaderboardMode] || 0 }));
+    chartLabel = leaderboardMode + "捐款";
+  }
+  rows = rows.sort((a, b) => b.total - a.total).filter(d => d.total > 0);
+
   if (chartLeaderboard) chartLeaderboard.destroy();
   chartLeaderboard = new Chart(document.getElementById("chartLeaderboard"), {
     type: "bar",
-    data: { labels: cumulative.map(d => d.name), datasets: [{ label: "累積捐款", data: cumulative.map(d => d.total), backgroundColor: "#00B4A6", borderRadius: 6 }] },
+    data: { labels: rows.map(d => d.name), datasets: [{ label: chartLabel, data: rows.map(d => d.total), backgroundColor: "#00B4A6", borderRadius: 6 }] },
     options: { indexAxis: "y", plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => fmtMoney(ctx.parsed.x) } } }, scales: { x: { ticks: { callback: (v) => fmtShort(v) } } } }
   });
 
