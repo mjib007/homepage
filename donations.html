@@ -3,32 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>董事捐款查詢（限定人員）</title>
+<title>董事捐款資料視覺化</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
-    --navy: #1E2761;
-    --navy-dk: #141B49;
-    --ice: #CADCFC;
-    --teal: #00B4A6;
-    --teal-dk: #00857A;
-    --bg: #F4F7FD;
-    --card: #FFFFFF;
-    --text-dk: #1E293B;
-    --text-muted: #64748B;
-    --line: #E2E8F0;
-    --serif: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
-    --sans: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", -apple-system, sans-serif;
+    --navy: #1E2761; --navy-dk: #141B49; --ice: #CADCFC; --teal: #00B4A6; --teal-dk: #00857A;
+    --amber: #C9A227; --bg: #F4F7FD; --card: #FFFFFF;
+    --text-dk: #1E293B; --text-muted: #64748B;
+    --sans: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    --serif: Georgia, "Noto Serif TC", serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text-dk);
-    min-height: 100vh;
-  }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text-dk); }
 
-  /* ===== 登入遮罩（與主系統一致的樣式） ===== */
+  /* ===== Auth overlay（沿用出席系統同一套） ===== */
   .auth-overlay {
     position: fixed; inset: 0; background: rgba(10, 14, 33, 0.96);
     z-index: 9999; display: flex; justify-content: center; align-items: center;
@@ -44,100 +33,107 @@
     font-size: 12px; letter-spacing: 3px; color: var(--teal-dk);
     text-transform: uppercase; margin-bottom: 12px; font-weight: 700;
   }
-  .auth-modal h2 {
-    font-family: var(--serif); font-size: 22px; font-weight: 700;
-    color: var(--navy); margin-bottom: 8px;
-  }
+  .auth-modal h2 { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
   .auth-modal p { color: var(--text-muted); font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
   .auth-error {
     color: #C0392B; font-size: 13px; margin-top: 16px; padding: 10px 14px;
     background: #FDECEC; border-radius: 8px; border: 1px solid #F5C6C6;
   }
   .auth-error.hidden { display: none; }
-  .auth-loading {
-    color: var(--text-muted); font-size: 14px; margin-top: 20px;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-  }
+  .auth-loading { color: var(--text-muted); font-size: 14px; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
   .auth-loading.hidden { display: none !important; }
   .auth-spin {
-    width: 16px; height: 16px; border: 2px solid #D7E1F5;
-    border-top-color: var(--teal); border-radius: 50%;
+    width: 16px; height: 16px; border: 2px solid #D7E1F5; border-top-color: var(--teal); border-radius: 50%;
     animation: authspin 0.8s linear infinite;
   }
   @keyframes authspin { to { transform: rotate(360deg); } }
   #googleBtnContainer { display: flex; justify-content: center; width: 100%; }
   #googleBtnContainer.hidden { display: none !important; }
 
-  /* ===== 主畫面 ===== */
-  .topbar {
-    padding: 22px 32px; background: var(--navy); color: white;
-    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
-  }
-  .topbar .kicker { font-size: 12px; letter-spacing: 2px; color: var(--ice); text-transform: uppercase; }
-  .topbar .title { font-family: var(--serif); font-size: 22px; font-weight: 700; margin-top: 4px; }
-  .topbar .sub { font-size: 12.5px; color: var(--ice); margin-top: 6px; }
-  .topbar-actions { display: flex; align-items: center; gap: 12px; }
-  .back-link {
-    color: var(--ice); font-size: 13px; text-decoration: none; border: 1px solid rgba(255,255,255,0.3);
-    padding: 7px 14px; border-radius: 7px;
-  }
-  .back-link:hover { border-color: var(--teal); color: white; }
+  .header { background: var(--navy); padding: 28px 32px; color: white; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+  .header .kicker { font-size: 12px; letter-spacing: 2px; color: #CADCFC; font-weight: 700; text-transform: uppercase; }
+  .header .title { font-size: 24px; font-weight: 700; margin-top: 4px; font-family: var(--serif); }
+  .header .note { font-size: 12px; color: #9AA8C7; margin-top: 6px; }
   .logout-btn {
-    padding: 7px 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.3);
-    color: var(--ice); border-radius: 7px; cursor: pointer; font-size: 13px; font-family: var(--sans);
+    padding: 6px 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.3);
+    color: var(--ice); border-radius: 7px; cursor: pointer; font-size: 12px; font-family: var(--sans);
   }
   .logout-btn:hover { border-color: #ffb3b3; color: #ffb3b3; }
 
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 24px 60px; display: none; }
-  .wrap.visible { display: block; }
+  .sync-row { padding: 10px 32px 0; font-size: 12.5px; color: var(--text-muted); }
+  .sync-row a { color: var(--teal-dk); }
 
-  .summary-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
-  .summary-card {
-    flex: 1; min-width: 180px; background: var(--card); border-radius: 14px;
-    padding: 20px 22px; box-shadow: 0 2px 6px rgba(20,27,73,0.08);
+  .tabs { display: flex; gap: 6px; padding: 14px 32px 0; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer;
+    font-size: 14px; font-weight: 600; font-family: var(--sans);
+    background: white; color: var(--text-muted); box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   }
-  .summary-card .label { font-size: 12.5px; color: var(--text-muted); margin-bottom: 6px; }
-  .summary-card .value { font-family: var(--serif); font-size: 26px; font-weight: 700; color: var(--navy); }
-  .summary-card .value.teal { color: var(--teal-dk); }
+  .tab-btn.active { background: var(--navy); color: white; box-shadow: 0 4px 12px rgba(30,39,97,0.25); }
+  .tab-btn.flow.active { background: var(--amber); }
 
-  .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
-  input[type="text"], select {
-    font-family: var(--sans); font-size: 14px; padding: 10px 14px;
-    border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--text-dk);
+  .content { padding: 24px 32px 60px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .stat-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  .stat-card { background: var(--card); border-radius: 14px; padding: 18px 24px; flex: 1 1 220px; box-shadow: 0 2px 8px rgba(20,27,73,0.08); }
+  .stat-card .label { font-size: 12.5px; color: var(--text-muted); margin-bottom: 6px; }
+  .stat-card .value { font-size: 24px; font-weight: 700; font-family: var(--serif); }
+  .stat-card .sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  .card { background: var(--card); border-radius: 16px; padding: 22px 24px; box-shadow: 0 2px 10px rgba(20,27,73,0.08); margin-bottom: 20px; }
+  .card-title { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .card-desc { font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; }
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  select, input[type="text"] {
+    padding: 8px 14px; border-radius: 8px; border: 1px solid #D7E1F5;
+    font-size: 14px; font-family: var(--sans); color: var(--text-dk); background: white;
   }
-  input[type="text"] { flex: 1 1 240px; }
-  select { flex: 0 0 auto; }
-  input[type="text"]:focus, select:focus { outline: none; border-color: var(--teal); }
+  .select-row { margin-bottom: 18px; font-size: 13px; color: var(--text-muted); }
 
-  .count { font-size: 12.5px; color: var(--text-muted); margin: 4px 0 12px; }
-
-  .table-scroll {
-    overflow-x: auto; background: var(--card); border-radius: 14px;
-    box-shadow: 0 2px 6px rgba(20,27,73,0.08);
+  .filter-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-row input[type="text"] { width: 200px; }
+  .filter-chip {
+    display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 20px;
+    border: 1px solid #D7E1F5; background: white; font-size: 12.5px; color: var(--text-muted);
+    cursor: pointer; user-select: none;
   }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  th { background: #EEF3FC; color: var(--navy); font-weight: 700; font-size: 13px; position: sticky; top: 0; }
-  tbody tr:hover { background: #F7FAFF; }
-  td.amount { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; color: var(--navy); }
-  .empty-row td { text-align: center; padding: 40px; color: var(--text-muted); }
+  .filter-chip.active { background: var(--navy); color: white; border-color: var(--navy); }
+  .filter-count { font-size: 12px; color: var(--text-muted); margin-left: auto; }
 
-  .status-line { text-align: center; color: var(--text-muted); font-size: 13px; margin-bottom: 16px; }
-  .status-line.err { color: #C0392B; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th { text-align: right; padding: 8px 10px; color: var(--text-muted); font-weight: 600; border-bottom: 2px solid #E2E8F0; cursor: pointer; user-select: none; }
+  th:first-child, td:first-child { text-align: left; }
+  th:hover { color: var(--navy); }
+  td { padding: 8px 10px; border-bottom: 1px solid #F1F5F9; }
+  tr:hover td { background: #FAFBFF; }
+  .num { font-family: var(--serif); }
+  .highlight-row td { background: #FFFBEF; }
 
-  .footer-note {
-    margin-top: 24px; font-size: 12px; color: var(--text-muted); text-align: center; line-height: 1.8;
-  }
+  .heat-cell { border-radius: 6px; padding: 10px 6px; text-align: center; font-size: 11.5px; min-width: 70px; }
+  th.center { text-align: center; }
+  td.center { text-align: center; padding: 2px; }
+  td.name-cell { padding: 6px 10px; font-weight: 600; white-space: nowrap; }
+
+  .rate-legend { display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--text-muted); }
+  .rate-legend b { color: var(--navy); }
+
+  canvas { max-width: 100%; }
+  .empty-msg { text-align: center; padding: 30px; color: var(--text-muted); font-size: 13px; }
 </style>
 </head>
 <body>
 
-<!-- 登入遮罩 -->
+<!-- 權限登入遮罩 -->
 <div id="authOverlay" class="auth-overlay">
   <div class="auth-modal">
     <div class="auth-kicker">Taiwan Law Foundation</div>
-    <h2>董事捐款查詢</h2>
-    <p>本頁僅限授權人員檢視，<br>請使用授權的 Google 帳號登入。</p>
+    <h2>董事捐款資料視覺化</h2>
+    <p>請使用授權的 Google 帳號登入<br>以驗證使用權限</p>
     <div id="googleBtnContainer"></div>
     <div id="authError" class="auth-error hidden"></div>
     <div id="authLoading" class="auth-loading hidden">
@@ -147,232 +143,417 @@
   </div>
 </div>
 
-<div class="topbar">
+<div class="header">
   <div>
     <div class="kicker">財團法人台灣法學基金會</div>
-    <div class="title">董事捐款查詢</div>
-    <div class="sub">僅限授權人員檢視・資料即時讀取自 Google Sheet</div>
+    <div class="title">董事捐款資料視覺化</div>
+    <div class="note">資料來源：donations工作表（即時串接）</div>
   </div>
-  <div class="topbar-actions">
-    <a class="back-link" href="DI.html">← 返回報到系統</a>
-    <button class="logout-btn" onclick="handleLogout()">登出</button>
-  </div>
+  <button class="logout-btn" onclick="handleLogout()">登出</button>
 </div>
 
-<div class="wrap" id="mainWrap">
-  <div class="status-line" id="statusLine">讀取中…</div>
+<div class="sync-row"><span id="syncStatus">尚未同步</span>　<a href="#" onclick="loadData();return false;">重新同步</a></div>
 
-  <div class="summary-row">
-    <div class="summary-card">
-      <div class="label">捐款總筆數</div>
-      <div class="value" id="statCount">–</div>
+<div class="tabs" id="tabs"></div>
+
+<div class="content" id="mainContent" style="display:none;">
+
+  <!-- ===== 資金流向 ===== -->
+  <div class="tab-panel active" id="panel-flow">
+    <div class="stat-row" id="flowStatRow"></div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">最新年度資金流向</div>
+        <div class="card-desc" id="flowPieDesc"></div>
+        <canvas id="chartFlowPie" height="280"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title">另行捐贈秘書處金額</div>
+        <div class="card-desc">僅列出有另行捐贈紀錄的董事</div>
+        <canvas id="chartFlowBar" height="280"></canvas>
+      </div>
     </div>
-    <div class="summary-card">
-      <div class="label">捐款總金額（新台幣）</div>
-      <div class="value teal" id="statTotal">–</div>
+    <div class="card">
+      <div class="card-title">逐位董事資金明細</div>
+      <div class="card-desc">自留餘額＝一般捐款－另行捐贈秘書處金額</div>
+      <div class="filter-row">
+        <input type="text" id="flowSearch" placeholder="搜尋姓名…" oninput="renderFlowTable()">
+        <span class="filter-chip" id="chipOnlyDonated" onclick="toggleOnlyDonated()">只顯示有另行捐贈者</span>
+        <span class="filter-count" id="flowCount"></span>
+      </div>
+      <table id="flowTable"></table>
     </div>
   </div>
 
-  <div class="controls">
-    <input type="text" id="keyword" placeholder="輸入姓名關鍵字搜尋…">
-    <select id="filterYear">
-      <option value="">全部年度</option>
-    </select>
+  <!-- ===== 總覽 ===== -->
+  <div class="tab-panel" id="panel-overview">
+    <div class="stat-row" id="statRow"></div>
+    <div class="card">
+      <div class="card-title">全體董事年度捐款總額</div>
+      <div class="card-desc">各年度總額僅計入一般捐款，不含另行捐贈秘書處款項</div>
+      <canvas id="chartOverview" height="90"></canvas>
+    </div>
   </div>
 
-  <div class="count" id="count"></div>
-
-  <div class="table-scroll">
-    <table>
-      <thead>
-        <tr>
-          <th>編號</th>
-          <th>姓名</th>
-          <th>年度</th>
-          <th style="text-align:right;">捐款金額</th>
-          <th>捐款日期</th>
-          <th>備註</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
+  <!-- ===== 排行榜 ===== -->
+  <div class="tab-panel" id="panel-leaderboard">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">累積捐款排行榜</div>
+        <canvas id="chartLeaderboard" height="420"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title">最新年度捐款佔比</div>
+        <canvas id="chartPie" height="420"></canvas>
+      </div>
+    </div>
   </div>
 
-  <div class="footer-note">
-    本頁資料涉及財務隱私，僅提供予經授權之董事查閱，請勿轉發截圖或連結。
+  <!-- ===== 個別董事 ===== -->
+  <div class="tab-panel" id="panel-individual">
+    <div class="card">
+      <div class="card-title">個別董事捐款趨勢</div>
+      <div class="select-row">選擇董事：<select id="directorSelect"></select></div>
+      <canvas id="chartIndividual" height="110"></canvas>
+      <div style="margin-top:14px;font-size:13px;color:var(--text-muted)">
+        累積捐款：<b id="individualTotal" style="color:var(--navy)"></b>
+      </div>
+    </div>
   </div>
+
+  <!-- ===== 熱力圖 ===== -->
+  <div class="tab-panel" id="panel-heatmap">
+    <div class="card">
+      <div class="card-title">董事 × 年度 捐款熱力圖</div>
+      <div style="overflow-x:auto"><table id="heatTable"></table></div>
+    </div>
+  </div>
+
+  <!-- ===== 參與率 ===== -->
+  <div class="tab-panel" id="panel-participation">
+    <div class="card">
+      <div class="card-title">每年捐款參與率（17位董事中，當年有捐款的比例）</div>
+      <canvas id="chartParticipation" height="90"></canvas>
+      <div class="rate-legend" id="rateLegend"></div>
+    </div>
+  </div>
+
 </div>
 
 <script>
-// ====== 設定區（與主報到系統相同的 n8n 網址） ======
+// ====== 設定區 ======
 const N8N_BASE = "https://mjib007.zeabur.app";
-const API_CHECK_PERMISSION = N8N_BASE + "/webhook/check-permission";
-const DONATIONS_QUERY_URL = N8N_BASE + "/webhook/donations-query";
-const GOOGLE_CLIENT_ID = "973721313231-0no4ivldu33he0kts8k51kn4tqd979g7.apps.googleusercontent.com";
-const SYSTEM_NAME = "捐款查詢權限";
+const DONATIONS_URL = N8N_BASE + "/webhook/donations-summary";
+const AUTH_CONFIG = {
+  GOOGLE_CLIENT_ID: "973721313231-0no4ivldu33he0kts8k51kn4tqd979g7.apps.googleusercontent.com",
+  API_CHECK_PERMISSION: N8N_BASE + "/webhook/check-permission",
+  SYSTEM_NAME: "董事會報到系統"
+};
 // ====================
 
 let currentUser = null;
-let allDonations = [];
+let onlyDonatedFilter = false;
+
+// 董事名單固定17位（用於參與率等計算基準；秘書處另計）
+const BOARD_MEMBERS_17 = ["謝哲勝","吳寶田","吳小燕","林家祺","林敏雄","楊岳虎","于俊明","許兆慶","錢世傑","趙之敏","蔡鐘慶","黃維民","張靜怡","李兆環","林洲富","李金松","劉文珍"];
+
+let DATA = { years: [], raw: {}, donateToSecretariat: {} };
 
 function initGoogleLogin() {
-  if (typeof google === "undefined" || !google.accounts) {
-    setTimeout(initGoogleLogin, 300);
-    return;
-  }
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: onGoogleCredential,
-    auto_select: false
-  });
-  google.accounts.id.renderButton(
-    document.getElementById("googleBtnContainer"),
-    { theme: "outline", size: "large", width: 280 }
-  );
+  if (typeof google === "undefined" || !google.accounts) { setTimeout(initGoogleLogin, 300); return; }
+  google.accounts.id.initialize({ client_id: AUTH_CONFIG.GOOGLE_CLIENT_ID, callback: onGoogleCredential, auto_select: false });
+  google.accounts.id.renderButton(document.getElementById("googleBtnContainer"), { theme: "outline", size: "large", width: 280 });
 }
-
 async function onGoogleCredential(response) {
   const payload = parseJwt(response.credential);
   currentUser = { email: payload.email, name: payload.name };
   sessionStorage.setItem("donationUser", JSON.stringify(currentUser));
   await checkPermission(currentUser.email);
 }
-
 function parseJwt(token) {
   const base64Url = token.split(".")[1];
   const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-  const jsonPayload = decodeURIComponent(
-    atob(base64).split("").map(c =>
-      "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
-    ).join("")
-  );
+  const jsonPayload = decodeURIComponent(atob(base64).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join(""));
   return JSON.parse(jsonPayload);
 }
-
 async function checkPermission(email) {
-  setAuthLoading(true);
-  hideAuthError();
+  setAuthLoading(true); hideAuthError();
   try {
-    const res = await fetch(API_CHECK_PERMISSION, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, system: SYSTEM_NAME })
+    const res = await fetch(AUTH_CONFIG.API_CHECK_PERMISSION, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, system: AUTH_CONFIG.SYSTEM_NAME })
     });
     const data = await res.json();
     if (data.success && data.hasPermission) {
       document.getElementById("authOverlay").classList.add("hidden");
-      document.getElementById("mainWrap").classList.add("visible");
-      loadDonations();
+      startApp();
     } else {
-      showAuthError(`帳號 ${email} 無「${SYSTEM_NAME}」，無法查看本頁`);
-      sessionStorage.removeItem("donationUser");
-      currentUser = null;
+      showAuthError(`帳號 ${email} 無「${AUTH_CONFIG.SYSTEM_NAME}」存取權限`);
+      sessionStorage.removeItem("donationUser"); currentUser = null;
     }
   } catch (e) {
     showAuthError("系統驗證失敗，請稍後再試");
-    sessionStorage.removeItem("donationUser");
-    currentUser = null;
-  } finally {
-    setAuthLoading(false);
-  }
+    sessionStorage.removeItem("donationUser"); currentUser = null;
+  } finally { setAuthLoading(false); }
 }
-
 function setAuthLoading(show) {
   document.getElementById("authLoading").classList.toggle("hidden", !show);
   document.getElementById("googleBtnContainer").classList.toggle("hidden", show);
 }
-function showAuthError(msg) {
-  const el = document.getElementById("authError");
-  el.textContent = msg;
-  el.classList.remove("hidden");
-}
-function hideAuthError() {
-  document.getElementById("authError").classList.add("hidden");
-}
-function handleLogout() {
-  sessionStorage.removeItem("donationUser");
-  location.reload();
+function showAuthError(msg) { const el = document.getElementById("authError"); el.textContent = msg; el.classList.remove("hidden"); }
+function hideAuthError() { document.getElementById("authError").classList.add("hidden"); }
+function handleLogout() { sessionStorage.removeItem("donationUser"); location.reload(); }
+
+function fmtMoney(n) { return "NT$ " + n.toLocaleString("zh-TW"); }
+function fmtShort(n) { return Math.abs(n) >= 10000 ? (n / 10000).toFixed(1) + "萬" : n.toLocaleString("zh-TW"); }
+function setSyncStatus(text, isError) {
+  const el = document.getElementById("syncStatus");
+  el.textContent = text; el.style.color = isError ? "#C0392B" : "var(--text-muted)";
 }
 
-async function loadDonations() {
-  const statusLine = document.getElementById("statusLine");
-  statusLine.textContent = "讀取中…";
-  statusLine.className = "status-line";
+/* ====== Tabs ====== */
+const TABS = [
+  { id: "flow", label: "💰 資金流向", flow: true },
+  { id: "overview", label: "總覽" },
+  { id: "leaderboard", label: "排行榜" },
+  { id: "individual", label: "個別董事" },
+  { id: "heatmap", label: "熱力圖" },
+  { id: "participation", label: "參與率" },
+];
+function buildTabs() {
+  const tabsEl = document.getElementById("tabs");
+  tabsEl.innerHTML = "";
+  TABS.forEach((t, i) => {
+    const btn = document.createElement("button");
+    btn.className = "tab-btn" + (t.flow ? " flow" : "") + (i === 0 ? " active" : "");
+    btn.textContent = t.label;
+    btn.onclick = () => switchTab(t.id);
+    btn.id = "tabbtn-" + t.id;
+    tabsEl.appendChild(btn);
+  });
+}
+function switchTab(id) {
+  TABS.forEach(t => {
+    document.getElementById("panel-" + t.id).classList.toggle("active", t.id === id);
+    document.getElementById("tabbtn-" + t.id).classList.toggle("active", t.id === id);
+  });
+}
+
+/* ====== 載入資料 ====== */
+async function loadData() {
+  setSyncStatus("同步中…", false);
   try {
-    const res = await fetch(DONATIONS_QUERY_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: currentUser.email })
-    });
+    const res = await fetch(DONATIONS_URL);
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
-    if (data.status === "forbidden") {
-      statusLine.textContent = "⚠ 無捐款查詢權限，請確認登入帳號";
-      statusLine.className = "status-line err";
-      return;
-    }
-    allDonations = data.donations || [];
-    document.getElementById("statCount").textContent = (data.statistics?.總筆數 ?? allDonations.length) + " 筆";
-    document.getElementById("statTotal").textContent =
-      "NT$ " + (data.statistics?.總金額 ?? 0).toLocaleString("zh-TW");
-    statusLine.textContent = "已載入（更新時間：" + (data.generatedAt || "") + "）";
-    populateYearFilter();
-    applyFilters();
+    DATA.years = data.years || [];
+    DATA.raw = data.raw || {};
+    DATA.donateToSecretariat = data.donateToSecretariat || {};
+    setSyncStatus("已同步（" + (data.generatedAt ? new Date(data.generatedAt).toLocaleString("zh-TW") : "") + "）", false);
+    renderAll();
   } catch (e) {
-    statusLine.textContent = "⚠ 讀取失敗，請確認網路與 n8n 工作流已啟用";
-    statusLine.className = "status-line err";
+    setSyncStatus("⚠ 無法連線後端，請確認n8n工作流已啟用", true);
   }
 }
 
-function populateYearFilter() {
-  const years = [...new Set(allDonations.map(d => d.年度).filter(Boolean))].sort();
-  const sel = document.getElementById("filterYear");
-  sel.innerHTML = '<option value="">全部年度</option>';
-  years.forEach(y => {
-    const opt = document.createElement("option");
-    opt.value = y;
-    opt.textContent = y;
-    sel.appendChild(opt);
-  });
+function allNames() {
+  return Array.from(new Set([...Object.keys(DATA.raw), ...BOARD_MEMBERS_17]));
 }
 
-function applyFilters() {
-  const kw = document.getElementById("keyword").value.trim().toLowerCase();
-  const yearFilter = document.getElementById("filterYear").value;
-
-  const filtered = allDonations.filter(d => {
-    if (yearFilter && d.年度 !== yearFilter) return false;
-    if (kw && !String(d.姓名).toLowerCase().includes(kw)) return false;
-    return true;
-  });
-
-  document.getElementById("count").textContent = `共 ${filtered.length} 筆（總計 ${allDonations.length} 筆）`;
-  renderTable(filtered);
-}
-
-function renderTable(rows) {
-  const tbody = document.getElementById("tbody");
-  tbody.innerHTML = "";
-  if (rows.length === 0) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">沒有符合條件的資料</td></tr>`;
+function renderAll() {
+  if (DATA.years.length === 0) {
+    document.getElementById("mainContent").innerHTML = '<div class="empty-msg">目前沒有可顯示的捐款資料</div>';
+    document.getElementById("mainContent").style.display = "block";
     return;
   }
-  for (const r of rows) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${r.編號 || ""}</td>
-      <td>${r.姓名 || ""}</td>
-      <td>${r.年度 || ""}</td>
-      <td class="amount">${Number(r.捐款金額 || 0).toLocaleString("zh-TW")}</td>
-      <td>${r.捐款日期 || ""}</td>
-      <td>${r.備註 || ""}</td>
-    `;
-    tbody.appendChild(tr);
-  }
+  renderFlow();
+  renderOverview();
+  renderLeaderboard();
+  renderIndividualSetup();
+  renderHeatmap();
+  renderParticipation();
 }
 
-document.getElementById("keyword").addEventListener("input", applyFilters);
-document.getElementById("filterYear").addEventListener("change", applyFilters);
+/* ====== 資金流向 ====== */
+let chartFlowPie = null, chartFlowBar = null;
+function renderFlow() {
+  const latestYear = DATA.years[DATA.years.length - 1];
+  const names = allNames();
+  const totalRaw = names.reduce((s, n) => s + ((DATA.raw[n] || {})[latestYear] || 0), 0);
+  const donateMap = DATA.donateToSecretariat[latestYear] || {};
+  const totalDonated = Object.values(donateMap).reduce((a, b) => a + b, 0);
+  const totalSelf = totalRaw - totalDonated;
+
+  document.getElementById("flowStatRow").innerHTML = `
+    <div class="stat-card"><div class="label">${latestYear}度總捐款額（一般捐款）</div><div class="value" style="color:var(--navy)">${fmtMoney(totalRaw)}</div></div>
+    <div class="stat-card"><div class="label">另行捐贈秘書處</div><div class="value" style="color:#B8790A">${fmtMoney(totalDonated)}</div><div class="sub">${totalRaw ? ((totalDonated/totalRaw)*100).toFixed(1) : 0}% of ${latestYear}度總額</div></div>
+    <div class="stat-card"><div class="label">董事自留運用</div><div class="value" style="color:var(--teal-dk)">${fmtMoney(totalSelf)}</div><div class="sub">${totalRaw ? ((totalSelf/totalRaw)*100).toFixed(1) : 0}% of ${latestYear}度總額</div></div>
+  `;
+  document.getElementById("flowPieDesc").textContent = `「另行捐贈秘書處」為董事在${latestYear}度額外捐贈、指定交由秘書處統一運用的款項，與一般捐款分開統計，不重複計入總額`;
+
+  if (chartFlowPie) chartFlowPie.destroy();
+  chartFlowPie = new Chart(document.getElementById("chartFlowPie"), {
+    type: "doughnut",
+    data: { labels: ["董事自留運用", "另行捐贈秘書處"], datasets: [{ data: [totalSelf, totalDonated], backgroundColor: ["#00B4A6", "#C9A227"] }] },
+    options: { plugins: { legend: { position: "bottom" }, tooltip: { callbacks: { label: (ctx) => ctx.label + "：" + fmtMoney(ctx.parsed) } } } }
+  });
+
+  const entries = Object.entries(donateMap).sort((a, b) => b[1] - a[1]);
+  if (chartFlowBar) chartFlowBar.destroy();
+  chartFlowBar = new Chart(document.getElementById("chartFlowBar"), {
+    type: "bar",
+    data: { labels: entries.map(e => e[0]), datasets: [{ label: "另行捐贈秘書處金額", data: entries.map(e => e[1]), backgroundColor: "#C9A227", borderRadius: 6 }] },
+    options: { indexAxis: "y", plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => fmtMoney(ctx.parsed.x) } } }, scales: { x: { ticks: { callback: (v) => fmtShort(v) } } } }
+  });
+
+  renderFlowTable();
+}
+
+function toggleOnlyDonated() {
+  onlyDonatedFilter = !onlyDonatedFilter;
+  document.getElementById("chipOnlyDonated").classList.toggle("active", onlyDonatedFilter);
+  renderFlowTable();
+}
+
+function renderFlowTable() {
+  const latestYear = DATA.years[DATA.years.length - 1];
+  const donateMap = DATA.donateToSecretariat[latestYear] || {};
+  const searchTerm = document.getElementById("flowSearch").value.trim();
+
+  let rows = allNames().map(n => {
+    const raw = (DATA.raw[n] || {})[latestYear] || 0;
+    const donated = donateMap[n] || 0;
+    return { name: n, raw, donated, remain: raw - donated };
+  });
+
+  if (searchTerm) rows = rows.filter(r => r.name.includes(searchTerm));
+  if (onlyDonatedFilter) rows = rows.filter(r => r.donated > 0);
+
+  document.getElementById("flowCount").textContent = `共 ${rows.length} 筆`;
+
+  let html = `<thead><tr><th>董事</th><th>${latestYear}一般捐款</th><th>另行捐贈秘書處</th><th>自留餘額</th></tr></thead><tbody>`;
+  if (rows.length === 0) {
+    html += `<tr><td colspan="4" class="empty-msg">查無符合條件的資料</td></tr>`;
+  } else {
+    rows.forEach(r => {
+      html += `<tr class="${r.donated > 0 ? 'highlight-row' : ''}">
+        <td class="name-cell">${r.name}</td>
+        <td class="num">${fmtMoney(r.raw)}</td>
+        <td class="num">${r.donated > 0 ? fmtMoney(r.donated) : '—'}</td>
+        <td class="num">${fmtMoney(r.remain)}</td>
+      </tr>`;
+    });
+  }
+  html += "</tbody>";
+  document.getElementById("flowTable").innerHTML = html;
+}
+
+/* ====== 總覽 ====== */
+let chartOverview = null;
+function renderOverview() {
+  const names = allNames();
+  const yearlyTotals = DATA.years.map(y => ({ year: y, total: names.reduce((s, n) => s + ((DATA.raw[n] || {})[y] || 0), 0) }));
+  const cumAll = yearlyTotals.reduce((a, b) => a + b.total, 0);
+  const latest = yearlyTotals[yearlyTotals.length - 1];
+  const prev = yearlyTotals.length > 1 ? yearlyTotals[yearlyTotals.length - 2] : null;
+  const growth = prev && prev.total ? (((latest.total - prev.total) / prev.total) * 100).toFixed(1) : null;
+
+  document.getElementById("statRow").innerHTML = `
+    <div class="stat-card"><div class="label">累計捐款總額</div><div class="value" style="color:var(--navy)">${fmtMoney(cumAll)}</div></div>
+    <div class="stat-card"><div class="label">${latest.year}度捐款總額</div><div class="value" style="color:var(--teal-dk)">${fmtMoney(latest.total)}</div></div>
+    <div class="stat-card"><div class="label">較上年度成長率</div><div class="value" style="color:${growth===null?'var(--text-muted)':(growth<0?'#C0392B':'var(--teal-dk)')}">${growth===null?'—':(growth>0?'+':'')+growth+'%'}</div></div>
+  `;
+  if (chartOverview) chartOverview.destroy();
+  chartOverview = new Chart(document.getElementById("chartOverview"), {
+    type: "bar",
+    data: { labels: yearlyTotals.map(d => d.year), datasets: [{ label: "捐款總額", data: yearlyTotals.map(d => d.total), backgroundColor: "#1E2761", borderRadius: 8 }] },
+    options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => fmtMoney(ctx.parsed.y) } } }, scales: { y: { ticks: { callback: (v) => fmtShort(v) } } } }
+  });
+}
+
+/* ====== 排行榜 ====== */
+let chartLeaderboard = null, chartPie = null;
+function renderLeaderboard() {
+  const names = allNames();
+  const cumulative = names.map(n => ({ name: n, total: DATA.years.reduce((s, y) => s + ((DATA.raw[n] || {})[y] || 0), 0) })).sort((a, b) => b.total - a.total).filter(d => d.total > 0);
+  if (chartLeaderboard) chartLeaderboard.destroy();
+  chartLeaderboard = new Chart(document.getElementById("chartLeaderboard"), {
+    type: "bar",
+    data: { labels: cumulative.map(d => d.name), datasets: [{ label: "累積捐款", data: cumulative.map(d => d.total), backgroundColor: "#00B4A6", borderRadius: 6 }] },
+    options: { indexAxis: "y", plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => fmtMoney(ctx.parsed.x) } } }, scales: { x: { ticks: { callback: (v) => fmtShort(v) } } } }
+  });
+
+  const latestYear = DATA.years[DATA.years.length - 1];
+  const current = names.map(n => ({ name: n, value: (DATA.raw[n] || {})[latestYear] || 0 })).filter(d => d.value > 0).sort((a, b) => b.value - a.value);
+  if (chartPie) chartPie.destroy();
+  chartPie = new Chart(document.getElementById("chartPie"), {
+    type: "pie",
+    data: { labels: current.map(d => d.name), datasets: [{ data: current.map(d => d.value), backgroundColor: ["#1E2761","#00B4A6","#5A78C0","#C9A227","#8FA6D8","#00857A","#B7C6E8","#7C6BAF","#D97757","#4A90A4","#9BB068"] }] },
+    options: { plugins: { legend: { position: "right", labels: { boxWidth: 12, font: { size: 11 } } }, tooltip: { callbacks: { label: (ctx) => ctx.label + "：" + fmtMoney(ctx.parsed) } } } }
+  });
+}
+
+/* ====== 個別董事 ====== */
+let chartIndividual = null;
+function renderIndividualSetup() {
+  const sel = document.getElementById("directorSelect");
+  sel.innerHTML = "";
+  allNames().forEach(n => { const opt = document.createElement("option"); opt.value = n; opt.textContent = n; sel.appendChild(opt); });
+  sel.onchange = () => renderIndividual(sel.value);
+  renderIndividual(allNames()[0]);
+}
+function renderIndividual(name) {
+  const series = DATA.years.map(y => (DATA.raw[name] || {})[y] || 0);
+  if (chartIndividual) chartIndividual.destroy();
+  chartIndividual = new Chart(document.getElementById("chartIndividual"), {
+    type: "bar",
+    data: { labels: DATA.years, datasets: [{ label: name + " 捐款", data: series, backgroundColor: "#00857A", borderRadius: 8 }] },
+    options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => fmtMoney(ctx.parsed.y) } } }, scales: { y: { ticks: { callback: (v) => fmtShort(v) } } } }
+  });
+  document.getElementById("individualTotal").textContent = fmtMoney(DATA.years.reduce((s, y) => s + ((DATA.raw[name] || {})[y] || 0), 0));
+}
+
+/* ====== 熱力圖 ====== */
+function renderHeatmap() {
+  const names = allNames();
+  const maxVal = Math.max(1, ...names.flatMap(n => DATA.years.map(y => (DATA.raw[n] || {})[y] || 0)));
+  let html = "<thead><tr><th>董事</th>" + DATA.years.map(y => `<th class="center">${y}</th>`).join("") + "</tr></thead><tbody>";
+  names.forEach(n => {
+    html += `<tr><td class="name-cell">${n}</td>`;
+    DATA.years.forEach(y => {
+      const v = (DATA.raw[n] || {})[y] || 0;
+      const intensity = v === 0 ? 0 : 0.15 + 0.85 * (v / maxVal);
+      const bg = v === 0 ? "#F1F5F9" : `rgba(0,180,166,${intensity})`;
+      const color = intensity > 0.5 ? "white" : "#1E293B";
+      html += `<td class="center"><div class="heat-cell" style="background:${bg};color:${color};font-weight:${v===0?400:600}" title="${n}・${y}：${fmtMoney(v)}">${v===0?"—":fmtShort(v)}</div></td>`;
+    });
+    html += "</tr>";
+  });
+  html += "</tbody>";
+  document.getElementById("heatTable").innerHTML = html;
+}
+
+/* ====== 參與率 ====== */
+let chartParticipation = null;
+function renderParticipation() {
+  const participationRate = DATA.years.map(y => {
+    const count = BOARD_MEMBERS_17.filter(n => ((DATA.raw[n] || {})[y] || 0) > 0).length;
+    return { year: y, count, rate: Math.round((count / BOARD_MEMBERS_17.length) * 100) };
+  });
+  if (chartParticipation) chartParticipation.destroy();
+  chartParticipation = new Chart(document.getElementById("chartParticipation"), {
+    type: "line",
+    data: { labels: participationRate.map(p => p.year), datasets: [{ label: "參與率", data: participationRate.map(p => p.rate), borderColor: "#C9A227", backgroundColor: "#C9A227", tension: 0.3, pointRadius: 5 }] },
+    options: { plugins: { tooltip: { callbacks: { label: (ctx) => ctx.parsed.y + "%" } } }, scales: { y: { min: 0, max: 100, ticks: { callback: (v) => v + "%" } } } }
+  });
+  document.getElementById("rateLegend").innerHTML = participationRate.map(p => `<div>${p.year}：<b>${p.count}/17位</b>（${p.rate}%）</div>`).join("");
+}
+
+function startApp() {
+  buildTabs();
+  document.getElementById("mainContent").style.display = "block";
+  loadData();
+}
 
 window.addEventListener("load", async () => {
   initGoogleLogin();
