@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>構成要件推理示範系統｜MECE Legal KG Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c2430;
+    --ink-soft:#4a5468;
+    --parchment:#f7f4ec;
+    --parchment-deep:#efeadd;
+    --brass:#8a6a35;
+    --brass-bright:#b6873f;
+    --clay:#9c3f38;
+    --line:#d9d2bd;
+    --ok:#3f6b4d;
+    --panel:#fffdf8;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--parchment);
+    color:var(--ink);
+    font-family:'Noto Sans TC',sans-serif;
+    line-height:1.65;
+    padding:0 0 80px;
+  }
+  .rule{
+    height:1px;
+    background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 10px);
+  }
+  header{
+    padding:56px 24px 32px;
+    max-width:920px;
+    margin:0 auto;
+    text-align:center;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    letter-spacing:.18em;
+    color:var(--brass);
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  h1{
+    font-family:'Noto Serif TC',serif;
+    font-weight:900;
+    font-size:clamp(28px,4vw,42px);
+    margin:0 0 12px;
+    letter-spacing:.02em;
+  }
+  .sub{
+    color:var(--ink-soft);
+    font-size:15px;
+    max-width:620px;
+    margin:0 auto;
+  }
+  main{
+    max-width:920px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+  section.card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:28px 28px 30px;
+    margin-top:22px;
+    box-shadow:0 1px 0 rgba(0,0,0,.02);
+  }
+  .card-head{
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  .stage-no{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--brass);
+    border:1px solid var(--brass);
+    border-radius:999px;
+    padding:2px 9px;
+    letter-spacing:.05em;
+  }
+  h2{
+    font-family:'Noto Serif TC',serif;
+    font-weight:700;
+    font-size:19px;
+    margin:0;
+  }
+  label{
+    display:block;
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  input[type=password], input[type=text], select, textarea{
+    width:100%;
+    font-family:'JetBrains Mono',monospace;
+    font-size:14px;
+    padding:11px 12px;
+    border:1px solid var(--line);
+    border-radius:2px;
+    background:#fff;
+    color:var(--ink);
+  }
+  textarea{
+    font-family:'Noto Sans TC',sans-serif;
+    font-size:15px;
+    min-height:110px;
+    resize:vertical;
+    line-height:1.7;
+  }
+  .row{
+    display:grid;
+    grid-template-columns:1fr 180px;
+    gap:14px;
+    margin-bottom:16px;
+  }
+  .hint{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:6px;
+  }
+  .hint.warn{color:var(--clay);}
+  .presets{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .preset-btn{
+    font-family:'Noto Sans TC',sans-serif;
+    font-size:12.5px;
+    padding:7px 12px;
+    background:var(--parchment-deep);
+    border:1px solid var(--line);
+    border-radius:999px;
+    cursor:pointer;
+    color:var(--ink-soft);
+    transition:all .15s ease;
+  }
+  .preset-btn:hover{
+    border-color:var(--brass);
+    color:var(--brass);
+  }
+  button.primary{
+    font-family:'Noto Sans TC',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    background:var(--ink);
+    color:var(--parchment);
+    border:none;
+    border-radius:2px;
+    padding:13px 24px;
+    cursor:pointer;
+    letter-spacing:.02em;
+    transition:background .15s ease;
+  }
+  button.primary:hover{background:#000;}
+  button.primary:disabled{background:#a7a297;cursor:wait;}
+  #status{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    color:var(--brass);
+    margin-top:12px;
+    min-height:16px;
+  }
+  #results{display:none;}
+  .fade-in{animation:fadeIn .5s ease both;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  /* Stage 2: element table */
+  table.elements{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13.5px;
+  }
+  table.elements th{
+    text-align:left;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    border-bottom:1px solid var(--line);
+    padding:6px 8px;
+  }
+  table.elements td{
+    padding:9px 8px;
+    border-bottom:1px solid var(--parchment-deep);
+    vertical-align:top;
+  }
+  .badge{
+    display:inline-block;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    font-weight:700;
+    padding:2px 8px;
+    border-radius:999px;
+  }
+  .badge.yes{background:#e7f0e9;color:var(--ok);}
+  .badge.no{background:#f1efe8;color:#9a9384;}
+  .quote{
+    color:var(--ink-soft);
+    font-style:italic;
+    font-size:12.5px;
+  }
+  .conf{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+
+  /* Stage 3: statute logic trees */
+  .statute-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  @media(max-width:640px){.statute-grid{grid-template-columns:1fr;}}
+  .statute-box{
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:14px 16px;
+    background:var(--parchment);
+  }
+  .statute-box.satisfied{
+    border-color:var(--ok);
+    background:#f1f6f2;
+  }
+  .statute-title{
+    font-family:'Noto Serif TC',serif;
+    font-weight:700;
+    font-size:15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+  }
+  .statute-verdict{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    font-weight:700;
+  }
+  .statute-verdict.yes{color:var(--ok);}
+  .statute-verdict.no{color:#a7a297;}
+  .cond-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+    font-size:12.5px;
+  }
+  .cond-list li{
+    display:flex;
+    gap:6px;
+    padding:3px 0;
+    color:var(--ink-soft);
+  }
+  .cond-list li.hit{color:var(--ink);}
+  .mark{
+    font-family:'JetBrains Mono',monospace;
+    width:14px;
+    flex:none;
+  }
+  .or-group{
+    margin-top:4px;
+    padding-top:4px;
+    border-top:1px dashed var(--line);
+  }
+  .or-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    color:var(--brass);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+  }
+
+  /* Stage 4: verdict */
+  .verdict-card{
+    border:2px solid var(--ink);
+    border-radius:2px;
+    padding:20px;
+    background:#fff;
+  }
+  .verdict-card.conflict{border-color:var(--clay);}
+  .verdict-card.none{border-color:#a7a297;}
+  .verdict-headline{
+    font-family:'Noto Serif TC',serif;
+    font-weight:900;
+    font-size:20px;
+    margin-bottom:6px;
+  }
+  .verdict-note{
+    font-size:13.5px;
+    color:var(--ink-soft);
+  }
+  .conflict-flag{
+    display:inline-block;
+    margin-top:10px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--clay);
+    border:1px solid var(--clay);
+    padding:4px 10px;
+    border-radius:999px;
+  }
+  footer{
+    max-width:920px;
+    margin:40px auto 0;
+    padding:0 24px;
+    font-size:12px;
+    color:var(--ink-soft);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Thesis Defense Demo · 五要件家族 · 竊盜 / 侵占 / 詐欺</div>
+  <h1>構成要件推理示範系統</h1>
+  <p class="sub">重現論文第五章三階段推理管線的簡化版：要件抽取（呼叫語言模型）→ 符號邏輯核對（AND / OR，純本機運算）→ 判定結果與衝突標示。輸入案件事實，親眼檢視每一步推理。</p>
+</header>
+
+<main>
+
+  <section class="card">
+    <div class="card-head">
+      <span class="stage-no">SETUP</span>
+      <h2>連線設定</h2>
+    </div>
+    <div class="row">
+      <div>
+        <label for="apiKey">OpenAI API 金鑰（輸入過程隱碼，僅存於本頁瀏覽器記憶體，重新整理即清除，不會傳送至任何第三方伺服器）</label>
+        <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off">
+      </div>
+      <div>
+        <label for="model">模型</label>
+        <select id="model">
+          <option value="gpt-4o-mini">gpt-4o-mini（快速／便宜）</option>
+          <option value="gpt-4o">gpt-4o（品質較佳）</option>
+        </select>
+      </div>
+    </div>
+    <p class="hint warn">⚠ 這是純前端頁面，金鑰會直接從瀏覽器發送到 OpenAI API。適合個人示範測試，請勿把含有金鑰輸入功能的頁面部署給不信任的第三方使用。</p>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <span class="stage-no">INPUT</span>
+      <h2>輸入案件事實</h2>
+    </div>
+    <label for="caseText">案件事實描述（中文，越具體越好）</label>
+    <textarea id="caseText" placeholder="例如：甲翻牆進入乙住處，竊取電腦一台。"></textarea>
+    <div class="presets" id="presets"></div>
+    <button class="primary" id="runBtn">開始分析 →</button>
+    <div id="status"></div>
+  </section>
+
+  <div id="results">
+
+    <section class="card fade-in">
+      <div class="card-head">
+        <span class="stage-no">STAGE 2</span>
+        <h2>要件抽取與消歧（LLM 判斷）</h2>
+      </div>
+      <p class="hint">以下每一項要件，是否成立、信心分數、依據原文的判斷，全部由語言模型單次輸出 —— 這正是論文 §5.6.3「LLM 精煉」步驟在做的事，也是它的風險所在：這一步沒有人工覆核。</p>
+      <table class="elements" id="elementsTable">
+        <thead>
+          <tr><th style="width:22%">要件</th><th style="width:10%">成立</th><th style="width:14%">信心</th><th>模型依據（原文引用）</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section class="card fade-in">
+      <div class="card-head">
+        <span class="stage-no">STAGE 3</span>
+        <h2>符號邏輯核對（本機運算，非 LLM）</h2>
+      </div>
+      <p class="hint">六條法條的 AND / OR 規則寫死在本頁程式碼中，依 Stage 2 的要件成立結果逐條核對。這一步不呼叫任何 AI，純粹是邏輯運算。</p>
+      <div class="statute-grid" id="statuteGrid"></div>
+    </section>
+
+    <section class="card fade-in">
+      <div class="card-head">
+        <span class="stage-no">STAGE 4</span>
+        <h2>最終判定</h2>
+      </div>
+      <div id="verdict"></div>
+    </section>
+
+  </div>
+
+</main>
+
+<footer>
+  簡化示範系統 · 僅涵蓋竊盜 / 侵占 / 詐欺家族六條法條 · 供論文口試討論用途，非正式法律工具
+</footer>
+
+<script>
+/* ---------------------------------------------------------
+   構成要件詞彙表（對應論文 knowledge graph 的 Element 節點）
+--------------------------------------------------------- */
+const ELEMENTS = [
+  { id:"E1",  label:"不法所有意圖",                 def:"行為人主觀上具有將他人之物排除其所有權、據為己有或使第三人所有的意圖" },
+  { id:"E2",  label:"竊取行為（破壞他人持有）",       def:"未經同意，破壞原持有人對物的持有支配關係，建立自己的持有" },
+  { id:"E3",  label:"易持有為所有（行為人原本合法持有）", def:"行為人在行為之前，本來就基於某種合法關係（保管、委任、租賃等）持有該物，之後才變易為所有的意思" },
+  { id:"E4",  label:"標的為他人所有之動產",           def:"犯罪客體是屬於他人所有的動產" },
+  { id:"E5",  label:"侵入住宅或有人居住之建築物",     def:"以侵入住宅、有人居住之建築物、船艦或隱匿其內的方式犯之" },
+  { id:"E6",  label:"攜帶兇器",                       def:"犯罪時攜帶具有危險性的器械" },
+  { id:"E7",  label:"結夥三人以上",                   def:"三人以上共同實行犯罪行為" },
+  { id:"E8",  label:"施用詐術",                       def:"行為人對他人施以欺罔的方法" },
+  { id:"E9",  label:"使自然人陷於錯誤",               def:"詐術使一個活生生的人，主觀認識產生錯誤（機器不會「陷於錯誤」）" },
+  { id:"E10", label:"因錯誤而交付財物",               def:"被害人因認識錯誤而處分、交付財物" },
+  { id:"E11", label:"對自動付款設備施用不正方法",     def:"針對ATM等自動付款設備，以不正方法（非對自然人）取得財物" },
+  { id:"E12", label:"冒用政府機關或公務員名義",       def:"假冒政府機關或公務員的名義犯之" },
+  { id:"E13", label:"以大眾傳播工具對公眾散布",       def:"以廣播、電視、網際網路等媒體，對不特定多數人散布而犯之" },
+];
+
+/* ---------------------------------------------------------
+   六條法條的符號邏輯規則
+   type: "AND" -> 全部成立才算數
+   type: "OR"  -> 至少一項成立即可
+   巢狀結構：base(AND) 再加上 aggravating(OR)，對應論文 IS_AGGRAVATION_OF 關係
+--------------------------------------------------------- */
+const STATUTES = [
+  {
+    code:"§320", name:"普通竊盜罪",
+    rule:{ type:"AND", items:["E1","E2","E4"] }
+  },
+  {
+    code:"§321", name:"加重竊盜罪",
+    rule:{ type:"AND", items:["E1","E2","E4",
+      { type:"OR", label:"加重情形（擇一）", items:["E5","E6","E7"] }
+    ]}
+  },
+  {
+    code:"§335", name:"侵占罪",
+    rule:{ type:"AND", items:["E1","E3","E4"] }
+  },
+  {
+    code:"§339", name:"普通詐欺罪",
+    rule:{ type:"AND", items:["E8","E9","E10"] }
+  },
+  {
+    code:"§339-2", name:"ATM詐欺罪（不正方法由自動付款設備取財）",
+    rule:{ type:"AND", items:["E11","E4"] }
+  },
+  {
+    code:"§339-4", name:"加重詐欺罪",
+    rule:{ type:"AND", items:["E8","E9","E10",
+      { type:"OR", label:"加重情形（擇一）", items:["E12","E7","E13"] }
+    ]}
+  },
+];
+
+/* ---------------------------------------------------------
+   預設範例（含論文 §5.6.3 那個有爭議的例句）
+--------------------------------------------------------- */
+const PRESETS = [
+  { label:"翻牆竊盜", text:"甲翻牆進入乙住處，竊取電腦一台。" },
+  { label:"論文爭議例句", text:"A拿走了B合法持有的財物。" },
+  { label:"保管人侵占", text:"甲受乙委託保管一批貨物，事後甲將貨物擅自變賣花用。" },
+  { label:"ATM盜刷", text:"甲拾得乙遺失之提款卡，持該卡在ATM提款機以正確密碼領取現金。" },
+  { label:"結夥ATM詐欺", text:"甲、乙、丙三人共同持偽造提款卡，在ATM提款機領取現金。" },
+  { label:"冒名機關詐欺", text:"甲冒稱檢察官身分，致電乙謊稱乙涉及洗錢案，要求乙交付存款以便配合調查。" },
+];
+
+const presetsEl = document.getElementById("presets");
+PRESETS.forEach(p=>{
+  const b=document.createElement("button");
+  b.className="preset-btn";
+  b.textContent=p.label;
+  b.onclick=()=>{document.getElementById("caseText").value=p.text;};
+  presetsEl.appendChild(b);
+});
+
+/* ---------------------------------------------------------
+   呼叫 OpenAI API 做要件抽取
+--------------------------------------------------------- */
+async function extractElements(caseText, apiKey, model){
+  const elementList = ELEMENTS.map(e=>`- ${e.id}｜${e.label}：${e.def}`).join("\n");
+
+  const systemPrompt =
+`你是法律專家，任務是判斷一段中文案件事實，是否符合以下構成要件清單中的每一項。
+這是刑法竊盜／侵占／詐欺家族的構成要件，請特別注意：
+- 竊盜（E2）與侵占（E3）的關鍵區別在於行為人「行為前」對物有沒有合法持有關係。
+- 詐欺（E8/E9/E10）與 ATM 詐欺（E11）的關鍵區別在於欺騙對象是「自然人」還是「機器」；ATM詐欺不需要 E8/E9/E10。
+- 如果案件事實本身有歧義（例如沒有交代物的所有權歸屬、沒有交代持有關係的來龍去脈），請如實反映在信心分數與依據說明中，信心可以偏低，不要為了給出答案而過度腦補案情沒有明講的細節。
+
+構成要件清單：
+${elementList}
+
+請針對每一個要件，輸出 JSON，格式如下（只輸出 JSON，不要有其他文字）：
+{
+  "elements": [
+    {"id":"E1","matched":true 或 false,"confidence":0到1之間的數字,"evidence":"用一句話說明你依據案件事實的哪個部分做出這個判斷，如果不成立也要說明原因"}
+  ]
+}
+elements 陣列必須包含全部 ${ELEMENTS.length} 個要件，順序不拘。`;
+
+  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":`Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: model,
+      response_format:{type:"json_object"},
+      temperature:0,
+      messages:[
+        {role:"system", content: systemPrompt},
+        {role:"user", content: `案件事實：「${caseText}」\n\n請輸出 JSON。`}
+      ]
+    })
+  });
+
+  if(!resp.ok){
+    const errText = await resp.text();
+    throw new Error(`OpenAI API 錯誤（${resp.status}）：${errText.slice(0,300)}`);
+  }
+  const data = await resp.json();
+  const content = data.choices?.[0]?.message?.content;
+  if(!content) throw new Error("API 回傳格式異常，沒有取得 content。");
+  let parsed;
+  try{
+    parsed = JSON.parse(content);
+  }catch(e){
+    throw new Error("模型回傳的內容不是合法 JSON，請重試一次。");
+  }
+  return parsed.elements || [];
+}
+
+/* ---------------------------------------------------------
+   符號邏輯引擎：遞迴評估 AND / OR 規則
+--------------------------------------------------------- */
+function evalRule(rule, matchedSet){
+  if(typeof rule === "string"){
+    return { satisfied: matchedSet.has(rule), id: rule };
+  }
+  if(rule.type === "AND"){
+    const children = rule.items.map(it => evalRule(it, matchedSet));
+    return { satisfied: children.every(c=>c.satisfied), type:"AND", children, label: rule.label };
+  }
+  if(rule.type === "OR"){
+    const children = rule.items.map(it => evalRule(it, matchedSet));
+    return { satisfied: children.some(c=>c.satisfied), type:"OR", children, label: rule.label };
+  }
+}
+
+function renderCondNode(node, depth){
+  // leaf
+  if(node.id){
+    const el = ELEMENTS.find(e=>e.id===node.id);
+    const li = document.createElement("li");
+    li.className = node.satisfied ? "hit" : "";
+    li.innerHTML = `<span class="mark">${node.satisfied?"✓":"·"}</span> ${node.id} ${el?el.label:""}`;
+    return li;
+  }
+  // AND: flatten into the same list (implicit)
+  if(node.type === "AND"){
+    const frag = document.createDocumentFragment();
+    node.children.forEach(c=>{
+      if(c.type === "OR"){
+        const wrap = document.createElement("div");
+        wrap.className = "or-group";
+        const lbl = document.createElement("div");
+        lbl.className = "or-label";
+        lbl.textContent = (c.label||"OR") + (c.satisfied? " ✓ 已滿足其一":" — 尚未滿足");
+        wrap.appendChild(lbl);
+        const ul = document.createElement("ul");
+        ul.className = "cond-list";
+        c.children.forEach(cc=> ul.appendChild(renderCondNode(cc)));
+        wrap.appendChild(ul);
+        frag.appendChild(wrap);
+      } else {
+        frag.appendChild(renderCondNode(c));
+      }
+    });
+    return frag;
+  }
+  return document.createDocumentFragment();
+}
+
+/* ---------------------------------------------------------
+   主流程
+--------------------------------------------------------- */
+document.getElementById("runBtn").addEventListener("click", async ()=>{
+  const apiKey = document.getElementById("apiKey").value.trim();
+  const model = document.getElementById("model").value;
+  const caseText = document.getElementById("caseText").value.trim();
+  const statusEl = document.getElementById("status");
+  const runBtn = document.getElementById("runBtn");
+
+  if(!apiKey){ statusEl.textContent = "⚠ 請先輸入 API 金鑰。"; return; }
+  if(!caseText){ statusEl.textContent = "⚠ 請先輸入案件事實。"; return; }
+
+  runBtn.disabled = true;
+  document.getElementById("results").style.display = "none";
+  statusEl.textContent = "Stage 2／呼叫語言模型進行要件抽取中…";
+
+  try{
+    const elementResults = await extractElements(caseText, apiKey, model);
+
+    // Stage 2 render
+    const tbody = document.querySelector("#elementsTable tbody");
+    tbody.innerHTML = "";
+    const matchedSet = new Set();
+    ELEMENTS.forEach(def=>{
+      const r = elementResults.find(x=>x.id===def.id) || {matched:false,confidence:0,evidence:"（模型未回傳此項）"};
+      if(r.matched && r.confidence >= 0.5) matchedSet.add(def.id);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong>${def.id}</strong> ${def.label}</td>
+        <td><span class="badge ${r.matched?'yes':'no'}">${r.matched?'成立':'不成立'}</span></td>
+        <td class="conf">${(r.confidence??0).toFixed(2)}</td>
+        <td class="quote">${r.evidence||""}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Stage 3 render
+    statusEl.textContent = "Stage 3／執行符號邏輯核對…";
+    const grid = document.getElementById("statuteGrid");
+    grid.innerHTML = "";
+    const satisfiedStatutes = [];
+
+    STATUTES.forEach(st=>{
+      const evalResult = evalRule(st.rule, matchedSet);
+      if(evalResult.satisfied) satisfiedStatutes.push(st);
+
+      const box = document.createElement("div");
+      box.className = "statute-box" + (evalResult.satisfied ? " satisfied" : "");
+      const title = document.createElement("div");
+      title.className = "statute-title";
+      title.innerHTML = `<span>${st.code} ${st.name}</span><span class="statute-verdict ${evalResult.satisfied?'yes':'no'}">${evalResult.satisfied?'✓ 符合':'✕ 不符合'}</span>`;
+      box.appendChild(title);
+
+      const ul = document.createElement("ul");
+      ul.className = "cond-list";
+      const rendered = renderCondNode(evalResult);
+      if(rendered.tagName === "LI"){ ul.appendChild(rendered); }
+      else { ul.appendChild(rendered); }
+      box.appendChild(ul);
+
+      grid.appendChild(box);
+    });
+
+    // Stage 4 render
+    const verdictEl = document.getElementById("verdict");
+    verdictEl.innerHTML = "";
+    const card = document.createElement("div");
+    if(satisfiedStatutes.length === 0){
+      card.className = "verdict-card none";
+      card.innerHTML = `<div class="verdict-headline">無法條完全符合</div>
+        <div class="verdict-note">依目前抽取到的要件，六條法條中沒有任何一條的必要要件全部滿足。可能是案件事實描述不完整，或本示範系統的法條範圍未涵蓋此情形。</div>`;
+    } else if(satisfiedStatutes.length === 1){
+      card.className = "verdict-card";
+      card.innerHTML = `<div class="verdict-headline">判定：${satisfiedStatutes[0].code} ${satisfiedStatutes[0].name}</div>
+        <div class="verdict-note">僅此一條法條的構成要件全部滿足。</div>`;
+    } else {
+      card.className = "verdict-card conflict";
+      const names = satisfiedStatutes.map(s=>`${s.code} ${s.name}`).join("、");
+      card.innerHTML = `<div class="verdict-headline">⚠ 多條法條同時符合</div>
+        <div class="verdict-note">${names}<br><br>這正是論文 §5.6.3 討論過的情境：向量／語意層面同時符合多個候選要件，需要進一步消歧才能決定唯一法條。本系統刻意<strong>不</strong>自動幫您選一個「最像」的答案 —— 因為那正是論文方法論上被質疑的地方：LLM 一次性決定，沒有人工覆核。</div>
+        <div class="conflict-flag">CONFLICT · 需人工判斷</div>`;
+    }
+    verdictEl.appendChild(card);
+
+    document.getElementById("results").style.display = "block";
+    statusEl.textContent = "完成。";
+  }catch(err){
+    statusEl.textContent = "✕ " + err.message;
+  }finally{
+    runBtn.disabled = false;
+  }
+});
+</script>
+
+</body>
+</html>
